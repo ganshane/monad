@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sys/time.h>
+#include <time.h>
 
 static FILE *_logger_file = NULL;
 static char _filename[PATH_MAX];
