@@ -42,7 +42,9 @@ typedef __int64 int64_t;
 
 
 #include "monad_types.h"
+
 #include "logger.h"
+#include "status.h"
 
 //禁止默认的copy构造和copy赋值操作
 class Uncopyable;

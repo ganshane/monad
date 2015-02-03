@@ -7,11 +7,9 @@
 #include <string.h>
 #include <string>
 
-#include "util/nirvana_endian.h"
+#include "monad_endian.h"
 
-namespace nirvana {
-  namespace util {
-    
+namespace monad {
     // 对整数进行编码为字符
     // REQUIRES: dst has enough space for the value being written
     inline void EncodeFixed32ToTowCharWithBigEndian(char *buf, uint32_t value) {
@@ -165,7 +163,6 @@ namespace nirvana {
       return (hi << 32) | lo;
 #endif
     }
-  } //namepsace util
-}  // namespace nirvana
+}  // namespace monad
 
 #endif  // MONAD_UTIL_CODING_H_
