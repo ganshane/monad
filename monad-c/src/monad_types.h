@@ -1,6 +1,6 @@
 #ifndef MONAD_TYPES_H_
 #define MONAD_TYPES_H_
-namespace monad{
+namespace monad {
   //禁止默认的copy构造和copy赋值操作
   class Uncopyable{
     protected:

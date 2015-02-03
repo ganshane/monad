@@ -18,14 +18,34 @@
 #define LOGGER_LEVEL_INFO  2
 #define LOGGER_LEVEL_DEBUG  3
 
-MONAD_BEGIN_API
+#define LEVEL_NAME_LEN  8
+#define LOG_BUF_LEN   4096
 
-int logger_init(const char* filename);
-int logger_debug(const char* fmt,...);
-int logger_info(const char* fmt,...);
-int logger_error(const char* fmt,...);
-int logger_close();
+namespace monad {
+  class Logger{
+  public:
+    Logger();
+    virtual ~Logger();
+    void Open(const char* filename);
+    
+    int Debug(const char* fmt,...);
+    int Info(const char* fmt,...);
+    int Error(const char* fmt,...);
+  private:
+    int Rotate();
+    int InternalLog(int level, const char *fmt, va_list ap);
+    FILE *_logger_file = NULL;
+    char _filename[PATH_MAX];
+    uint64_t _file_length;
+  };
+}
 
-MONAD_END_API
+#define LogDebug(fmt, args...)	\
+monad::Logger::logger.Debug(fmt, ##args)
+#define LogInfo(fmt, args...)	\
+monad::Logger::logger.Info(fmt, ##args)
+#define LogError(fmt, args...)	\
+monad::Logger::logger.Error(fmt, ##args)
+
 
 #endif //MONAD_LOGGER_H_
