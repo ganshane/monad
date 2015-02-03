@@ -5,7 +5,7 @@ compiler:
 branches:
   - all
 script:
-  mkdir build && cmake .. && make
+  mkdir build && cd build && cmake .. && make
 os:
   - linux
   - osx
