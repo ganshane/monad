@@ -5,7 +5,7 @@ compiler:
 branches:
   - all
 script:
-  cd monad-c && mkdir build && cd build && cmake .. && make
+  cd monad-c && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
 os:
   - linux
   - osx
