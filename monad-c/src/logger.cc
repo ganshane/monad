@@ -5,12 +5,15 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+
+
 namespace monad {
   void OpenLogger(const char* filename){
     Logger::Instance().Open(filename);
   }
   Logger::Logger(){
     Open("stdout");
+    _mutex = new Mutex();
   }
   void Logger::Open(const char* filename){
     _filename[0]='\0';
@@ -116,13 +119,21 @@ namespace monad {
     *ptr = '\0';
     
     len = ptr - buf;
-    // change to write(), without locking?
+    
+    MutexLock *lock = NULL;
+    if (this->_mutex) {
+      lock = new MutexLock(_mutex);
+    }
     fwrite(buf, len, 1, _logger_file);
     fflush(_logger_file);
     
     _file_length += len;
     if (LOGGER_ROTATE_SIZE > 0 && _file_length > LOGGER_ROTATE_SIZE) {
       Rotate();
+
+    }
+    if (lock) {
+      delete lock;
     }
     
     return len;

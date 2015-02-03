@@ -4,7 +4,9 @@
 #define MONAD_LOGGER_H_
 
 #include "monad_config.h"
+
 #include "monad.h"
+#include "mutex_lock.h"
 
 //========> logger module
 #define LOGGER_ROTATE_SIZE 5L * 1024 * 1024
@@ -42,6 +44,8 @@ namespace monad {
     FILE *_logger_file;
     char _filename[PATH_MAX];
     uint64_t _file_length;
+      //互斥锁
+    Mutex *_mutex;
   };
   void OpenLogger(const char* filename);
 }
