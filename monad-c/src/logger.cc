@@ -6,9 +6,8 @@
 #include <sys/time.h>
 #include <time.h>
 namespace monad {
-  static Logger logger;
-  void LoggerOpen(const char* filename){
-    logger.Open(filename);
+  void OpenLogger(const char* filename){
+    Logger::Instance().Open(filename);
   }
   Logger::Logger(){
     Open("stdout");

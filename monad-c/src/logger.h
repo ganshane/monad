@@ -24,7 +24,11 @@
 namespace monad {
   class Logger{
   public:
-    Logger();
+    static Logger Instance(){
+      static Logger logger;
+      return logger;
+    }
+    
     virtual ~Logger();
     void Open(const char* filename);
     
@@ -32,20 +36,22 @@ namespace monad {
     int Info(const char* fmt,...);
     int Error(const char* fmt,...);
   private:
+    Logger();
     int Rotate();
     int InternalLog(int level, const char *fmt, va_list ap);
     FILE *_logger_file = NULL;
     char _filename[PATH_MAX];
     uint64_t _file_length;
   };
+  void OpenLogger(const char* filename);
 }
 
 #define LogDebug(fmt, args...)	\
-monad::Logger::logger.Debug(fmt, ##args)
+monad::Logger::Instance().Debug(fmt, ##args)
 #define LogInfo(fmt, args...)	\
-monad::Logger::logger.Info(fmt, ##args)
+monad::Logger::Instance().Info(fmt, ##args)
 #define LogError(fmt, args...)	\
-monad::Logger::logger.Error(fmt, ##args)
+monad::Logger::Instance().Error(fmt, ##args)
 
 
 #endif //MONAD_LOGGER_H_
