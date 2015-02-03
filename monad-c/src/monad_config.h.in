@@ -1,0 +1,25 @@
+#ifndef MONAD_CONFIG_H_
+#define MONAD_CONFIG_H_
+
+//版本号
+#define MONAD_VERSION_MAJOR @MONAD_VERSION_MAJOR@
+#define MONAD_VERSION_MINOR @MONAD_VERSION_MINOR@
+#define MONAD_VERSION_PATCH @MONAD_VERSION_PATCH@
+
+#define MONAD_MAKE_VERSION(major, minor, patch) \
+  ((major) * 10000 + (minor) * 100 + (patch))
+#define MONAD_VERSION \
+  MONAD_MAKE_VERSION(MONAD_VERSION_MAJOR, MONAD_VERSION_MINOR, MONAD_VERSION_PATCH)
+
+#cmakedefine MONAD_HAVE_LINUX
+#cmakedefine MONAD_HAVE_OSX
+#cmakedefine MONAD_HAVE_WINDOWS
+#cmakedefine MONAD_HAVE_ROCKSDB
+#ifdef MONAD_HAVE_ROCKSDB
+#define leveldb rocksdb
+#endif
+
+
+
+
+#endif

@@ -1,0 +1,58 @@
+# Copyright 2014,2015 Jun Tsai. All rights reserved.
+# site: http://www.ganshane.com
+PROJECT(monad5)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+SET(MONAD_VERSION_MAJOR 0)
+SET(MONAD_VERSION_MINOR 1)
+SET(MONAD_VERSION_PATCH 1)
+
+#check os
+IF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
+ELSEif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  SET(MONAD_HAVE_OSX true)
+  #for xcode apple clang
+  SET(CMAKE_MACOSX_RPATH 1)
+  LINK_DIRECTORIES(/usr/local/lib)
+  INCLUDE_DIRECTORIES(/usr/local/include)
+ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+SET(MONAD_HAVE_LINUX true)
+ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+SET(MONAD_HAVE_WINDOWS true)
+ENDIF()
+
+#define some variable
+OPTION(ENABLE_ROCKSDB "enable rocksdb" OFF)
+if(ENABLE_ROCKSDB)
+  MESSAGE(STATUS "using rocksdb ")
+  SET(MONAD_HAVE_ROCKSDB true)
+ENDIF()
+OPTION(STATIC_LINK "statically link all library " OFF)
+IF(STATIC_LINK)
+  ADD_LIBRARY(leveldb STATIC IMPORTED)
+  SET_PROPERTY(TARGET leveldb PROPERTY IMPORTED_LOCATION /usr/local/lib/libleveldb.a)
+  ADD_LIBRARY(rocksdb STATIC IMPORTED)
+  SET_PROPERTY(TARGET rocksdb PROPERTY IMPORTED_LOCATION /usr/local/lib/librocksdb.a)
+  ADD_LIBRARY(snappy STATIC IMPORTED)
+  SET_PROPERTY(TARGET snappy PROPERTY IMPORTED_LOCATION /usr/local/lib/libsnappy.a)
+ENDIF(STATIC_LINK)
+
+INCLUDE(CheckIncludeFiles)
+INCLUDE(CheckIncludeFileCXX)
+
+# global config file
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/monad_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/monad_config.h)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
+
+ADD_SUBDIRECTORY(src)
+
+# build unit test
+# you must config gtest directory using GTEST_ROOT variable.
+OPTION(ENABLE_TEST "enable test" OFF)
+if(ENABLE_TEST)
+  ENABLE_TESTING()
+  FIND_PACKAGE(GTest REQUIRED)
+  INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
+  ADD_SUBDIRECTORY(test)
+ENDIF()
