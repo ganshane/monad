@@ -5,7 +5,7 @@ compiler:
 branches:
   - all
 script:
-  mkdir build && cd build && cmake .. && make
+  cd monad-c && mkdir build && cd build && cmake .. && make
 os:
   - linux
   - osx
