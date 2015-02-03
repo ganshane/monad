@@ -39,7 +39,7 @@ namespace monad {
     Logger();
     int Rotate();
     int InternalLog(int level, const char *fmt, va_list ap);
-    FILE *_logger_file = NULL;
+    FILE *_logger_file;
     char _filename[PATH_MAX];
     uint64_t _file_length;
   };
