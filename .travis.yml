@@ -1,0 +1,12 @@
+language: cpp
+compiler:
+  - clang
+  - gcc
+branches:
+  - all
+script:
+  mkdir build && cmake .. && make
+os:
+  - linux
+  - osx
+osx_image: xcode61
