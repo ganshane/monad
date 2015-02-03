@@ -39,6 +39,12 @@ typedef __int64 monad_int64_t;
   #define UINT32_MAX        4294967295U
 #endif
 
+
+
+#include "monad_types.h"
 #include "logger.h"
+
+//禁止默认的copy构造和copy赋值操作
+class Uncopyable;
 
 #endif //MONAD_H_
