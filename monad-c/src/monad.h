@@ -21,6 +21,13 @@
 #define MONAD_64BIT
 #endif
 
+/* for printf uint64_t */
+#ifdef MONAD_64BIT
+#define MONAD_F_U64 "%llu"
+#else
+#define MONAD_F_U64 "%Lu"
+#endif
+
 #if defined(WIN32)
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int64 uint64_t;

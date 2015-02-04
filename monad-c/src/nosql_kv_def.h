@@ -5,8 +5,6 @@
 
 #include "monad_config.h"
 
-#include <cinttypes>
-
 #ifdef MONAD_HAVE_ROCKSDB
 #include "rocksdb/status.h"
 #else
@@ -163,7 +161,7 @@ namespace monad {
     inline CardPartitionMappingKey(const int64_t card_id, const uint32_t data_type) {
       char str[64];
       memset(str, 0, sizeof(str));
-      sprintf(str, "%" PRId64, card_id);
+      sprintf(str, MONAD_F_U64, card_id);
       //EncodeFixed64WithBigEndian(str, card_id);
       key_hash = BlizzardHash::HashString(str);
       _buf.push_back(PARTITION_INFO);
