@@ -7,6 +7,7 @@ SET(MONAD_VERSION_MAJOR 0)
 SET(MONAD_VERSION_MINOR 1)
 SET(MONAD_VERSION_PATCH 1)
 
+
 #check os
 IF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
@@ -22,11 +23,21 @@ ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 SET(MONAD_HAVE_WINDOWS true)
 ENDIF()
 
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX("leveldb/db.h" HAVE_LEVELDB_H)
+CHECK_INCLUDE_FILE_CXX ("rocksdb/db.h" HAVE_ROCKSDB_H)
+
 #define some variable
 OPTION(ENABLE_ROCKSDB "enable rocksdb" OFF)
 if(ENABLE_ROCKSDB)
+  IF(NOT HAVE_ROCKSDB_H)
+  MESSAGE(FATAL_ERROR "rocksdb/db.h not found!")
+  ENDIF()
   MESSAGE(STATUS "using rocksdb ")
   SET(MONAD_HAVE_ROCKSDB true)
+ELSEIF(NOT HAVE_LEVELDB_H)
+  MESSAGE(FATAL_ERROR "leveldb/db.h not found!")
 ENDIF()
 OPTION(STATIC_LINK "statically link all library " OFF)
 IF(STATIC_LINK)
@@ -38,8 +49,6 @@ IF(STATIC_LINK)
   SET_PROPERTY(TARGET snappy PROPERTY IMPORTED_LOCATION /usr/local/lib/libsnappy.a)
 ENDIF(STATIC_LINK)
 
-INCLUDE(CheckIncludeFiles)
-INCLUDE(CheckIncludeFileCXX)
 
 # global config file
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/monad_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/monad_config.h)
