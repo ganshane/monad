@@ -4,6 +4,8 @@ compiler:
   - gcc
 branches:
   - all
+before_script:
+  - sudo apt-get install libleveldb-dev
 script:
   cd monad-c && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
 os:
