@@ -19,8 +19,8 @@ struct SyncBinlogOptions {
   DataCommandType command_type;
   /* binlog的序号 */
   uint64_t seq;
-  /* 此data_type作为关键字记录时间戳 */
-  uint32_t data_type;
+  /* 数据序列号 */
+  uint32_t data_seq;
   /* 数据的时间戳 */
   uint64_t timestamp;
  public:
@@ -28,7 +28,7 @@ struct SyncBinlogOptions {
     partition_id = 0;
     command_type = COMMAND_UNKNOWN;
     seq = 0;
-    data_type = 0;
+    data_seq = 0;
     timestamp = 0;
   }
 };
@@ -38,13 +38,12 @@ struct SyncBinlogOptions {
  */
 class SyncNoSQL: public NoSQLSupport {
  private:
-  std::map<std::pair<uint8_t, int32_t>, uint32_t> _partition_counts;
+  std::map<uint8_t, uint32_t> _partition_counts;
  public:
   /**
-   * 查找某一分区某一数据的个数
+   * 查找某一分区数据的个数
    */
-  uint32_t FindOrLoadPartitionCount(uint8_t partition_id, uint32_t data_type)
-  throw(monad::MonadStatus);
+  uint32_t FindOrLoadPartitionCount(uint8_t partition_id) throw(monad::MonadStatus);
   /**
    * 构造SyncNoSQL实例
    * @param db_path 数据库路径
@@ -65,8 +64,7 @@ class SyncNoSQL: public NoSQLSupport {
   /**
    * 得到binlog的值
    */
-  virtual std::string *GetBinlogValue(const SyncBinlogKey &binglog_key);
-
+  virtual MonadStatus GetBinlogValue(const SyncBinlogKey &binglog_key,SyncBinlogValue& value);
   /**
    * 通过给定的分区ID，来取得binlog的最大值
    * @param partition_id 分区ID

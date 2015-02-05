@@ -10,46 +10,32 @@
 #endif
 
 namespace monad {
-uint32_t SyncNoSQL::FindOrLoadPartitionCount(uint8_t partition_id, uint32_t data_type)
+uint32_t SyncNoSQL::FindOrLoadPartitionCount(uint8_t partition_id)
 throw(monad::MonadStatus) {
-  std::pair<uint8_t, int32_t> count_key = std::make_pair(partition_id, data_type);
-  uint32_t count = _partition_counts[count_key];
+  uint32_t count = _partition_counts[partition_id];
   if (count > 0 )
     return count;
 
-  SyncPartitionDataCountKey key(partition_id, data_type);
+  SyncPartitionDataCountKey key(partition_id);
   std::string value;
   MonadStatus status = RawGet(key.ToString(), &value);
   if (status.ok()) { //ok
     SyncPartitionDataCountValue data_count_value(value);
     count = data_count_value.Count();
-    _partition_counts[count_key] = count;
+    _partition_counts[partition_id] = count;
     return count;
   } else if (status.code() == kNotFound) {
     return 0;
   } else
     throw status;
 }
-std::string *SyncNoSQL::GetBinlogValue(const SyncBinlogKey &binglog_key) {
-  std::string *val = new std::string();
-  MonadStatus status = RawGet(binglog_key.ToString(), val);
-  if (!status.ok() || status.code() == kNotFound) {
-    delete val;
-    return NULL;
+MonadStatus SyncNoSQL::GetBinlogValue(const SyncBinlogKey &binlog_key,SyncBinlogValue& value) {
+  std::string val;
+  MonadStatus status = RawGet(binlog_key.ToString(), &val);
+  if (status.ok()) {
+    value.Assign(val);
   }
-  SlaveBinlogValue binlog_value(*val);
-  if (binlog_value.CommandType() == PUT || binlog_value.CommandType() == UPDATE) { //假如是put，则进行处理抓取原始数据
-    std::string origin_data_key = binlog_value.Key();
-    std::string origin_data_value;
-    status = RawGet(origin_data_key, &origin_data_value);
-    if (status.ok() || status.code() == kNotFound) {
-      val->append(origin_data_value);
-    } else {
-      delete val;
-      return NULL;
-    }
-  }
-  return val;
+  return status;
 }
 MonadStatus SyncNoSQL::PutDataWithBinlog(const BaseBufferSupport &key,
     const int64_t card_id,
@@ -57,66 +43,58 @@ MonadStatus SyncNoSQL::PutDataWithBinlog(const BaseBufferSupport &key,
     const SyncBinlogOptions &binlog_options) {
 
   //得到分区的数据统计信息
-  uint32_t count = FindOrLoadPartitionCount(binlog_options.partition_id, binlog_options.data_type);
-  uint32_t old_count  = count;
-
+  uint32_t count = FindOrLoadPartitionCount(binlog_options.partition_id);
+  
   //create batch
   leveldb::WriteBatch batch;
-
-
-  
-  DataCommandType command = binlog_options.command_type;
+  NormalSeqDataKey data_seq_key(binlog_options.partition_id, binlog_options.data_seq);
   
   //分区信息
-  CardPartitionMappingKey partition_mapping_key(card_id, binlog_options.data_type);
-  if (command == DEL) { //假如是删除模式
-    //batch.Delete(partition_mapping_key.ToString());
-    batch.Delete(key.ToString());
+  PartitionMappingKey partition_mapping_key(key.ToString());
+  if (binlog_options.command_type == DEL) { //假如是删除模式
+    batch.Delete(data_seq_key.ToString());
+    batch.Delete(partition_mapping_key.ToString());
     count -= 1;
   } else {
-    if (command == PUT) {
+    if (binlog_options.command_type == PUT) {
       //放入分区映射表
-      PartitionMappingValue partition_mapping_value(binlog_options.partition_id);
+      PartitionMappingValue partition_mapping_value(binlog_options.partition_id,
+                                                    binlog_options.data_seq);
       batch.Put(partition_mapping_key.ToString(), partition_mapping_value.ToString());
+      //只有在PUT的时候数据才增加，更新下，数据不增加
       count += 1;
+      //只有PUT的时候，才记录最大的数据序列ID
+      SyncPartitionDataSeqKey partition_data_seq_key(binlog_options.partition_id);
+      SyncPartitionDataSeqValue partition_data_seq_value(binlog_options.data_seq);
+      batch.Put(partition_data_seq_key.ToString(), partition_data_seq_value.ToString());
     }
-    //针对原始数据的操作命令
-    if(ExistData(key)){
-      command = UPDATE;
-    }else{
-      command = PUT;
-    }
-    //在非删除情况下，如果有数据，则放入到数据库
-    if (data.size() > 0)
-      batch.Put(key.ToString(), data);
+    //value的值由binlog_value保存，此处讲不在保存原始的值
+    /*
+     //在非删除情况下，如果有数据，则放入到数据库
+     if(data.size() >0) { //有数据则放入到数据库
+     batch.Put(data_seq_key.ToString(), data);
+     }
+     */
   }
-
-  //写入binlog日志
+  
+  //写入同步使用的数据
   SyncBinlogKey binlog_key(binlog_options.partition_id, binlog_options.seq);
-  SlaveBinlogValue binlog_value(binlog_options.partition_id,
-                                binlog_options.seq,
-                                command,
-                                key);
+  SyncBinlogValue binlog_value(binlog_options.partition_id,
+                               binlog_options.seq,
+                               binlog_options.command_type,
+                               data_seq_key,
+                               data);
   batch.Put(binlog_key.ToString(), binlog_value.ToString());
-  LogDebug("Partition_id:%d seq2:%lld ", binlog_options.partition_id, binlog_key.Seq());
-  //写入时间戳
-  DataTimestampKey data_timestamp_key(binlog_options.data_type);
-  DataTimestampValue data_timestamp_value(binlog_options.timestamp);
-  batch.Put(data_timestamp_key.ToString(), data_timestamp_value.ToString());
-
-  if (old_count != count) {
-    //写入分区的数据总量
-    SyncPartitionDataCountKey data_count_key(binlog_options.partition_id,
-        binlog_options.data_type);
-    SyncPartitionDataCountValue data_count_value(count);
-    batch.Put(data_count_key.ToString(), data_count_value.ToString());
-  }
-
+  
+  //写入分区的数据总量
+  MetaPartitionDataCountKey data_count_key(binlog_options.partition_id);
+  MetaPartitionDataCountValue data_count_value(count);
+  batch.Put(data_count_key.ToString(), data_count_value.ToString());
+  
   leveldb::WriteOptions write_opts;
   leveldb::Status l_status = _db->Write(write_opts, &batch);
-  if (l_status.ok()) { //写入成功之后，更新变量值
-    std::pair<uint8_t, int32_t> count_key = std::make_pair(binlog_options.partition_id, binlog_options.data_type);
-    _partition_counts[count_key] = count;
+  if (l_status.ok()) { //当且仅当写入成功之后才进行写入
+    _partition_counts[binlog_options.partition_id] = count;
   }
   return MonadStatus::FromLeveldbStatus(l_status);
 }

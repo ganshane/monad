@@ -29,6 +29,9 @@ namespace monad {
     inline bool operator>(const BaseBufferSupport &rht) {
       return _buf > rht._buf;
     }
+    inline void Assign(std::string& str){
+      _buf.assign(str);
+    }
   protected:
     std::string _buf;
   };
@@ -139,6 +142,8 @@ namespace monad {
       if (value.size() > 0)
         _buf.append(value.ToString());
     };
+    inline SyncBinlogValue(): SlaveBinlogValue("") {
+    };
     inline SyncBinlogValue(const leveldb::Slice &data): SlaveBinlogValue(data) {
     };
     inline std::string Value() const {
@@ -245,11 +250,10 @@ namespace monad {
   //同步服务器分区数据
   class SyncPartitionDataCountKey: public BaseBufferSupport {
   public:
-    inline SyncPartitionDataCountKey(const uint8_t partition_id, const uint32_t data_type) {
+    inline SyncPartitionDataCountKey(const uint8_t partition_id){
       static char data_count_key_prefix[20] = "_data_count";
       _buf.append(data_count_key_prefix);
       _buf.push_back(partition_id);
-      EncodeFixed32(_buf, data_type);
     }
   };
   class SyncPartitionDataCountValue: public BaseBufferSupport {
