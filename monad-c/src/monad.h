@@ -21,11 +21,13 @@
 #define MONAD_64BIT
 #endif
 
-/* for printf uint64_t */
+/* for printf int64_t */
 #ifdef MONAD_64BIT
-#define MONAD_F_U64 "%llu"
+#ifdef __clang__
+#define MONAD_F_64 "%ll"
+#endif
 #else
-#define MONAD_F_U64 "%Lu"
+#define MONAD_F_64 "%L"
 #endif
 
 #if defined(WIN32)
