@@ -20,25 +20,10 @@
 
 
 namespace monad {
-  bool ValidateTime(int year, int month, int day) {
-    time_t timer;
-    struct tm y2k;
-    
-    y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
-    y2k.tm_year = year - 1900; y2k.tm_mon = month; y2k.tm_mday = day;
-    
-    time(&timer);  /* get current time; same as: timer = time(NULL)  */
-    
-    return difftime(timer, mktime(&y2k)) < 0;
-  }
   //构造函数
   NoSQLSupport::NoSQLSupport(const char *db_path, const NoSQLOptions &options)
   throw(MonadStatus)
   : _log_queue_size(options.log_keeped_num) {
-    if (!ValidateTime(2015, 6, 22)) {
-      LogInfo("expired,pls contact administrator!");
-      throw - 1; //crash
-    }
     _options.create_if_missing = true;
 #ifdef MONAD_HAVE_ROCKSDB
     //增大并行的线程数
