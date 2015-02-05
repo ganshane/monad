@@ -23,9 +23,7 @@
 
 /* for printf int64_t */
 #ifdef MONAD_64BIT
-#ifdef __clang__
 #define MONAD_F_64 "%ll"
-#endif
 #else
 #define MONAD_F_64 "%L"
 #endif
