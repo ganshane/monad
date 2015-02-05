@@ -11,7 +11,9 @@
 #else
 #include "leveldb/cache.h"
 #include "leveldb/env.h"
+#ifdef HAVE_LEVELDB_FILTER_POLICY_H
 #include "leveldb/filter_policy.h"
+#endif
 #endif
 
 #include "coding.h"
@@ -81,7 +83,9 @@ namespace monad {
     block_based_options.block_size = options.block_size_kb * 1024;
     _options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(block_based_options));
 #else
+#ifdef HAVE_LEVELDB_FILTER_POLICY_H
     _options.filter_policy = leveldb::NewBloomFilterPolicy(10);
+#endif
     _options.block_cache = leveldb::NewLRUCache(options.cache_size_mb * 1024 * 1024);
     _options.compression = leveldb::kSnappyCompression;
     //支持20G的打开文件 2M*10000
@@ -111,11 +115,13 @@ namespace monad {
     if (_options.block_cache) {
       delete _options.block_cache;
     }
+#ifdef HAVE_LEVELDB_FILTER_POLICY_H
     //删除filter_policy
     if (_options.filter_policy) {
       delete _options.filter_policy;
     }
-#endif
+#endif //HAVE_LEVELDB_FILTER_POLICY_H
+#endif // NOT MONAD_HAVE_ROCKSDB
     LogInfo("[NS] instance deleted.");
   };
   MonadStatus NoSQLSupport::RawPut(const leveldb::Slice &key, const leveldb::Slice &val) {
