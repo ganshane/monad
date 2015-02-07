@@ -268,26 +268,6 @@ namespace monad {
       return DecodeFixed32(_buf.data());
     }
   };
-  class MetaPartitionDataCountKey: public BaseBufferSupport {
-  public:
-    inline MetaPartitionDataCountKey(const uint8_t partition_id) {
-      static char data_count_key_prefix[20] = "_data_count";
-      _buf.append(data_count_key_prefix);
-      _buf.push_back(partition_id);
-    }
-  };
-  class MetaPartitionDataCountValue: public BaseBufferSupport {
-  public:
-    inline MetaPartitionDataCountValue(const leveldb::Slice &slice) {
-      _buf.assign(slice.data(), slice.size());
-    }
-    inline MetaPartitionDataCountValue(const uint32_t count) {
-      EncodeFixed32(_buf, count);
-    }
-    inline uint32_t Count() {
-      return DecodeFixed32(_buf.data());
-    }
-  };
   //DataTimestampKey
   class DataTimestampKey: public BaseBufferSupport {
   public:

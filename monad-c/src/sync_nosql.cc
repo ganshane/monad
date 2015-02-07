@@ -87,8 +87,8 @@ MonadStatus SyncNoSQL::PutDataWithBinlog(const BaseBufferSupport &key,
   batch.Put(binlog_key.ToString(), binlog_value.ToString());
   
   //写入分区的数据总量
-  MetaPartitionDataCountKey data_count_key(binlog_options.partition_id);
-  MetaPartitionDataCountValue data_count_value(count);
+  SyncPartitionDataCountKey data_count_key(binlog_options.partition_id);
+  SyncPartitionDataCountValue data_count_value(count);
   batch.Put(data_count_key.ToString(), data_count_value.ToString());
   
   leveldb::WriteOptions write_opts;
