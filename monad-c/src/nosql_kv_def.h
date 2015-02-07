@@ -30,8 +30,8 @@ namespace monad {
     inline bool operator>(const BaseBufferSupport &rht) {
       return _buf > rht._buf;
     }
-    inline void Assign(std::string& str){
-      _buf.assign(str);
+    inline void Assign(const leveldb::Slice& str){
+      _buf.assign(str.data(),str.size());
     }
   protected:
     std::string _buf;
@@ -92,9 +92,6 @@ namespace monad {
     inline SlaveBinlogValue(const leveldb::Slice &data) {
       _buf.append(data.data(), data.size());
     };
-    inline SlaveBinlogValue(const std::string &data,size_t offset,size_t len){
-      _buf.assign(data,offset,len);
-    }
     inline uint8_t PartitionId() const {
       return _buf[0];
     }
@@ -159,12 +156,6 @@ namespace monad {
       uint32_t key_len = KeyLength();
       uint32_t value_start_pos = 10 + sizeof(uint32_t) + key_len;
       return std::string(_buf, 0, value_start_pos);
-    }
-    inline std::shared_ptr<SlaveBinlogValue> ToSlaveBinlogValue() const {
-      uint32_t key_len = KeyLength();
-      uint32_t value_start_pos = 10 + sizeof(uint32_t) + key_len;
-      return std::shared_ptr<SlaveBinlogValue>(
-                                               new SlaveBinlogValue(_buf,0,value_start_pos));
     }
   };
   

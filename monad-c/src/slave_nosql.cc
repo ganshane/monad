@@ -46,10 +46,10 @@ namespace monad {
     return MonadStatus::FromLeveldbStatus(status);
   }
   MonadStatus SlaveNoSQLSupport::PutBinlog(const SyncBinlogValue &binlog_value) {
+    std::string slave_binlog = binlog_value.ToSlaveBinlogString();
     std::string value = binlog_value.Value();
-    std::shared_ptr<SlaveBinlogValue> slave_binlog =
-        binlog_value.ToSlaveBinlogValue();
-    return PutSlaveBinlog(*slave_binlog, value);
+    SlaveBinlogValue slave_binlog_value(slave_binlog);
+    return PutSlaveBinlog(slave_binlog_value, value);
   }
   uint64_t SlaveNoSQLSupport::FindLastBinlog() {
 
