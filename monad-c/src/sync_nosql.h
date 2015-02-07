@@ -57,8 +57,7 @@ class SyncNoSQL: public NoSQLSupport {
    * @param binlog_options 数据同步的参数
    * @param 给出返回的状态
    */
-  virtual MonadStatus PutDataWithBinlog(const BaseBufferSupport &key,
-      const int64_t card_id,
+  virtual MonadStatus PutDataWithBinlog(const leveldb::Slice &key,
       const leveldb::Slice &data,
       const SyncBinlogOptions &binlog_options);
   /**

@@ -37,8 +37,7 @@ MonadStatus SyncNoSQL::GetBinlogValue(const SyncBinlogKey &binlog_key,SyncBinlog
   }
   return status;
 }
-MonadStatus SyncNoSQL::PutDataWithBinlog(const BaseBufferSupport &key,
-    const int64_t card_id,
+MonadStatus SyncNoSQL::PutDataWithBinlog(const leveldb::Slice& key,
     const leveldb::Slice &data,
     const SyncBinlogOptions &binlog_options) {
 
