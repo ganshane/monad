@@ -1,4 +1,4 @@
-IF(CMAKE_COMPILER_IS_GNUCXX)
+IF(CMAKE_HAVE_LINUX)
   SET(CMAKE_CXX_FLAGS "-fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing ${CMAKE_CXX_FLAGS}")
 ENDIF()
 IF(NIRVANA_HAVE_WINDOWS)
