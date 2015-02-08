@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $CROSSPREFIX ]; then
-  sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig
+  sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig gcc-mingw-w64 g++-mingw-w64-x86-64 g++-mingw-w64-i686
   cd monad-c
   LIB_DIR=$(pwd)/_tmp
   mkdir -p $LIB_DIR
