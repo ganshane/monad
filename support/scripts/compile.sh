@@ -15,7 +15,7 @@ if [ $CROSSPREFIX ]; then
   cd $LIB_DIR
   git clone --depth=1 --branch=bitcoin-fork https://github.com/bitcoin/leveldb.git
   cd leveldb
-  CC=/usr/bin/${CROSSPREFIX}gcc CXX=${CROSSPREFIX}g++ AR=${CROSSPREFIX}-ar TARGET_OS=OS_WINDOWS_CROSSCOMPILE make clean all
+  CC=/usr/bin/${CROSSPREFIX}gcc CXX=${CROSSPREFIX}g++ AR=${CROSSPREFIX}ar TARGET_OS=OS_WINDOWS_CROSSCOMPILE make clean all
   cp libleveldb.a ${LIB_DIR}/${ARCH}
   cp -rp include/leveldb ${LIB_DIR}/mingw/
 
