@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $CROSSPREFIX ]; then
-  sudo apt-get install -qqy mingw-w64 g++-mingw-w64 swig
+  sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig
   cd monad-c
   LIB_DIR=$(pwd)/_tmp
   mkdir -p $LIB_DIR
@@ -30,5 +30,6 @@ if [ $CROSSPREFIX ]; then
     -DJAVA_JVM_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjava.so  ..
   make
 else
+  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
   cd monad-c && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
 fi

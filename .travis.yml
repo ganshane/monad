@@ -12,11 +12,8 @@ matrix:
 
 branches:
   - all
-before_script:
-  - sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
 script:
   sh support/scripts/compile.sh
 os:
   - linux
   - osx
-osx_image: xcode61
