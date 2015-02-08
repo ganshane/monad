@@ -17,6 +17,8 @@ ADD Toolchain-cross-mingw32-linux.cmake /build/Toolchain-cross-mingw32-linux.cma
 RUN git clone --depth=1 --branch=bitcoin-fork https://github.com/bitcoin/leveldb.git
 
 RUN mkdir /build/mingw
+RUN mkdir /build/w32
+RUN mkdir /build/w64
 
 
 #build =============> 64bit

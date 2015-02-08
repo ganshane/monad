@@ -18,16 +18,6 @@ ENDIF()
 FILE(GLOB_RECURSE ROOT_SOURCES ${PROJECT_SOURCE_DIR}/src/*)
 ADD_LIBRARY(monad STATIC ${ROOT_SOURCES})
 
-IF(MONAD_HAVE_ROCKSDB)
-  TARGET_LINK_LIBRARIES(monad rocksdb)
-ELSE()
-  TARGET_LINK_LIBRARIES(monad leveldb)
-ENDIF()
-
-IF(NOT MONAD_HAVE_WINDOWS)
-  TARGET_LINK_LIBRARIES(monad snappy pthread)
-ENDIF()
-
 
 ##################### JNI BRIDGE ##############
 # swig support
@@ -60,10 +50,20 @@ SWIG_LINK_LIBRARIES(monad4j monad)
 SET_TARGET_PROPERTIES(monad4j PROPERTIES LINKER_LANGUAGE CXX)
 ADD_DEPENDENCIES(monad4j monad jni-swig-out-dir)
 
+IF(MONAD_HAVE_ROCKSDB)
+  TARGET_LINK_LIBRARIES(monad4j rocksdb)
+ELSE()
+  TARGET_LINK_LIBRARIES(monad4j leveldb)
+ENDIF()
+
+IF(NOT MONAD_HAVE_WINDOWS)
+  TARGET_LINK_LIBRARIES(monad4j snappy pthread)
+ENDIF()
+
 IF(MONAD_HAVE_WINDOWS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(monad4j PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -fno-strict-aliasing ")
   ENDIF()
-  TARGET_LINK_LIBRARIES(monad4j wldap32 ws2_32 netapi32 version)
+  TARGET_LINK_LIBRARIES(monad4j shlwapi) #wldap32 ws2_32 version)
 ENDIF()
 
