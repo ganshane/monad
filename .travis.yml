@@ -1,13 +1,21 @@
-language: cpp
-compiler:
-  - clang
-  - gcc
+language: cpp   
+matrix:
+  fast_finish: true
+  include:
+    # cross-compile using mingw
+    - compiler: ": w64"
+      env: HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-
+    - compiler: ": w32"
+      env: HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32-
+    - compiler: "clang"
+    - compiler: "gcc"
+
 branches:
   - all
 before_script:
   - sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
 script:
-  cd monad-c && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+  sh support/scripts/compile.sh
 os:
   - linux
   - osx
