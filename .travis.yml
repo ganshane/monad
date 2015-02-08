@@ -3,9 +3,9 @@ matrix:
   fast_finish: true
   include:
     # cross-compile using mingw
-    - compiler: ": w64"
+    - compiler: "win64"
       env: HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-
-    - compiler: ": w32"
+    - compiler: " win32"
       env: HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32-
     - compiler: "clang"
     - compiler: "gcc"
