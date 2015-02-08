@@ -1,18 +1,31 @@
 IF(MONAD_HAVE_LINUX)
   SET(CMAKE_CXX_FLAGS "-fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing ${CMAKE_CXX_FLAGS}")
 ENDIF()
-IF(NIRVANA_HAVE_WINDOWS)
-  SET(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at")
+IF(MONAD_HAVE_WINDOWS)
+  IF(MINGW)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/build/${ARCH} ")
+    IF(ARCH MATCHES "w32")
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 ")
+    ELSE()
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -D_AMD64_ ")
+    ENDIF()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/build/mingw -static -DCURL_STATICLIB -DHAVE_LIBZ -DHAVE_ZLIB_H ")
+  ENDIF()
 ENDIF()
+
 
 
 FILE(GLOB_RECURSE ROOT_SOURCES ${PROJECT_SOURCE_DIR}/src/*)
 ADD_LIBRARY(monad STATIC ${ROOT_SOURCES})
 
-IF(NIRVANA_HAVE_ROCKSDB)
-  TARGET_LINK_LIBRARIES(monad pthread rocksdb snappy)
+IF(MONAD_HAVE_ROCKSDB)
+  TARGET_LINK_LIBRARIES(monad rocksdb)
 ELSE()
-  TARGET_LINK_LIBRARIES(monad pthread leveldb snappy)
+  TARGET_LINK_LIBRARIES(monad leveldb)
+ENDIF()
+
+IF(NOT MONAD_HAVE_WINDOWS)
+  TARGET_LINK_LIBRARIES(monad snappy pthread)
 ENDIF()
 
 
@@ -31,10 +44,10 @@ INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH2})
 # create swig ouput directory
 SET(CMAKE_SWIG_OUTDIR javaapi)
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_SWIG_OUTDIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory javaapi
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src
-    COMMENT "Creating target directory for nirvana project JNI sources")
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
+  COMMAND ${CMAKE_COMMAND} -E make_directory javaapi
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src
+  COMMENT "Creating target directory for nirvana project JNI sources")
 ADD_CUSTOM_TARGET(jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
 
 SET(SWIG_I monad.i)
@@ -46,4 +59,11 @@ SWIG_ADD_MODULE(monad4j JAVA ${SWIG_SOURCES})
 SWIG_LINK_LIBRARIES(monad4j monad)
 SET_TARGET_PROPERTIES(monad4j PROPERTIES LINKER_LANGUAGE CXX)
 ADD_DEPENDENCIES(monad4j monad jni-swig-out-dir)
+
+IF(MONAD_HAVE_WINDOWS)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(monad4j PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -fno-strict-aliasing ")
+  ENDIF()
+  TARGET_LINK_LIBRARIES(monad4j wldap32 ws2_32 netapi32 version)
+ENDIF()
 
