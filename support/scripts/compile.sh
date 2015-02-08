@@ -1,11 +1,10 @@
 #!/bin/bash
 
-sudo apt-get update
-
 if [ $CROSSPREFIX ]; then
-  sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig \
-  gcc-mingw-w64 g++-mingw-w64-x86-64 g++-mingw-w64-i686 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
-  binutils-mingw-w64-i686 binutils-mingw-w64-x86-64
+  sudo apt-get -yy purge mingw32 mingw32-binutils
+  sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig
+#  gcc-mingw-w64 g++-mingw-w64-x86-64 g++-mingw-w64-i686 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
+#  binutils-mingw-w64-i686 binutils-mingw-w64-x86-64
   cd monad-c
   LIB_DIR=$(pwd)/_tmp
   mkdir -p $LIB_DIR
