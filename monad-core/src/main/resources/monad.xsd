@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    attributeFormDefault="unqualified"
+    elementFormDefault="qualified"
+    id="monad">
+  <xs:complexType name="databaseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="pool_name" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="driver" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="user" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="password" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="url" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="memcachedType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="address" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:integer" name="expired_period_in_minutes" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="rpcType">
+    <xs:sequence>
+      <xs:element name="bind" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="io_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="1"/>
+      <xs:element name="worker_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="8"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="webType">
+    <xs:sequence>
+      <xs:element name="bind" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="min_conn_count" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="max_conn_count" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="keep_alive_time_minutes" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="waiting_queue_size" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="socket_acceptor" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="socket_backlog" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="conn_idle_time_secs" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="request_buffer_size_kb" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="response_buffer_size_kb" type="xs:int" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="zkType">
+    <xs:sequence>
+      <xs:element name="address" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="root" type="xs:string" minOccurs="0" maxOccurs="1" default="/monad"/>
+      <xs:element name="timeout_in_mills" type="xs:int" minOccurs="0" maxOccurs="1" default="60000"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="heartbeatType">
+    <xs:sequence>
+      <xs:element name="host_name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="cron" type="xs:string" minOccurs="0" maxOccurs="1" default="0 0/5 * * * ? *"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="textIndexType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="path" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>索引存放路径</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="writer_buffer" minOccurs="0" maxOccurs="1" default="32">
+        <xs:annotation>
+          <xs:documentation>写索引时候的buffer,单位(MB)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="need_commit" minOccurs="0" maxOccurs="1" default="10000">
+        <xs:annotation>
+          <xs:documentation>写入多少的时候，需要commit</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="nosqlType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="path">
+        <xs:annotation>
+          <xs:documentation>数据的保存目录，此目录应该存在，如果不存在将出现错误信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="cache_size_mb" default="8" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>读数据的缓存大小，默认：8</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="block_size_kb" minOccurs="0" maxOccurs="1" default="32">
+        <xs:annotation>
+          <xs:documentation>数据块的大小，默认：32</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="write_buffer_mb" minOccurs="0" maxOccurs="1" default="32">
+        <xs:annotation>
+          <xs:documentation>写数据的buffer大小，默认：32</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="target_file_size_mb" minOccurs="0" maxOccurs="1" default="32">
+        <xs:annotation>
+          <xs:documentation>单个文件大小，默认：32</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="max_mmap_size" minOccurs="0" maxOccurs="1" default="64">
+        <xs:annotation>
+          <xs:documentation>linux下使用mmap的个数，默认：64</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="max_open_files" minOccurs="0" maxOccurs="1" default="1000">
+        <xs:annotation>
+          <xs:documentation>最大打开文件数，默认：1000</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <!-- cron Type -->
+  <xs:simpleType name="cronType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\d\*\?/\s]{7,21}"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

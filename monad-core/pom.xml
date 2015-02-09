@@ -1,0 +1,120 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!--
+     Copyright 2014,2015 Jun Tsai. All rights reserved.
+     site: http://www.ganshane.com
+  -->
+
+  <parent>
+    <groupId>com.ganshane.monad</groupId>
+    <artifactId>monad-project</artifactId>
+    <version>dev-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>monad-core</artifactId>
+  <packaging>jar</packaging>
+  <name>Monad Core Feature Support</name>
+  <dependencies>
+    <!-- support -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-support</artifactId>
+    </dependency>
+    <!-- jni -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-jni</artifactId>
+    </dependency>
+    <!-- rpc -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-rpc</artifactId>
+    </dependency>
+    <!-- protocol -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-protocol</artifactId>
+    </dependency>
+    <!-- jolokia -->
+    <!--
+    <dependency>
+      <groupId>org.jolokia</groupId>
+      <artifactId>jolokia-jvm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jolokia</groupId>
+      <artifactId>jolokia-jmx</artifactId>
+    </dependency>
+    -->
+    <!-- metrics -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-jvm</artifactId>
+    </dependency>
+    <!-- zookeeper client -->
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tapestry</groupId>
+      <artifactId>tapestry-json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tapestry</groupId>
+      <artifactId>tapestry-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tapestry</groupId>
+      <artifactId>tapestry-ioc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

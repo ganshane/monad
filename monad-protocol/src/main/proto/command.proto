@@ -8,4 +8,8 @@ option java_outer_classname = "CommandProto";
 
 message BaseCommand {
   extensions 100 to max;
+  /**
+    internal_sync#SyncRequest  101
+    internal_sync#SyncResponse 102
+   */
 }
