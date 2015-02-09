@@ -37,7 +37,8 @@ if [ $CROSSPREFIX ]; then
     -DJAVA_INCLUDE_PATH2=/usr/lib/jvm/java-7-openjdk-amd64/include/linux \
     -DJAVA_JVM_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjava.so  ..
   make
-
+  #windows not execute maven test case
+  exit $?
 else
   sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
   cd monad-c
