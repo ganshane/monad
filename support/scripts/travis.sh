@@ -41,7 +41,7 @@ if [ $CROSSPREFIX ]; then
   #windows not execute maven test case
   exit $?
 else
-  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
+  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev protobuf-c-compiler
   cd monad-c
   mkdir build 
   cd build 
