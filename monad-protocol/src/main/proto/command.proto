@@ -1,0 +1,11 @@
+package monad.proto;
+
+option optimize_for = SPEED;
+
+option java_package = "monad.protocol.internal";
+
+option java_outer_classname = "CommandProto";
+
+message BaseCommand {
+  extensions 100 to max;
+}
