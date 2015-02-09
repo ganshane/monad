@@ -1,4 +1,7 @@
-language: cpp   
+language: 
+  - cpp
+env:
+  - PROTOBUF_VERSION=2.5.0
 matrix:
   fast_finish: true
   include:
