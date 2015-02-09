@@ -25,3 +25,4 @@ src/main/conf/development/log4j.properties
 support/config/local*
 **/src/main/conf/development/*
 support/log
+monad-jni/src/main/java/monad/jni/services/gen
