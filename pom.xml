@@ -12,6 +12,8 @@
     <name>Monad Data Process Engine</name>
     <modules>
       <module>monad-jni</module>
+      <module>monad-protocol</module>
+      <module>monad-rpc</module>
       <module>monad-support</module>
     </modules>
     <scm>
@@ -24,6 +26,16 @@
         <dependency>
           <groupId>com.ganshane.monad</groupId>
           <artifactId>monad-jni</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>com.ganshane.monad</groupId>
+          <artifactId>monad-protocol</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>com.ganshane.monad</groupId>
+          <artifactId>monad-rpc</artifactId>
           <version>${project.version}</version>
         </dependency>
         <dependency>
