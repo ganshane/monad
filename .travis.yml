@@ -13,7 +13,7 @@ matrix:
 branches:
   - all
 script:
-  sh support/scripts/compile.sh
+  sh support/scripts/travis.sh
 os:
   - linux
   - osx
