@@ -50,5 +50,10 @@ namespace monad {
     }
   };
 
+  enum LoggerLevel{
+    LOGGER_LEVEL_ERROR = 1,
+    LOGGER_LEVEL_INFO = 2,
+    LOGGER_LEVEL_DEBUG = 3
+  };
 }
 #endif //MONAD_TYPES_H_

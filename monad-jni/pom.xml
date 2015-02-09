@@ -16,6 +16,10 @@
   <name>Monad JNI Bridge</name>
   <dependencies>
     <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-support</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
     </dependency>

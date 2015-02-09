@@ -8,14 +8,16 @@
 
 
 namespace monad {
-  void OpenLogger(const char* filename){
-    Logger::Instance().Open(filename);
+  void OpenLogger(const char* filename,const LoggerLevel level){
+    Logger::Instance()->Open(filename,level);
+    
   }
   Logger::Logger(){
     Open("stdout");
     _mutex = new Mutex();
   }
-  void Logger::Open(const char* filename){
+  void Logger::Open(const char* filename,const LoggerLevel level){
+    _level = level;
     _filename[0]='\0';
     if (strcmp(filename, "stdout") == 0) {
       _logger_file = stdout;
@@ -70,8 +72,8 @@ namespace monad {
     }
     return 0;
   }
-  int Logger::InternalLog(int level, const char *fmt, va_list ap) {
-    if (LOGGER_LEVEL < level) {
+  int Logger::InternalLog(LoggerLevel level, const char *fmt, va_list ap) {
+    if (_level < level) {
       return 0;
     }
     

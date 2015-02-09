@@ -125,5 +125,10 @@
     return self->ToString();
   };
 }
+//logger
+namespace monad{
+  void OpenLogger(const char* filename,const LoggerLevel level);
+}
+
 
 #endif
