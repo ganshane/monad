@@ -36,7 +36,6 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
 make
 cd -
 
-scp build-$ARCH/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/nirvana/dll/$ARCH/monad4j.dll
 
 #build =============> 64bit
 export HOST=x86_64-w64-mingw32
@@ -56,7 +55,8 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
 make
 cd -
 
-scp build-$ARCH/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/nirvana/dll/$ARCH/monad4j.dll
+scp build-w32/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w32/monad4j.dll
+scp build-w64/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w64/monad4j.dll
 
 echo "[hit enter key to exit] or run 'docker stop <container>'"
 read cmd
