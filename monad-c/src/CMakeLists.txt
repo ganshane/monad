@@ -37,7 +37,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_SWIG_OUTDIR}
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
   COMMAND ${CMAKE_COMMAND} -E make_directory javaapi
   COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src
-  COMMENT "Creating target directory for nirvana project JNI sources")
+  COMMENT "Creating target directory for monad project JNI sources")
 ADD_CUSTOM_TARGET(jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
 
 SET(SWIG_I monad.i)

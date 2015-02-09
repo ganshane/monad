@@ -135,4 +135,4 @@ MonadStatus SyncNoSQL::DeleteBinlogRange(const uint8_t partition_id, const uint6
   }
   return MonadStatus::OK();
 }
-}//nirvana
+}//monad

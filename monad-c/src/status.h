@@ -74,6 +74,6 @@ namespace monad{
       state_ = (s.state_ == NULL) ? NULL : CopyState(s.state_);
     }
   }
-}  // namespace nirvana
+}  // namespace monad
 
 #endif //MONAD_UTIL_STATUS_H_

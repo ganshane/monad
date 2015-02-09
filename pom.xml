@@ -12,6 +12,7 @@
     <name>Monad Data Process Engine</name>
     <modules>
       <module>monad-jni</module>
+      <module>monad-support</module>
     </modules>
     <scm>
       <connection>scm:git:https://github.com/ganshane/monad.git</connection>
@@ -25,45 +26,250 @@
                 <artifactId>monad-jni</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!-- scala library -->
             <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scala-release-version}</version>
+                <groupId>com.ganshane.monad</groupId>
+                <artifactId>monad-support</artifactId>
+                <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty</artifactId>
-                <version>6.1.24</version>
-            </dependency>
-            <dependency>
-                <groupId>org.fusesource.jansi</groupId>
-                <artifactId>jansi</artifactId>
-                <version>1.8</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.6.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>1.6.1</version>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.8.2</version>
-                <type>jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.6</version>
-                <scope>test</scope>
-            </dependency>
+          <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.5</version>
+          </dependency>
+          <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-core</artifactId>
+            <version>${tapestry-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-json</artifactId>
+            <version>${tapestry-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-ioc</artifactId>
+            <version>${tapestry-release-version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <!-- memcached client -->
+          <dependency>
+            <groupId>net.spy</groupId>
+            <artifactId>spymemcached</artifactId>
+            <version>2.11.4</version>
+          </dependency>
+          <!-- javassist -->
+          <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.1-GA</version>
+          </dependency>
+          <!-- disruptor -->
+          <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.2.1</version>
+          </dependency>
+          <!-- database connection pool -->
+          <dependency>
+            <groupId>com.cloudhopper.proxool</groupId>
+            <artifactId>proxool</artifactId>
+            <version>0.9.1</version>
+            <exclusions>
+              <!--
+              <exclusion>
+                <groupId>com.cloudhopper.proxool</groupId>
+                <artifactId>proxool-cglib</artifactId>
+              </exclusion>
+              -->
+              <exclusion>
+                <groupId>avalon-framework</groupId>
+                <artifactId>avalon-framework-api</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <!-- commons -->
+          <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+          </dependency>
+          <!-- proto -->
+          <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+          </dependency>
+          <!-- metrics -->
+          <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${metrics-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jvm</artifactId>
+            <version>${metrics-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jetty8</artifactId>
+            <version>${metrics-release-version}</version>
+          </dependency>
+
+          <!-- scala -->
+          <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala-release-version}</version>
+          </dependency>
+          <!-- jna -->
+          <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>4.1.0</version>
+          </dependency>
+          <!-- netty -->
+          <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>3.9.2.Final</version>
+          </dependency>
+
+
+          <!-- jetty@eclipse -->
+          <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jetty-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jsp</artifactId>
+            <version>${jetty-release-version}</version>
+          </dependency>
+          <!-- jansi -->
+          <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.8</version>
+          </dependency>
+          <!-- hawtio -->
+          <dependency>
+            <groupId>io.hawt</groupId>
+            <artifactId>hawtio-core</artifactId>
+            <version>${hawtio-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.hawt</groupId>
+            <artifactId>hawtio-app</artifactId>
+            <version>${hawtio-release-version}</version>
+          </dependency>
+          <!-- commons dbutils -->
+          <dependency>
+            <groupId>commons-dbutils</groupId>
+            <artifactId>commons-dbutils</artifactId>
+            <version>1.6</version>
+          </dependency>
+          <!-- slf4j -->
+          <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.6.1</version>
+          </dependency>
+          <!-- zookeeper -->
+          <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.5</version>
+            <exclusions>
+              <exclusion>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.jboss.netty</groupId>
+                <artifactId>netty</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <!-- curator -->
+          <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>2.6.0</version>
+          </dependency>
+          <!-- lucene -->
+          <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+            <version>${lucene-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-smartcn</artifactId>
+            <version>${lucene-release-version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene-release-version}</version>
+          </dependency>
+          <!-- httpclient -->
+          <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.5</version>
+          </dependency>
+          <!-- test -->
+          <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <type>jar</type>
+            <scope>test</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.6</version>
+            <scope>test</scope>
+          </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -260,6 +466,13 @@
     <properties>
         <update-release-info>false</update-release-info>
         <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
+        <tapestry-release-version>5.3.7</tapestry-release-version>
+        <jetty-release-version>8.1.16.v20140903</jetty-release-version>
         <scala-release-version>2.11.2</scala-release-version>
+        <metrics-release-version>3.1.0</metrics-release-version>
+        <hawtio-release-version>1.4.19</hawtio-release-version>
+        <lucene-release-version>4.10.2</lucene-release-version>
+        <proguard-release-version>5.1</proguard-release-version>
+        <lichen-release-version>0.5.10.1</lichen-release-version>
     </properties>
 </project>
