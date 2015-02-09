@@ -49,5 +49,5 @@ fi
 
 #compile jni files
 cp src/javaapi/*.java ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen/
-
+cd $ROOT_DIR
 mvn clean test
