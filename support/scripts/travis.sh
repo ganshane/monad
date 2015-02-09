@@ -3,6 +3,7 @@
 ROOT_DIR=$(pwd)
 #create jni directory
 mkdir  -p ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen
+mkdir -p ${ROOT_DIR}/support/dll
 
 if [ $CROSSPREFIX ]; then
   sudo apt-get -yy purge mingw32 mingw32-binutils
@@ -50,5 +51,6 @@ fi
 
 #compile jni files
 cp src/javaapi/*.java ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen/
+cp src/libmonad4j.so ${ROOT_DIR}/support/dll
 cd $ROOT_DIR
 mvn clean test
