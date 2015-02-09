@@ -53,10 +53,12 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   -DJAVA_INCLUDE_PATH2=/usr/lib/jvm/java-7-openjdk-amd64/include/linux \
   -DJAVA_JVM_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjava.so  ..
 make
+tar cfvz monad-jni-gen.tar.gz src/javaapi/*.java
 cd -
 
 scp build-w32/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w32/monad4j.dll
 scp build-w64/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w64/monad4j.dll
+scp build-w64/monad-jni-gen.tar.gz jcai@dev.egfit.com:/opt/app/sites/lichen/monad/
 
 echo "[hit enter key to exit] or run 'docker stop <container>'"
 read cmd
