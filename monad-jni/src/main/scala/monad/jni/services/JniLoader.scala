@@ -24,7 +24,7 @@ object JniLoader extends LoggerSupport {
         System.setProperty(MonadJniConstants.MONAD_JNI_LIBRARY_KEY, file.getAbsolutePath + "/dll")
       MONAD_LIBRARY.load()
 
-      if (System.getProperty("enable-log") != "true") {
+      if (System.getProperty("enable-log") != "true" && logFile != "stderr") {
         CMonad.OpenLogger(logFile + ".internal", LoggerLevel.LOGGER_LEVEL_INFO);
       } else {
         CMonad.OpenLogger("stderr", LoggerLevel.LOGGER_LEVEL_DEBUG) //debug
