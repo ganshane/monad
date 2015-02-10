@@ -41,13 +41,11 @@ if [ $CROSSPREFIX ]; then
   #windows not execute maven test case
   exit $?
 else
-  sudo add-apt-repository --yes ppa:chris-lea/protobuf
-  sudo apt-get -qq update
-  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev libprotoc7_2.5.0 protobuf-compiler
+  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
   cd monad-c
-  mkdir build 
-  cd build 
-  cmake -DCMAKE_BUILD_TYPE=Release .. 
+  mkdir build
+  cd build
+  cmake -DCMAKE_BUILD_TYPE=Release ..
   make
 fi
 
@@ -56,14 +54,14 @@ cp src/javaapi/*.java ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen
 cp src/libmonad4j.so ${ROOT_DIR}/support/dll
 
 #install protoc
-#mkdir -p $ROOT_DIR/target
-#wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
-#tar xfvz protobuf-2.5.0.tar.gz
-#cd protobuf-2.5.0
-#./configure
-#make -j2
-#sudo make install
-#sudo ldconfig
+mkdir -p $ROOT_DIR/target
+wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
+tar xfvz protobuf-2.5.0.tar.gz
+cd protobuf-2.5.0
+CC=gcc CXX=g++ ./configure
+CC=gcc CXX=g++ make -j2
+sudo make install
+sudo ldconfig
 
 #building main scala project
 cd $ROOT_DIR
