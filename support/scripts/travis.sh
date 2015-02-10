@@ -56,7 +56,7 @@ cp src/libmonad4j.so ${ROOT_DIR}/support/dll
 #install protoc
 mkdir -p $ROOT_DIR/target
 wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
-tar xfvz protobuf-2.5.0.tar.gz
+tar xfz protobuf-2.5.0.tar.gz
 cd protobuf-2.5.0
 CC=gcc CXX=g++ ./configure
 CC=gcc CXX=g++ make -j2
