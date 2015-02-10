@@ -14,6 +14,7 @@
       <module>monad-cloud</module>
       <module>monad-core</module>
       <module>monad-extjs</module>
+      <module>monad-interface</module>
       <module>monad-jni</module>
       <module>monad-protocol</module>
       <module>monad-rpc</module>
