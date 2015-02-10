@@ -32,7 +32,7 @@ class CacheResourceStreamerImplTest {
         val crs = new CacheResourceStreamerImpl(true,request,response,delegate)
         crs.streamResource(resource)
 
-        verify(request,response,delegate,resource)
+        verify(request).getHeader(CACHE_HEADER)
     }
     @Test
     def test_cache_content(){
@@ -50,6 +50,6 @@ class CacheResourceStreamerImplTest {
         val crs = new CacheResourceStreamerImpl(true,request,response,delegate)
         crs.streamResource(resource)
 
-        verify(request,response,delegate,resource)
+        verify(request,times(1)).getHeader(CACHE_HEADER)
     }
 }

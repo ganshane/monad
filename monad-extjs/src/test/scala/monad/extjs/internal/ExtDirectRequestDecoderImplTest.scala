@@ -43,6 +43,8 @@ class ExtDirectRequestDecoderImplTest {
         val context = cerp.getEventContext
         Assert.assertEquals(3,context.getCount)
 
-        verify(componentClassResolver,valueEncoder,extRequest,servletRequest)
+        verify(componentClassResolver).canonicalizePageName("TestPage");
+      verify(extRequest).getMethod
+      verify(servletRequest).getParameter("t:cp")
     }
 }

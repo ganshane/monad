@@ -29,13 +29,13 @@ class CoffeeScriptAssetRequestHandlerTest {
         when(arl.findClasspathResourceForPath(basePath+"/"+file)).
           thenReturn(new ClasspathResource("test.coffee"))
 
-        streamer.streamResource(Matchers.anyObject[Resource]())
+        //streamer.streamResource(Matchers.anyObject[Resource]())
 
         //replay(streamer,arl,request,response)
         val csarh = new CoffeeScriptAssetRequestHandler(streamer,arl,basePath)
         csarh.handleAssetRequest(request, response, file)
 
-        verify(streamer,arl,request,response)
+      verify(streamer,times(1)).streamResource(Matchers.anyObject[Resource]())
 
     }
 }

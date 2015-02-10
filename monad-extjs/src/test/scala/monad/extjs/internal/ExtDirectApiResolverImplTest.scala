@@ -42,8 +42,8 @@ class ExtDirectApiResolverImplTest {
         logger.debug("js:\n{}",resolver.toJs)
 
 
-      verify(ccr)
-      verify(apc)
+      verify(ccr).getPageNames
+      verify(apc).constructAssetPath("extjs_static","icons")
     }
     class A{
         @ExtDirectMethod
