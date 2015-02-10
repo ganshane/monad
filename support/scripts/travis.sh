@@ -43,7 +43,7 @@ if [ $CROSSPREFIX ]; then
 else
   sudo add-apt-repository --yes ppa:chris-lea/protobuf
   sudo apt-get -qq update
-  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev libprotoc8 protobuf-compiler
+  sudo apt-get -yy install libleveldb-dev swig libsnappy-dev libprotoc7_2.5.0 protobuf-compiler
   cd monad-c
   mkdir build 
   cd build 
