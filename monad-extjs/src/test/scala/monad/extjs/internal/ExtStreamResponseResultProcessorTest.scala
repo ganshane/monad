@@ -22,7 +22,7 @@ class ExtStreamResponseResultProcessorTest {
         extRequest.method="testMethod"
         extRequest.tid="asdf"
         val response = mock(classOf[Response])
-        response.disableCompression()
+        //when(response.disableCompression()).thenReturn()
         val baos= new ByteArrayOutputStream
         when(response.getOutputStream
           (ExtStreamResponseResultProcessor.contentType.toString)).
