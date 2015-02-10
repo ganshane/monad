@@ -55,13 +55,10 @@ cp src/libmonad4j.so ${ROOT_DIR}/support/dll
 
 #install protoc
 mkdir -p $ROOT_DIR/target
-wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
-tar xfvz protobuf-2.5.0.tar.gz
-cd protobuf-2.5.0
-./configure
-make -j2
-sudo make install
-sudo ldconfig
+PROTOBUF_VERSION=2.6.0
+wget https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protobuf-$PROTOBUF_VERSION.tar.gz
+tar xf protobuf-$PROTOBUF_VERSION.tar.gz
+(cd protobuf-$PROTOBUF_VERSION && ./configure && make -j2 && sudo make install && sudo ldconfig )
 
 #building main scala project
 cd $ROOT_DIR
