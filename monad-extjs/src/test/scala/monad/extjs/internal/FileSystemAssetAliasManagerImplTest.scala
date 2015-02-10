@@ -25,6 +25,6 @@ class FileSystemAssetAliasManagerImplTest {
         val clientUrl = fsaam.toClientURL(resourcePath)
         Assert.assertEquals("/extjs/ext-all.js",clientUrl)
 
-        verify(apc)
+        verify(apc).constructAssetPath("extjs_static","ext-all.js")
     }
 }
