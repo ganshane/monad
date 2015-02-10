@@ -60,6 +60,9 @@ IF(NOT MONAD_HAVE_WINDOWS)
   TARGET_LINK_LIBRARIES(monad4j snappy pthread)
 ENDIF()
 
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -fno-strict-aliasing ${CMAKE_CXX_FLAGS} ")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
 IF(MONAD_HAVE_WINDOWS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(monad4j PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -fno-strict-aliasing ")
