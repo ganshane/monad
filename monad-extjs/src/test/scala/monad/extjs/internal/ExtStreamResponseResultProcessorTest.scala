@@ -2,12 +2,12 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import org.mockito.Mockito._
-import monad.extjs.services.ExtRequest
-import org.apache.tapestry5.services.Response
-import monad.extjs.model.ExtStreamResponse
 import java.io.ByteArrayOutputStream
+
+import monad.extjs.model.ExtStreamResponse
+import org.apache.tapestry5.services.Response
 import org.junit.{Assert, Test}
+import org.mockito.Mockito._
 
 /**
  *
@@ -39,6 +39,6 @@ class ExtStreamResponseResultProcessorTest {
         """.trim
         Assert.assertEquals(result,baos.toString)
 
-        verify(response)
+      //verify(response).
     }
 }
