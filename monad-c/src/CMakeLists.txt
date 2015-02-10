@@ -1,3 +1,5 @@
+# Copyright 2015 the original author or authors. All rights reserved.
+# site: http://www.ganshane.com
 IF(MONAD_HAVE_LINUX)
   SET(CMAKE_CXX_FLAGS "-fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing ${CMAKE_CXX_FLAGS}")
 ENDIF()

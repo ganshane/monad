@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 #ifndef MONAD_TYPES_H_
 #define MONAD_TYPES_H_
 namespace monad {

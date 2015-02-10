@@ -1,6 +1,5 @@
-// Copyright 2014,2015 Jun Tsai. All rights reserved.
+// Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-
 #include "monad_config.h"
 
 #include "mutex_lock.h"

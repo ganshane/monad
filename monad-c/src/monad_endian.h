@@ -1,4 +1,4 @@
-// Copyright 2014,2015 Jun Tsai. All rights reserved.
+// Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 #ifndef MONAD_UTIL_ENDIAN_H_
 #define MONAD_UTIL_ENDIAN_H_

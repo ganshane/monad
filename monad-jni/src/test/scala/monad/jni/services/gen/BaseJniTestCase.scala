@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 package monad.jni.services.gen
 
 import java.io.File
