@@ -1,0 +1,188 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!-- 
+   Copyright 2014,2015 Jun Tsai. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+  <parent>
+    <groupId>com.ganshane.monad</groupId>
+    <artifactId>monad-project</artifactId>
+    <version>dev-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>monad-cloud</artifactId>
+  <packaging>jar</packaging>
+  <name>Monad Cloud Application</name>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>monad-support</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tapestry</groupId>
+      <artifactId>tapestry-ioc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+              <excludeScope>provided</excludeScope>
+              <includeScope>runtime</includeScope>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dependencies-all</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeScope>compile</includeScope>
+              <outputDirectory>${project.build.directory}/dependencies-all</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>proguard</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+                <!-- proguard -->
+                <mkdir dir="${project.build.directory}/proguard-in"/>
+                <move todir="${project.build.directory}/proguard-in">
+                  <fileset dir="${project.build.directory}/dependencies">
+                    <include name="monad-*.jar"/>
+                  </fileset>
+                </move>
+                <delete>
+                  <fileset dir="${project.build.directory}/dependencies-all" includes="monad-*.jar"/>
+                </delete>
+                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                      todir="${project.build.directory}/proguard-in"/>
+                <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpathref="maven.plugin.classpath"/>
+                <taskdef name="proguardconfiguration" classname="proguard.ant.ConfigurationTask"
+                         classpathref="maven.plugin.classpath"/>
+                <proguard configuration="../support/proguard/proguard.conf"
+                          printmapping="${project.build.directory}/proguard_mapping.txt" forceprocessing="false">
+                  <injar file="${project.build.directory}/proguard-in/monad-core-${project.version}.jar"
+                         filter="!monad/core/services/FetchSyncDataSupport*,
+                         !monad/core/services/DataSynchronizerSupport*,
+                         !**/*NoSQL*,
+                         !monad/core/LocalMonadCoreModule*,
+                         !monad/core/ProtobufProcessorModule*,
+                         !monad/core/internal/Rpc*,
+                         !monad/core/internal/MachineHeartbeatImpl*,
+                         !monad/core/services/DataSync*,
+                         !monad/core/internal/MonadCoreUtils*,
+                         !monad/core/internal/ProtobufResponseResultProcessor*,
+                         !monad/core/services/LogExceptionHandler*
+                         "
+                      />
+                  <injar file="${project.build.directory}/proguard-in/monad-support-${project.version}.jar"
+                         filter="!monad/support/services/Jetty*"
+                      />
+                  <injar file="${project.build.directory}/proguard-in/monad-jni-${project.version}.jar"/>
+                  <injar file="${project.build.directory}/proguard-in/monad-cloud-${project.version}.jar"/>
+                  <outjar file="${project.build.directory}/dependencies/${project.build.finalName}.jar"/>
+                  <libraryjar dir="${project.build.directory}/dependencies-all"/>
+                  <libraryjar file="${jdk-rt-path}"/>
+                  <!-- <libraryjar file="${java.home}/bundle/Classes/classes.jar" />-->
+                  <!-- <libraryjar file="${java.home}/lib/rt.jar" /> -->
+                </proguard>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.sf.proguard</groupId>
+            <artifactId>proguard-anttask</artifactId>
+            <version>${proguard-release-version}</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.2</version>
+        <executions>
+          <execution>
+            <id>cloud</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>monad-cloud-${project.version}</finalName>
+              <descriptors>
+                <descriptor>support/assembly/bin-cloud.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

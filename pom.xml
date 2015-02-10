@@ -11,6 +11,7 @@
     <version>dev-SNAPSHOT</version>
     <name>Monad Data Process Engine</name>
     <modules>
+      <module>monad-cloud</module>
       <module>monad-core</module>
       <module>monad-jni</module>
       <module>monad-protocol</module>
@@ -24,6 +25,11 @@
   </scm>
     <dependencyManagement>
       <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>monad-cloud</artifactId>
+          <version>${project.version}</version>
+        </dependency>
         <dependency>
           <groupId>${project.groupId}</groupId>
           <artifactId>monad-core</artifactId>
@@ -445,19 +451,6 @@
   </reporting>
   <profiles>
     <profile>
-      <id>development</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-        <property>
-          <name>env</name>
-          <value>development</value>
-        </property>
-      </activation>
-      <properties>
-        <resource-conf>src/main/conf/development</resource-conf>
-      </properties>
-    </profile>
-    <profile>
       <id>unix</id>
       <activation>
         <os>
@@ -465,7 +458,20 @@
         </os>
       </activation>
       <properties>
+        <resource-conf>src/main/conf/development</resource-conf>
         <jdk-rt-path>${java.home}/lib/rt.jar</jdk-rt-path>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <resource-conf>src/main/conf/development</resource-conf>
+        <jdk-rt-path>${java.home}/bundle/Classes/classes.jar</jdk-rt-path>
       </properties>
     </profile>
     <profile>
