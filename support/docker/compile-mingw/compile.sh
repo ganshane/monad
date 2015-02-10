@@ -25,7 +25,7 @@ mkdir build-$ARCH
 cd build-$ARCH
 LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
-  -DHOST=$HOST  -DCMAKE_BUILD_TYPE=Release -DARCH=$ARCH \
+  -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
   -DJAVA_AWT_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjawt.so \
   -DJAVA_INCLUDE_PATH=/usr/lib/jvm/java-7-openjdk-amd64/include \
@@ -45,7 +45,7 @@ mkdir build-$ARCH
 cd build-$ARCH
 LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
-  -DHOST=$HOST  -DCMAKE_BUILD_TYPE=Release -DARCH=$ARCH \
+  -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
   -DJAVA_AWT_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjawt.so \
   -DJAVA_INCLUDE_PATH=/usr/lib/jvm/java-7-openjdk-amd64/include \
