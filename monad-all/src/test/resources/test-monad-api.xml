@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013 The EGF IT Software Department.
+   site: http://www.ganshane.com
+-->
+
+<monad_api>
+  <log_file>${server.home}/log/monad.api.log</log_file>
+  <group_api>http://localhost:9080/api</group_api>
+</monad_api>

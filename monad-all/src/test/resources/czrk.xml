@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013 The EGF IT Software Department.
+   site: http://www.ganshane.com
+-->
+
+<resource name="czrk" cn_name="常住人口" dynamic="true" share="true">
+  <index>
+    <!--索引分词器-->
+    <analyzer>MMSeg</analyzer>
+  </index>
+  <search>
+    <!--搜索分词器-->
+    <analyzer>MMSeg</analyzer>
+  </search>
+  <sync>
+    <!--数据同步定时器-->
+    <cron>0 0 1 * * ? *</cron>
+    <!--数据同步时间间隔-->
+    <interval>60</interval>
+    <jdbc>
+      <driver>org.h2.Driver</driver>
+      <url>jdbc:h2:mem:data/db/czrk</url>
+      <user>sa</user>
+      <password></password>
+      <batch_size>50000</batch_size>
+      <sql>select id,xm,xb,sfzh,create_time from czrk</sql>
+    </jdbc>
+  </sync>
+  <properties>
+    <!--定义数据同步各字段属性 name:字段名 list_name:列表显示名称 index_type:索引类型 default_query:是否默认查询字段(分字段查询) dic:字典规范词类别 primary_key:是否主键(唯一) modify_key:是否增量字段(用于同步数据识别增量) format:日期格式化格式-->
+    <property name="xm" cn_name="姓名" list_name="姓名" index_type="Text" default_query="true"></property>
+    <property name="xb" cn_name="性别" list_name="性别" dic="性别" index_type="Keyword"></property>
+    <property name="sfzh" cn_name="身份证号" list_name="身份证号" index_type="Text"></property>
+    <property name="id" cn_name="ID" list_name="ID" primary_key="true" index_type="Keyword"
+              column_type="Long"></property>
+    <property name="create_time" cn_name="创建时间" list_name="创建时间" modify_key="true" column_type="Date"></property>
+  </properties>
+  <!-- 本资源能查其他资源的分析 -->
+  <relations>
+    <!--关联查询定义(同户)-->
+    <rel name="th">
+      <!--关联查询(同户)构成字段定义-->
+      <property name="sfzh" trait="th1"></property>
+    </rel>
+  </relations>
+  <dynamic>
+    <!-- 动态信息配置，定义动态信息相关字段 -->
+    <property name="xm" trait="xm"></property>
+    <property name="zjhm" trait="sfzh"></property>
+    <property name="kssj" trait="kssj"></property>
+    <property name="jssj" trait="jssj"></property>
+    <property name="hdfsd" trait="hdfsd"></property>
+  </dynamic>
+</resource>

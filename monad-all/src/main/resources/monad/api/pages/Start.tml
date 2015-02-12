@@ -1,0 +1,16 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_1_0.xsd"
+      title="Monad Search Engine"
+    >
+<div class="box">
+  <form action="/api/search">
+    <input type="hidden" name="pretty" value="true"/>
+    <input type="text" name="q" id="q"/>
+    <select name="i">
+      <t:loop source="indexNames" value="indexDef">
+        <option value="${indexDef.name}">${indexDef.name}</option>
+      </t:loop>
+    </select><br/>
+    <input type="submit" name="s" value="我搜!"/>
+  </form>
+</div>
+</html>

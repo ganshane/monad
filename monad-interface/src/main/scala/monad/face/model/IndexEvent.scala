@@ -12,9 +12,9 @@ class IndexEvent {
     //资源名称
     var resource: ResourceDefinition = null
     //行ID
-    var id: Array[Byte] = null
+    var id: Int = -1
     //分析使用的对象ID
-    var objectId:Option[Array[Byte]] = None
+    var objectId:Option[Int] = None
     //数据
     var row: JsonObject = null
     var command:Int = _
@@ -25,7 +25,7 @@ class IndexEvent {
     def reset(){
         resource =null
         row = null
-        id=null
+        id= -1
         commitFlag=false
         commitSeq = -1
         version = -1

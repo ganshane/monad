@@ -1,0 +1,23 @@
+// Copyright 2012,2013 The EGF IT Software Department.
+// site: http://www.ganshane.com
+package monad.api.internal
+
+import com.google.gson.JsonObject
+import monad.api.services.SearcherFacade
+import monad.core.services.GroupZookeeperTemplate
+import monad.face.model.ResourceDefinition
+
+/**
+ * 针对资源的状态进行统计
+ * @author jcai
+ */
+class ResourceStater(searcherFacade: SearcherFacade, groupZk: GroupZookeeperTemplate) {
+  def stat(resource: ResourceDefinition): (Long, Long, Long) = {
+    val indexNum = searcherFacade.getDocumentNum
+    (indexNum, indexNum, 0)
+  }
+
+  def stat2(resource: ResourceDefinition): JsonObject = {
+    groupZk.getRegionInfo(resource.name)
+  }
+}

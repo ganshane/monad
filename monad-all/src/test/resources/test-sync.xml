@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013 The EGF IT Software Department.
+   site: http://www.ganshane.com
+-->
+
+<monad_sync>
+  <log_file>${server_home}/log</log_file>
+  <group_api>http://localhost:9081/api</group_api>
+  <sync>
+    <nodes>
+      <server id="s1" weight="1"/>
+      <server id="s2" weight="10"/>
+    </nodes>
+  </sync>
+</monad_sync>

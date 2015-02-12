@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013 The EGF IT Software Department.
+   site: http://www.ganshane.com
+-->
+
+<dynamic>
+  <!-- 动态信息特征字段配置,trait:特征列 cn_name:特征列说明 -->
+  <properties>
+    <property trait="xm" cn_name="姓名"></property>
+    <property trait="sfzh" cn_name="身份证号"></property>
+    <property trait="kssj" cn_name="开始时间"></property>
+    <property trait="jssj" cn_name="结束时间"></property>
+    <property trait="hdfsdqh" cn_name="活动发生地区划"></property>
+    <property trait="hdfsd" cn_name="活动发生地"></property>
+  </properties>
+</dynamic>
