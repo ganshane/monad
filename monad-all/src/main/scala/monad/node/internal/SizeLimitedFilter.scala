@@ -48,6 +48,7 @@ private[internal] class SizeLimitedFilter(val limit: Int) extends Filter {
         target
       }
     }
+
   }
 
 }

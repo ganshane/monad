@@ -9,6 +9,7 @@ final class ByteEncoder {
 
     private static char a_char_array1d_static_fld[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".toCharArray();
     private static byte a_byte_array1d_static_fld[];
+
     static {
         a_byte_array1d_static_fld = new byte[256];
         for (int i = 0; i < 256; i++)

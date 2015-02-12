@@ -190,19 +190,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.rollback()
   }
 
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
-  }
-
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
     resourceSearcher
   }
@@ -320,6 +307,15 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
+  def deleteDocument(id: Int, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      val query = NumericRangeQuery.newIntRange(MonadFaceConstants.OBJECT_ID_FIELD_NAME, id, id, true, true)
+      indexWriter.deleteDocuments(query)
+      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+    }
+  }
+
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
       logger.warn("[" + rd.name + "] indexer version({}) != data version({})", version, dataVersion)
@@ -332,15 +328,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     indexWriter
   }
 
-  def deleteDocument(id: Int, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      val query = NumericRangeQuery.newIntRange(MonadFaceConstants.OBJECT_ID_FIELD_NAME, id, id, true, true)
-      indexWriter.deleteDocuments(query)
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
-    }
-  }
-
   def commit(lastSeq: Long, dataVersion: Int) {
     obtainIndexWriter
 
@@ -351,6 +338,19 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     resourceSearcher.maybeRefresh()
     val i = indexWriter.maxDoc()
     logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+  }
+
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
   }
 
   private def writeLastLog(seq: Long) {

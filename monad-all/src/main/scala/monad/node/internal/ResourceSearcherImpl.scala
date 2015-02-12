@@ -131,6 +131,17 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     }
   }
 
+  protected def parseQuery(q: String) = {
+    val parser = createParser()
+    try {
+      parser.parse(q)
+    } catch {
+      case e: Throwable =>
+        logger.error(e.toString)
+        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
+    }
+  }
+
   def maxDoc: Int = doInSearcher(_.getIndexReader.numDocs())
 
   def collectSearch2(query: String, sort: String, topN: Int) = {
@@ -236,17 +247,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.maxDoc = searcher.getIndexReader.maxDoc()
 
       shardResult
-    }
-  }
-
-  protected def parseQuery(q: String) = {
-    val parser = createParser()
-    try {
-      parser.parse(q)
-    } catch {
-      case e: Throwable =>
-        logger.error(e.toString)
-        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
   }
 

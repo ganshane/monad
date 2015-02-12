@@ -23,7 +23,8 @@ class ResultLimitCollector(delegate: Collector, limit: Int) extends Collector {
   }
 
   def collect(doc: Int) {
-    checkLimit(); delegate.collect(doc)
+    checkLimit();
+    delegate.collect(doc)
   }
 
   private def checkLimit() {

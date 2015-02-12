@@ -33,4 +33,5 @@ object SearchResultCache {
   }
 
   class CacheEntity(val key: String, var value: Any, var expiredTime: Long)
+
 }

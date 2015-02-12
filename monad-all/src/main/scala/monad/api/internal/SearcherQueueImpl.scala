@@ -84,6 +84,11 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     internalSearch(searchResults, start, offset)
   }
 
+  def search2(q: String, start: Int, offset: Int, sortStr: String): SearchResult = {
+    val searchResults = resourceSearcher.collectSearch2(rd.name, q, sortStr, start + offset)
+    internalSearch(searchResults, start, offset)
+  }
+
   private def internalSearch(searchResults: ShardResult, start: Int, offset: Int): SearchResult = {
     var results: Array[ShardResult] = null
     var result: SearchResult = null
@@ -105,11 +110,6 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     }
 
     result
-  }
-
-  def search2(q: String, start: Int, offset: Int, sortStr: String): SearchResult = {
-    val searchResults = resourceSearcher.collectSearch2(rd.name, q, sortStr, start + offset)
-    internalSearch(searchResults, start, offset)
   }
 
   def idSearch(q: String) = {

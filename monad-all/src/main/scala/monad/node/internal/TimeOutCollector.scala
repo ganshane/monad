@@ -63,7 +63,8 @@ class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends Co
   }
 
   def collect(doc: Int) {
-    checkTimeout(); delegate.collect(doc)
+    checkTimeout();
+    delegate.collect(doc)
   }
 
   private def checkTimeout() {

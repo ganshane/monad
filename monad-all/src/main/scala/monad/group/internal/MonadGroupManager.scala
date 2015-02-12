@@ -67,9 +67,9 @@ class MonadGroupManager(config: CloudServerSupport, zk: GroupZookeeperTemplate) 
 
   def getDynamic = getXmlDefinition(CloudPathConstants.DYNAMIC_PATH)
 
-  def getRelation = getXmlDefinition(CloudPathConstants.RELATION_PATH)
-
   def getXmlDefinition(path: String) = zk.getDataAsString(path).getOrElse("")
+
+  def getRelation = getXmlDefinition(CloudPathConstants.RELATION_PATH)
 
   def getStat(name: String): (Int, String) = {
     var v = zk.getData(CloudPathConstants.RESOURCE_ID_PATH_FORMAT.format(name))

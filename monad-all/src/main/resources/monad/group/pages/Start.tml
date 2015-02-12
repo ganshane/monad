@@ -11,6 +11,7 @@
 </div>
 
 <script type="text/javascript">document.getElementById('loading-msg').innerHTML = 'Loading styles and images...';
+
 </script>
 <span t:type="extjs/ExtLoader" resource="css"></span>
 <script type="text/javascript">document.getElementById('loading-msg').innerHTML = 'Loading javascript api...';</script>
@@ -22,6 +23,7 @@
 </div>
 <script>
 startMonadGroupApplication('${appPath}');
+
 
 </script>
 </body>

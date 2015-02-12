@@ -14,7 +14,8 @@ class ResourceEvent {
   var eventType: ResourceEventType = null
 
   def reset() {
-    resource = null; eventType = null
+    resource = null;
+    eventType = null
   }
 }
 
