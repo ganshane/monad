@@ -14,6 +14,7 @@
       <module>monad-cloud</module>
       <module>monad-core</module>
       <module>monad-extjs</module>
+      <module>monad-group</module>
       <module>monad-interface</module>
       <module>monad-jni</module>
       <module>monad-protocol</module>
@@ -40,6 +41,16 @@
         <dependency>
           <groupId>${project.groupId}</groupId>
           <artifactId>monad-extjs</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>monad-group</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>monad-interface</artifactId>
           <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -80,6 +91,11 @@
         <dependency>
           <groupId>org.apache.tapestry</groupId>
           <artifactId>tapestry-json</artifactId>
+          <version>${tapestry-release-version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tapestry</groupId>
+          <artifactId>tapestry-yuicompressor</artifactId>
           <version>${tapestry-release-version}</version>
         </dependency>
         <dependency>
@@ -135,6 +151,12 @@
           <artifactId>commons-io</artifactId>
           <version>2.4</version>
         </dependency>
+        <!-- hpcc library -->
+        <dependency>
+          <groupId>com.carrotsearch</groupId>
+          <artifactId>hppc</artifactId>
+          <version>0.6.1</version>
+        </dependency>
         <!-- proto -->
         <dependency>
           <groupId>com.google.protobuf</groupId>
@@ -177,6 +199,25 @@
           <version>3.9.2.Final</version>
         </dependency>
 
+        <!-- js library -->
+        <dependency>
+          <groupId>org.mozilla</groupId>
+          <artifactId>rhino</artifactId>
+          <version>1.7R5</version>
+        </dependency>
+        <!-- Fast, efficient Java serialization -->
+        <dependency>
+          <groupId>com.esotericsoftware.kryo</groupId>
+          <artifactId>kryo</artifactId>
+          <version>2.24.0</version>
+        </dependency>
+        <!-- h2database -->
+        <dependency>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <version>1.3.176</version>
+        </dependency>
+
 
         <!-- jetty@eclipse -->
         <dependency>
@@ -184,7 +225,7 @@
           <artifactId>jetty-server</artifactId>
           <version>${jetty-release-version}</version>
         </dependency>
-        <dependency>
+       <dependency>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-servlet</artifactId>
           <version>${jetty-release-version}</version>
@@ -285,6 +326,16 @@
         <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-queryparser</artifactId>
+          <version>${lucene-release-version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-misc</artifactId>
+          <version>${lucene-release-version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-highlighter</artifactId>
           <version>${lucene-release-version}</version>
         </dependency>
         <!-- httpclient -->

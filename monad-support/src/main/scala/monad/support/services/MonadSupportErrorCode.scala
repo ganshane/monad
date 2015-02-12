@@ -18,5 +18,6 @@ object MonadSupportErrorCode {
   object SERVICE_HAS_INITIALIZED extends ErrorCode(1005)
 
   object SERVER_FAIL_BIND extends ErrorCode(1006)
+  object TIMEOUT_TO_GET_OBJECT extends ErrorCode(1007)
 
 }
