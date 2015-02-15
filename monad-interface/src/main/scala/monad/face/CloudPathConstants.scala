@@ -29,7 +29,8 @@ object CloudPathConstants {
     final val RESOURCE_REGION_INFO_PATH_FORMAT=RESOURCE_PATH_FORMAT+"/info"
     final val RESOURCE_RESYNC_PATH_FORMAT=RESOURCE_PATH_FORMAT+"/resync"
     final val RESOURCE_SEARCHER_PATH_FORMAT=RESOURCES_PATH+"/%s/searcher"
-    final val NODE_PATH_FORMAT="/nodes"
-    final val DYNAMIC_PATH="/dynamic"
-    final val RELATION_PATH="/relation"
+  
+  final val NODE_PATH_FORMAT="/nodes"
+  final val DYNAMIC_PATH="/dynamic"
+  final val RELATION_PATH="/relation"
 }

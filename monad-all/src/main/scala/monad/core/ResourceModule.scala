@@ -2,8 +2,10 @@
 // site: http://www.ganshane.com
 package monad.core
 
-import monad.core.internal.{ResourceRequestImpl, ResourcesWatcher}
-import monad.core.services.{ResourceDefinitionLoaderListener, ResourceRequest, ServiceLifecycleHub}
+import monad.api.internal.ResourceRequestImpl
+import monad.api.services.ResourceRequest
+import monad.core.internal.ResourcesWatcher
+import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
 import monad.face.MonadFaceConstants
 import monad.face.services.ResourceDefinitionLoader
 import monad.support.services.ServiceLifecycle

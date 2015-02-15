@@ -16,11 +16,19 @@ import org.apache.zookeeper.data.Stat
 class GroupZookeeperTemplate(groupApi: GroupServerApi, periodExecutor: PeriodicExecutor)
   extends ZookeeperTemplate(groupApi.GetCloudAddress, Some(CloudPathConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)) {
 
+  def setupGroupDirectoryInZk() = {
+    createPersistPath(CloudPathConstants.RESOURCES_PATH)
+    createPersistPath(CloudPathConstants.NODE_PATH_FORMAT)
+    createPersistPath(CloudPathConstants.DYNAMIC_PATH)
+    createPersistPath(CloudPathConstants.RELATION_PATH)
+  }
+
   /**
    * 启动对象实例
    */
   override def start() {
     super.start()
+    setupGroupDirectoryInZk()
     startCheckFailed(periodExecutor)
   }
 

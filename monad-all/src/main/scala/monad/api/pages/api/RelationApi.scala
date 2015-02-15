@@ -3,8 +3,7 @@
 package monad.api.pages.api
 
 import monad.api.model.SearchRequest
-import monad.api.services.{MonadApiExceptionCode, RelationService}
-import monad.core.services.ResourceRequest
+import monad.api.services.{ResourceRequest, MonadApiExceptionCode, RelationService}
 import monad.face.model.ResourceRelation
 import monad.face.services.ResourceDefinitionLoader
 import monad.support.services.MonadException

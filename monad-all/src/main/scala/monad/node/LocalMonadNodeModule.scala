@@ -2,7 +2,8 @@
 // site: http://www.ganshane.com
 package monad.node
 
-import monad.core.services.{ResourceDefinitionLoaderListener, ResourceRequest, ServiceLifecycleHub}
+import monad.api.services.ResourceRequest
+import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
 import monad.face.MonadFaceConstants
 import monad.face.services._
 import monad.node.internal._

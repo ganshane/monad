@@ -53,7 +53,7 @@ object LocalMonadCoreModule {
     rootZk.shutdown()
     val zk = new ZookeeperTemplate(config.zk.address, Some(config.zk.root), config.zk.timeoutInMills)
     zk.startCheckFailed(periodExecutor)
-    
+
     zk
   }
 

@@ -6,9 +6,8 @@
 
 package monad.api.internal
 
-import monad.api.services.SearcherQueue
+import monad.api.services.{ResourceRequest, SearcherQueue}
 import monad.core.internal.AbstractResourceDefinitionLoaderListener
-import monad.core.services.ResourceRequest
 import monad.face.model.{ResourceDefinition, ResourceType}
 import monad.face.services.RpcSearcherFacade
 import monad.support.services.ZookeeperTemplate

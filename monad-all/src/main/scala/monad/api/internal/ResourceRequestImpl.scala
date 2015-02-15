@@ -1,8 +1,8 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.internal
+package monad.api.internal
 
-import monad.core.services.ResourceRequest
+import monad.api.services.ResourceRequest
 import monad.face.model.ResourceDefinition
 
 /**

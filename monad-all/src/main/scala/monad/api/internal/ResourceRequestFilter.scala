@@ -2,8 +2,7 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
-import monad.api.services.MonadApiExceptionCode
-import monad.core.services.ResourceRequest
+import monad.api.services.{ResourceRequest, MonadApiExceptionCode}
 import monad.face.services.ResourceDefinitionLoader
 import monad.support.services.MonadException
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
