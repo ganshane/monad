@@ -10,6 +10,7 @@ import monad.rpc.services.RpcServerFinder
 import monad.support.services.{ServiceLifecycle, ZookeeperTemplate}
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Match}
+import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{FactoryDefaults, ServiceOverride, SymbolProvider}
 import org.apache.tapestry5.plastic.MethodInvocation
 import org.slf4j.Logger
@@ -41,7 +42,7 @@ object LocalMonadCoreModule {
     new LocalSimpleStore(config.localStoreDir)
   }
 
-  def buildZookeeperTemplate(config: ZkClientConfigSupport): ZookeeperTemplate = {
+  def buildZookeeperTemplate(config: ZkClientConfigSupport,periodExecutor:PeriodicExecutor): ZookeeperTemplate = {
     val rootZk = new ZookeeperTemplate(config.zk.address)
     rootZk.start()
 
@@ -50,7 +51,10 @@ object LocalMonadCoreModule {
     rootZk.createPersistPath(config.zk.root + MonadCoreConstants.ERRORS)
 
     rootZk.shutdown()
-    new ZookeeperTemplate(config.zk.address, Some(config.zk.root), config.zk.timeoutInMills)
+    val zk = new ZookeeperTemplate(config.zk.address, Some(config.zk.root), config.zk.timeoutInMills)
+    zk.startCheckFailed(periodExecutor)
+    
+    zk
   }
 
   @Contribute(classOf[ServiceLifecycleHub])
