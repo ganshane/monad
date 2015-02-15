@@ -1,6 +1,6 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.services
+package monad.api.services
 
 /**
  * object id的创建接口

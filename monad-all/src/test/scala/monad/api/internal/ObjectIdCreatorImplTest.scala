@@ -1,4 +1,4 @@
-package monad.core.internal
+package monad.api.internal
 
 import java.nio.ByteBuffer
 
