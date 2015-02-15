@@ -4,10 +4,9 @@ package monad.group.internal
 
 import java.text.SimpleDateFormat
 import java.util.Date
-
-import monad.core.config.CloudServerSupport
 import monad.core.services.GroupZookeeperTemplate
 import monad.face.CloudPathConstants
+import monad.face.config.CloudServerSupport
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
 import monad.face.services.DataTypeUtils
 import monad.support.MonadSupportConstants

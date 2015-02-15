@@ -6,7 +6,7 @@ import java.util
 import javax.xml.bind.annotation._
 import javax.xml.bind.annotation.adapters.{XmlAdapter, XmlJavaTypeAdapter}
 
-import monad.core.config.ServerIdSupport
+import monad.face.config.ServerIdSupport
 
 @XmlAccessorType(XmlAccessType.FIELD)
 class RpcService {

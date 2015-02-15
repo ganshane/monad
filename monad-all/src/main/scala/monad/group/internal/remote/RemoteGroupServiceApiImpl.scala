@@ -7,11 +7,10 @@ import java.util.{List => JList}
 
 import com.google.gson.reflect.TypeToken
 import com.google.gson.{Gson, JsonParser}
-import monad.core.config.GroupApiSupport
-import monad.core.model.GroupConfig
 import monad.core.services.GroupServerApi
 import monad.face.ApiConstants
-import monad.face.model.ResourceDefinition
+import monad.face.config.GroupApiSupport
+import monad.face.model.{GroupConfig, ResourceDefinition}
 import monad.group.internal.MonadGroupExceptionCode
 import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
 import org.slf4j.LoggerFactory

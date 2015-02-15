@@ -5,9 +5,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.google.gson.JsonObject
-import monad.core.config.SyncConfigSupport
 import monad.core.services.GroupZookeeperTemplate
 import monad.face.MonadFaceConstants
+import monad.face.config.SyncConfigSupport
 import monad.face.model.{ColumnType, ResourceDefinition}
 import monad.face.services.DataTypeUtils
 import monad.jni._

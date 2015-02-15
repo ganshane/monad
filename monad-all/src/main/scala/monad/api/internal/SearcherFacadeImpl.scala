@@ -8,7 +8,7 @@ import java.util.concurrent.{Semaphore, TimeUnit}
 import com.google.gson.JsonObject
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade, SearcherQueue}
-import monad.core.config.ApiConfigSupport
+import monad.face.config.ApiConfigSupport
 import monad.support.services.MonadException
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 

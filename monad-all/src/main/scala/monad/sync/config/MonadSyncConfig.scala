@@ -4,7 +4,7 @@ package monad.sync.config
 
 import javax.xml.bind.annotation.{XmlRootElement, XmlType}
 
-import monad.core.config.{GroupApiSupport, LogFileSupport, SyncConfigSupport}
+import monad.face.config.{GroupApiSupport, SyncConfigSupport, LogFileSupport}
 
 /**
  * 针对同步模块的配置

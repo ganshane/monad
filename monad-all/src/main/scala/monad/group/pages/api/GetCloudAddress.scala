@@ -6,7 +6,7 @@
 
 package monad.group.pages.api
 
-import monad.core.model.JsonApiResponse
+import monad.face.model.JsonApiResponse
 import monad.group.config.MonadGroupConfig
 import org.apache.tapestry5.ioc.annotations.Inject
 

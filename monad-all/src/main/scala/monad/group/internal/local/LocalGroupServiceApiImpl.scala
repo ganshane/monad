@@ -2,10 +2,9 @@
 // site: http://www.ganshane.com
 package monad.group.internal.local
 
-import monad.core.config.{CloudServerSupport, GroupConfigSupport}
-import monad.core.model.GroupConfig
 import monad.core.services.GroupServerApi
-import monad.face.model.ResourceDefinition
+import monad.face.config.{GroupConfigSupport, CloudServerSupport}
+import monad.face.model.{GroupConfig, ResourceDefinition}
 import monad.group.internal.MonadGroupUpNotifier
 import monad.support.services.XmlLoader
 

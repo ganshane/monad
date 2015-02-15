@@ -2,8 +2,7 @@
 // site: http://www.ganshane.com
 package monad.core.services
 
-import monad.core.model.GroupConfig
-import monad.face.model.ResourceDefinition
+import monad.face.model.{GroupConfig, ResourceDefinition}
 
 /**
  * 针对本地组服务器操作API

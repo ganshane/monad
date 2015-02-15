@@ -5,8 +5,8 @@ package monad.core.internal
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.lmax.disruptor.EventHandler
-import monad.core.model.ResourceEvent
 import monad.core.services.{GroupZookeeperTemplate, ResourceDefinitionLoaderListener}
+import monad.face.model.ResourceEvent
 import org.slf4j.LoggerFactory
 
 /**

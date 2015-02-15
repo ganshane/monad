@@ -3,11 +3,9 @@
 package monad.node.internal
 
 import java.util
-
-import monad.core.model.AnalyzerCreator
 import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition.ResourceProperty
-import monad.face.model.{ColumnType, ResourceDefinition}
+import monad.face.model.{AnalyzerCreator, ColumnType, ResourceDefinition}
 import monad.face.services.DataTypeUtils
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.core.KeywordAnalyzer

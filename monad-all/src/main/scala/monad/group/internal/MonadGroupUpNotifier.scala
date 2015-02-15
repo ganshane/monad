@@ -3,9 +3,9 @@
 package monad.group.internal
 
 import com.google.gson.Gson
-import monad.core.config.{CloudServerSupport, GroupConfigSupport}
-import monad.core.model.GroupConfig
 import monad.face.CloudPathConstants
+import monad.face.config.{GroupConfigSupport, CloudServerSupport}
+import monad.face.model.GroupConfig
 import monad.support.MonadSupportConstants
 import monad.support.services.{ServiceLifecycle, ServiceUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.Invokable

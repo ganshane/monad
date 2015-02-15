@@ -9,9 +9,9 @@ package monad.api
 
 import monad.api.internal._
 import monad.api.services._
-import monad.core.config.ApiConfigSupport
 import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
 import monad.face.MonadFaceConstants
+import monad.face.config.ApiConfigSupport
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._

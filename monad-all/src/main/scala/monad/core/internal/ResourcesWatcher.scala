@@ -8,11 +8,11 @@ import java.util.concurrent.{ConcurrentHashMap, Executors}
 
 import com.lmax.disruptor._
 import com.lmax.disruptor.dsl.Disruptor
-import monad.core.model.ResourceEvent
-import monad.core.model.ResourceEvent.ResourceEventType
+import monad.face.model.{ResourceEvent, ResourceDefinition}
+import ResourceEvent.ResourceEventType
 import monad.core.services.{GroupZookeeperTemplate, ResourceDefinitionLoaderListener}
 import monad.face.CloudPathConstants
-import monad.face.model.ResourceDefinition
+import monad.face.model.{ResourceEvent, ResourceDefinition}
 import monad.face.services.ResourceDefinitionLoader
 import monad.support.MonadSupportConstants
 import monad.support.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}

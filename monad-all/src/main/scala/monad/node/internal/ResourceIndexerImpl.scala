@@ -9,10 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.google.gson.{JsonObject, JsonParser}
 import com.lmax.disruptor.EventTranslator
-import monad.core.config.{IndexConfigSupport, ServerIdSupport}
-import monad.core.model.AnalyzerCreator
 import monad.face.MonadFaceConstants
-import monad.face.model.{IndexEvent, ResourceDefinition}
+import monad.face.config.{IndexConfigSupport, ServerIdSupport}
+import monad.face.model.{AnalyzerCreator, IndexEvent, ResourceDefinition}
 import monad.face.services.{DataTypeUtils, ResourceSearcher, ResourceSearcherSource}
 import monad.jni._
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}

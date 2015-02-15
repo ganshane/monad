@@ -14,8 +14,8 @@ import com.google.gson.{JsonArray, JsonObject, JsonParser}
 import monad.api.MonadApiConstants
 import monad.api.model.{SearchRequest, SearchResult}
 import monad.api.services.{ObjectIdCreator, DBObjectExtractor, MemcachedClient}
-import monad.core.config.ApiConfigSupport
 import monad.face.MonadFaceConstants
+import monad.face.config.ApiConfigSupport
 import monad.face.model.ResourceDefinition
 import monad.face.services.{DataTypeUtils, RpcSearcherFacade}
 import monad.support.MonadSupportConstants

@@ -1,8 +1,7 @@
 package monad.node.internal
 
 import javax.naming.SizeLimitExceededException
-
-import monad.core.config.IndexConfigSupport
+import monad.face.config.IndexConfigSupport
 import monad.face.model.IdShardResult
 import monad.node.internal.support.SearcherManagerSupport
 import org.apache.lucene.index.{AtomicReaderContext, SegmentReader}

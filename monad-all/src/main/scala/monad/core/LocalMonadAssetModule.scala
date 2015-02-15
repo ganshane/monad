@@ -2,8 +2,6 @@
 // site: http://www.ganshane.com
 package monad.core
 
-import monad.core.internal.JsonApiResponseResultProcessor
-import monad.core.model.JsonApiResponse
 import monad.extjs.internal.CoffeeScriptAssetRequestHandler
 import org.apache.tapestry5.SymbolConstants
 import org.apache.tapestry5.internal.services.{AssetResourceLocator, ResourceStreamer}
@@ -19,7 +17,7 @@ import org.apache.tapestry5.services.assets.AssetRequestHandler
 object LocalMonadAssetModule {
   @Contribute(classOf[ComponentEventResultProcessor[_]])
   def contributeComponentEventResultProcessor(configuration: MappedConfiguration[Class[_], ComponentEventResultProcessor[_]]) {
-    configuration.addInstance(classOf[JsonApiResponse], classOf[JsonApiResponseResultProcessor])
+    //configuration.addInstance(classOf[JsonApiResponse], classOf[JSONApiResponseResultProcessor])
   }
 
   def contributeAssetDispatcher(configuration: MappedConfiguration[String, AssetRequestHandler],

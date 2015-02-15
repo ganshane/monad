@@ -10,9 +10,8 @@ import java.util
 
 import monad.api.model.SearchResult
 import monad.api.services.SearcherQueue
-import monad.core.model.AnalyzerCreator
 import monad.face.MonadFaceConstants
-import monad.face.model.{ResourceDefinition, ShardResult, ShardResultCollect}
+import monad.face.model.{AnalyzerCreator, ResourceDefinition, ShardResult, ShardResultCollect}
 import monad.face.services.RpcSearcherFacade
 import monad.support.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer

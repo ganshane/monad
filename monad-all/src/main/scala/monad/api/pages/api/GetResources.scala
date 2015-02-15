@@ -3,7 +3,7 @@
 package monad.api.pages.api
 
 import monad.api.services.RelationService
-import monad.core.model.JsonApiResponse
+import monad.face.model.JsonApiResponse
 import org.apache.tapestry5.ioc.annotations.Inject
 
 /**

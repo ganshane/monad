@@ -1,9 +1,8 @@
 // Copyright 2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.model
+package monad.face.model
 
-import monad.core.model.ResourceEvent.ResourceEventType
-import monad.face.model.ResourceDefinition
+import monad.face.model.ResourceEvent.ResourceEventType
 
 /**
  * 资源事件类型

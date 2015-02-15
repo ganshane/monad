@@ -2,9 +2,8 @@ package monad.sync.internal
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
-
-import monad.core.config.SyncConfigSupport
 import monad.core.services.GroupZookeeperTemplate
+import monad.face.config.SyncConfigSupport
 import monad.face.model.ResourceDefinition
 import monad.jni.{SyncIdNoSQL, SyncServer}
 import monad.support.services.ServiceLifecycle

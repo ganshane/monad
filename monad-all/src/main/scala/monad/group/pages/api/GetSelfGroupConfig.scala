@@ -2,8 +2,8 @@
 // site: http://www.ganshane.com
 package monad.group.pages.api
 
-import monad.core.config.GroupConfigSupport
-import monad.core.model.{GroupConfig, JsonApiResponse}
+import monad.face.config.GroupConfigSupport
+import monad.face.model.{JsonApiResponse, GroupConfig}
 import org.apache.tapestry5.ioc.annotations.Inject
 
 /**

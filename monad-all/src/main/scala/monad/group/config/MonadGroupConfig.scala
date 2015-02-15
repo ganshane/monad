@@ -4,7 +4,7 @@ package monad.group.config
 
 import javax.xml.bind.annotation._
 
-import monad.core.config.{CloudServerSupport, ExtjsSupport, GroupConfigSupport, LogFileSupport}
+import monad.face.config.{ExtjsSupport, GroupConfigSupport, CloudServerSupport, LogFileSupport}
 
 /**
  * monad的组配置，通常用于某一个地方，譬如：南昌
