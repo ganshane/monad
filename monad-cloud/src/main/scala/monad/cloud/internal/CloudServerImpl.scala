@@ -7,7 +7,8 @@ import java.util.Properties
 
 import monad.cloud.config.MonadCloudConfig
 import monad.cloud.services.CloudServer
-import monad.support.services.LoggerSupport
+import monad.core.MonadCoreConstants
+import monad.support.services.{ZookeeperTemplate, LoggerSupport}
 import org.apache.commons.io.FileUtils
 import org.apache.zookeeper.server._
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
@@ -130,16 +131,14 @@ class CloudServerImpl(clusterConfig: MonadCloudConfig)
   }
 
   private def setupMonadDirectory() {
-    /*
       val rootZk = new ZookeeperTemplate("localhost:" + clusterConfig.port)
       rootZk.start()
 
-      rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.MACHINES)
-      rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.HEARTBEATS)
-      rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.ERRORS)
+    //Copyr from
+      rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH+ MonadCoreConstants.GROUPS_PATH)
+      rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.LIVE_PATH)
 
       rootZk.shutdown()
-    */
   }
 
   def shutdown() {
