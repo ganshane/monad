@@ -5,8 +5,9 @@ package monad.core.internal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 
-import monad.core.services.{MonadCoreExceptionCode, ResourceDefinitionLoaderListener}
+import monad.core.services.ResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
+import monad.face.services.MonadFaceExceptionCode
 import monad.support.services.{MonadException, ServiceLifecycle, ServiceUtils}
 import org.slf4j.LoggerFactory
 
@@ -82,7 +83,7 @@ trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
   def directGetObject(key: String): T = {
     val obj = objects.get(key)
     if (obj == null) {
-      throw new MonadException("resource:" + key + " not found", MonadCoreExceptionCode.OBJECT_NOT_LIVE)
+      throw new MonadException("resource:" + key + " not found", MonadFaceExceptionCode.OBJECT_NOT_LIVE)
     }
 
     obj
