@@ -5,6 +5,7 @@ package monad.group.config
 import javax.xml.bind.annotation._
 
 import monad.face.config.{ExtjsSupport, GroupConfigSupport, CloudServerSupport, LogFileSupport}
+import monad.support.services.WebServerConfigSupport
 
 /**
  * monad的组配置，通常用于某一个地方，譬如：南昌
@@ -15,6 +16,7 @@ import monad.face.config.{ExtjsSupport, GroupConfigSupport, CloudServerSupport, 
 @XmlAccessorType(value = XmlAccessType.FIELD)
 class MonadGroupConfig
   extends GroupConfigSupport
+  with WebServerConfigSupport
   with LogFileSupport
   with ExtjsSupport
   with CloudServerSupport
