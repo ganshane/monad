@@ -1,10 +1,10 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core
+package monad.face
 
-import monad.core.services.{GroupServerApi, GroupZookeeperTemplate, ServiceLifecycleHub}
-import monad.face.MonadFaceConstants
-import monad.group.internal.remote.RemoteGroupServiceApiImpl
+import monad.core.services.ServiceLifecycleHub
+import monad.face.internal.remote.RemoteGroupServiceApiImpl
+import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations.Contribute
 import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}

@@ -1,12 +1,12 @@
 // Copyright 2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.internal
+package monad.face.internal
 
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.lmax.disruptor.EventHandler
-import monad.core.services.{GroupZookeeperTemplate, ResourceDefinitionLoaderListener}
 import monad.face.model.ResourceEvent
+import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoaderListener}
 import org.slf4j.LoggerFactory
 
 /**

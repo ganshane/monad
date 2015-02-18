@@ -4,8 +4,8 @@ package monad.group.internal
 
 import java.io.File
 
-import monad.core.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
+import monad.face.services.{GroupZookeeperTemplate, GroupServerApi}
 import monad.group.config.MonadGroupConfig
 import monad.support.services.XmlLoader
 import org.apache.commons.io.FileUtils

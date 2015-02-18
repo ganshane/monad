@@ -7,11 +7,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.lmax.disruptor.dsl.Disruptor
 import com.lmax.disruptor.{EventFactory, EventTranslator}
-import monad.core.internal.AbstractResourceDefinitionLoaderListener
-import monad.core.services.{GroupZookeeperTemplate, LogExceptionHandler}
+import monad.core.services.LogExceptionHandler
 import monad.face.config.SyncConfigSupport
+import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.{ResourceDefinition, ResourceType}
-import monad.face.services.ResourceDefinitionLoader
+import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
 import monad.jni.{NoSQLOptions, SyncIdNoSQL}
 import monad.support.services.ServiceLifecycle
 import monad.sync.model.DataEvent

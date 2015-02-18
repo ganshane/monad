@@ -2,8 +2,9 @@
 // site: http://www.ganshane.com
 package monad.group
 
-import monad.core.services.{GroupServerApi, GroupZookeeperTemplate, ServiceLifecycleHub}
+import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
+import monad.face.services.{GroupZookeeperTemplate, GroupServerApi}
 import monad.group.internal.local.LocalGroupServiceApiImpl
 import monad.group.internal.{MonadGroupManager, MonadGroupUpNotifier}
 import monad.support.services.ServiceLifecycle

@@ -1,17 +1,16 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.group.internal.remote
+package monad.face.internal.remote
 
 import java.lang.reflect.Type
 import java.util.{List => JList}
 
 import com.google.gson.reflect.TypeToken
 import com.google.gson.{Gson, JsonParser}
-import monad.core.services.GroupServerApi
 import monad.face.ApiConstants
 import monad.face.config.GroupApiSupport
 import monad.face.model.{GroupConfig, ResourceDefinition}
-import monad.group.internal.MonadGroupExceptionCode
+import monad.face.services.{MonadFaceExceptionCode, GroupServerApi}
 import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
 import org.slf4j.LoggerFactory
 
@@ -41,7 +40,7 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       jsonStr = httpRestClient.get(groupApi + "/" + api, params)
     } catch {
       case e: Throwable =>
-        throw new MonadException("fail to connect group server " + e.toString, MonadGroupExceptionCode.FAIL_CONNECT_GROUP_SERVER)
+        throw new MonadException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
     }
     val json = new JsonParser().parse(jsonStr).getAsJsonObject
     if (json.get(ApiConstants.SUCCESS).getAsBoolean) {
@@ -55,7 +54,7 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       return gson.fromJson(json.get(ApiConstants.DATA), genericType).asInstanceOf[T]
     }
     throw new MonadException("fail to get self group config " + json.get(ApiConstants.MSG),
-      MonadGroupExceptionCode.FAIL_GET_SELF_GROUP_CONFIG
+      MonadFaceExceptionCode.FAIL_GET_SELF_GROUP_CONFIG
     )
   }
 

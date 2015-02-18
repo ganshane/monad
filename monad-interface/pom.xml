@@ -26,9 +26,17 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>monad-support</artifactId>
       </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>monad-core</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>monad-extjs</artifactId>
+      </dependency>
         <dependency>
             <groupId>org.apache.tapestry</groupId>
-            <artifactId>tapestry-ioc</artifactId>
+            <artifactId>tapestry-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.tapestry</groupId>
@@ -39,6 +47,11 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
+      <dependency>
+        <groupId>com.lmax</groupId>
+        <artifactId>disruptor</artifactId>
+        <version>3.2.0</version>
+      </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>

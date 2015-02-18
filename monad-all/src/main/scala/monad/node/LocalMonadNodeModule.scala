@@ -3,7 +3,7 @@
 package monad.node
 
 import monad.api.services.ResourceRequest
-import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
+import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
 import monad.node.internal._

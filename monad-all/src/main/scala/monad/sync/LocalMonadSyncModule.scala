@@ -2,8 +2,9 @@
 // site: http://www.ganshane.com
 package monad.sync
 
-import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
+import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
+import monad.face.services.ResourceDefinitionLoaderListener
 import monad.support.services.ServiceLifecycle
 import monad.sync.internal.{ResourceImporterManager, ResourceSyncServer}
 import org.apache.tapestry5.ioc.annotations.Contribute

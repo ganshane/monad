@@ -4,7 +4,7 @@ package monad.node.services
 
 import com.google.gson.JsonObject
 import com.lmax.disruptor.dsl.Disruptor
-import monad.core.internal.AbstractResourceDefinitionLoaderListener
+import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.IndexEvent
 import monad.face.services.RpcSearcherFacade
 import monad.support.services.ServiceLifecycle

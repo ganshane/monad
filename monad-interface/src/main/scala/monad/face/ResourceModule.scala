@@ -1,13 +1,10 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core
+package monad.face
 
-import monad.api.internal.ResourceRequestImpl
-import monad.api.services.ResourceRequest
-import monad.core.internal.ResourcesWatcher
-import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
-import monad.face.MonadFaceConstants
-import monad.face.services.ResourceDefinitionLoader
+import monad.core.services.ServiceLifecycleHub
+import monad.face.internal.ResourcesWatcher
+import monad.face.services.{ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Marker}
 import org.apache.tapestry5.ioc.services.ChainBuilder
@@ -20,9 +17,6 @@ import org.apache.tapestry5.services.Core
  */
 object ResourceModule {
   def bind(binder: ServiceBinder) {
-    binder.bind(classOf[ResourceRequest], classOf[ResourceRequestImpl]).
-      scope(ScopeConstants.PERTHREAD).
-      withId("ResourceRequest")
     binder.bind(classOf[ResourceDefinitionLoader], classOf[ResourcesWatcher]).withId("ResourceDefinitionLoader")
   }
 

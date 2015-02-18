@@ -1,13 +1,12 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.internal
+package monad.face.internal
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 
-import monad.core.services.ResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
-import monad.face.services.MonadFaceExceptionCode
+import monad.face.services.{MonadFaceExceptionCode, ResourceDefinitionLoaderListener}
 import monad.support.services.{MonadException, ServiceLifecycle, ServiceUtils}
 import org.slf4j.LoggerFactory
 

@@ -1,10 +1,10 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core
+package monad.face
 
 import monad.extjs.internal.CoffeeScriptAssetRequestHandler
 import org.apache.tapestry5.SymbolConstants
-import org.apache.tapestry5.internal.services.{AssetResourceLocator, ResourceStreamer}
+import org.apache.tapestry5.internal.services.{ResourceStreamer, AssetResourceLocator}
 import org.apache.tapestry5.ioc.MappedConfiguration
 import org.apache.tapestry5.ioc.annotations.Contribute
 import org.apache.tapestry5.services.ComponentEventResultProcessor

@@ -4,8 +4,8 @@ package monad.api.internal
 
 import com.google.gson.JsonObject
 import monad.api.services.SearcherFacade
-import monad.core.services.GroupZookeeperTemplate
 import monad.face.model.ResourceDefinition
+import monad.face.services.GroupZookeeperTemplate
 
 /**
  * 针对资源的状态进行统计

@@ -9,10 +9,11 @@ package monad.api
 
 import monad.api.internal._
 import monad.api.services._
-import monad.core.services.{ResourceDefinitionLoaderListener, ServiceLifecycleHub}
+import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
+import monad.face.services.ResourceDefinitionLoaderListener
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.{MappedConfiguration, OrderedConfiguration, ScopeConstants, ServiceBinder}
@@ -33,6 +34,9 @@ object LocalMonadApiModule {
     binder.bind(classOf[ResourceStater]).withId("ResourceStater")
     binder.bind(classOf[SearcherFacade], classOf[SearcherFacadeImpl]).withId("SearcherFacade")
     binder.bind(classOf[ObjectIdCreator], classOf[ObjectIdCreatorImpl]).withId("ObjectIdCreator")
+    binder.bind(classOf[ResourceRequest], classOf[ResourceRequestImpl]).
+      scope(ScopeConstants.PERTHREAD).
+      withId("ResourceRequest")
   }
 
   def buildMemcachedClient(apiConfigSupport: ApiConfigSupport) = {

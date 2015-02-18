@@ -1,6 +1,6 @@
 // Copyright 2012,2013 The EGF IT Software Department.
 // site: http://www.ganshane.com
-package monad.core.services
+package monad.face.services
 
 import com.google.gson.JsonObject
 import monad.face.{CloudPathConstants, MonadFaceConstants}
