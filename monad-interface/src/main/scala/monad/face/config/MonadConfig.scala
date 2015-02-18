@@ -12,6 +12,7 @@ import monad.face.model.GroupConfig
  * monad 全局配置
  * @author jcai
  */
+@deprecated
 trait LogFileSupport {
   @XmlElement(name = "log_file")
   var logFile: String = _
@@ -22,6 +23,7 @@ trait ServerIdSupport {
   var regionId: Short = _
 }
 
+@deprecated
 trait CloudServerSupport {
   @XmlElement(name = "cloud_server")
   var cloudServer: String = _

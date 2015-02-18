@@ -11,10 +11,11 @@
     <version>dev-SNAPSHOT</version>
     <name>Monad Data Process Engine</name>
     <modules>
+      <module>monad-all</module>
       <module>monad-cloud</module>
       <module>monad-core</module>
       <module>monad-extjs</module>
-      <module>monad-all</module>
+      <module>monad-group</module>
       <module>monad-interface</module>
       <module>monad-jni</module>
       <module>monad-protocol</module>
@@ -78,10 +79,16 @@
           <artifactId>commons-codec</artifactId>
           <version>1.5</version>
         </dependency>
+        <!--deprecated -->
         <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
           <version>2.5</version>
+        </dependency>
+        <dependency>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+          <version>3.0.1</version>
         </dependency>
         <dependency>
           <groupId>org.apache.tapestry</groupId>
