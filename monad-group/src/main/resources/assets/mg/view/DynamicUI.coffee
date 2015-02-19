@@ -1,5 +1,5 @@
 
-Ext.define 'mg.view.DynamicUI'
+Ext.define 'mg.view.DynamicUI',
     extend: 'Ext.panel.Panel'
     layout:'fit'
     listeners:

@@ -1,5 +1,5 @@
 
-Ext.define 'mg.view.RelationUI'
+Ext.define 'mg.view.RelationUI',
     extend: 'Ext.panel.Panel'
     layout:'fit'
     listeners:

@@ -100,11 +100,13 @@
           <artifactId>tapestry-json</artifactId>
           <version>${tapestry-release-version}</version>
         </dependency>
+        <!--
         <dependency>
           <groupId>org.apache.tapestry</groupId>
           <artifactId>tapestry-yuicompressor</artifactId>
           <version>${tapestry-release-version}</version>
         </dependency>
+        -->
         <dependency>
           <groupId>org.apache.tapestry</groupId>
           <artifactId>tapestry-ioc</artifactId>
@@ -210,7 +212,7 @@
         <dependency>
           <groupId>org.mozilla</groupId>
           <artifactId>rhino</artifactId>
-          <version>1.7R5</version>
+          <version>1.7R4</version>
         </dependency>
         <!-- Fast, efficient Java serialization -->
         <dependency>
@@ -561,7 +563,7 @@
   <properties>
     <update-release-info>false</update-release-info>
     <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
-    <tapestry-release-version>5.3.7</tapestry-release-version>
+    <tapestry-release-version>5.3.8</tapestry-release-version>
     <jetty-release-version>8.1.16.v20140903</jetty-release-version>
     <scala-release-version>2.11.2</scala-release-version>
     <metrics-release-version>3.1.0</metrics-release-version>

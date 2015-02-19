@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import org.mozilla.javascript.{ScriptableObject, Context}
+import org.mozilla.javascript.{ContextFactory, ScriptableObject, Context}
 import java.io.{InputStream, InputStreamReader}
 import org.slf4j.LoggerFactory
 import io.Source
@@ -19,14 +19,16 @@ object CoffeeScriptCompiler {
     private var globalScope: ScriptableObject = _
     private val logger = LoggerFactory getLogger getClass
     private val locker = new ReentrantLock()
-    try {
+    private val contextFactory = new ContextFactory();
+
+  try {
         val reader = new InputStreamReader(inputStream, "UTF-8")
         try {
-            val context = Context.enter()
-            context.setOptimizationLevel(-1); // Without this, Rhino hits a 64K bytecode limit and fails
+            val context = contextFactory.enterContext()
             try {
 
                 globalScope = context.initStandardObjects()
+                context.setOptimizationLevel(-1); // Without this, Rhino hits a 64K bytecode limit and fails
 
                 context.evaluateReader(globalScope, reader, "coffee-script.js", 1, null)
             } finally {
@@ -54,7 +56,8 @@ object CoffeeScriptCompiler {
             if (logger.isDebugEnabled) {
                 logger.debug("script:\n{}", coffeeScriptSource)
             }
-            val context = Context.enter()
+            val context = contextFactory.enterContext();
+
             try {
                 val compileScope = context.newObject(globalScope)
                 compileScope.setParentScope(globalScope)
