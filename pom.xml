@@ -21,6 +21,7 @@
       <module>monad-protocol</module>
       <module>monad-rpc</module>
       <module>monad-support</module>
+      <module>monad-sync</module>
     </modules>
     <scm>
       <connection>scm:git:https://github.com/ganshane/monad.git</connection>
