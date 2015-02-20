@@ -32,4 +32,10 @@ object MonadSyncExceptionCode {
 
   case object FAIL_READ_DATA_FROM_DB extends ErrorCode(8012)
 
+  case object SQL_UNSUPPORTED extends ErrorCode(8013)
+
+  case object DUPLICATE_PARTITION_DEFINITION extends ErrorCode(8014)
+
+  case object PARTITION_NOT_FOUND extends ErrorCode(8015)
+
 }

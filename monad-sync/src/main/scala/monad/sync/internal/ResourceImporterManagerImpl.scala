@@ -5,34 +5,35 @@ package monad.sync.internal
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.google.protobuf.ByteString
 import com.lmax.disruptor.dsl.Disruptor
 import com.lmax.disruptor.{EventFactory, EventTranslator}
 import monad.core.services.LogExceptionHandler
 import monad.face.config.SyncConfigSupport
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
-import monad.face.model.{ResourceDefinition, ResourceType}
+import monad.face.model.ResourceDefinition
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
-import monad.jni.{NoSQLOptions, SyncIdNoSQL}
+import monad.jni.services.gen.NoSQLOptions
+import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
 import monad.support.services.ServiceLifecycle
 import monad.sync.model.DataEvent
+import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.ObjectLocator
 import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
-
-import scala.collection.JavaConversions._
 
 /**
  * 资源的导入
  * @author jcai
  */
-class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
-                              objectLocator: ObjectLocator,
-                              periodicExecutor: PeriodicExecutor,
-                              parallelExecutor: ParallelExecutor,
-                              resourceDefinitionLoader: ResourceDefinitionLoader,
-                              zk: GroupZookeeperTemplate,
-                              syncConfig: SyncConfigSupport)
-  extends AbstractResourceDefinitionLoaderListener[ResourceImporter]
+class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
+                                  periodicExecutor: PeriodicExecutor,
+                                  parallelExecutor: ParallelExecutor,
+                                  resourceDefinitionLoader: ResourceDefinitionLoader,
+                                  zk: GroupZookeeperTemplate,
+                                  syncConfig: SyncConfigSupport)
+  extends ResourceImporterManager
+  with AbstractResourceDefinitionLoaderListener[ResourceImporter]
   with ServiceLifecycle {
   private val EVENT_FACTORY = new EventFactory[DataEvent] {
     def newInstance() = new DataEvent()
@@ -40,7 +41,6 @@ class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
   private val buffer = 1 << 12
   private var disruptor: Disruptor[DataEvent] = null
   private var dbReader: ExecutorService = null
-  private var idNoSQL: Option[SyncIdNoSQL] = None
 
   /**
    * 启动对象实例
@@ -68,17 +68,8 @@ class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
       nosqlOptions.setWrite_buffer_mb(syncConfig.sync.idNoSql.writeBuffer)
       nosqlOptions.setMax_open_files(syncConfig.sync.idNoSql.maxOpenFiles)
       nosqlOptions.setLog_keeped_num(syncConfig.sync.binlogLength)
-      try {
-        idNoSQL = Some(new SyncIdNoSQL(syncConfig.sync.idNoSql.path, nosqlOptions))
-        syncConfig.sync.nodes.foreach(x => idNoSQL.get.AddRegion(x.id))
-      } finally {
-        nosqlOptions.delete()
-      }
-
     }
 
-    //启动同步服务器
-    resourceSyncServer.start()
   }
 
   /**
@@ -88,12 +79,21 @@ class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
     dbReader.shutdownNow()
     disruptor.shutdown()
     dbReader.awaitTermination(4, TimeUnit.SECONDS)
+  }
 
 
-    if (resourceSyncServer != null)
-      resourceSyncServer.shutdown()
-    if (idNoSQL.isDefined)
-      idNoSQL.get.delete()
+  override def fetchSyncData(request: SyncRequest): SyncResponse = {
+    val resourceName = request.getResourceName
+    val importer = directGetObject(resourceName)
+    if (importer == null) {
+      val syncResponseBuilder = SyncResponse.newBuilder()
+      syncResponseBuilder.setResourceName(resourceName)
+      syncResponseBuilder.setPartitionId(request.getPartitionId)
+      syncResponseBuilder.setMessage(ByteString.copyFromUtf8("resource not found"))
+      syncResponseBuilder.build()
+    } else {
+      importer.doFetchSyncData(request).setResourceName(resourceName).build()
+    }
   }
 
   def importData(resourceName: String,
@@ -111,15 +111,6 @@ class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
     })
   }
 
-  //当资源卸载的时候
-  override def onResourceUnloaded(resourceKey: String) {
-    try {
-      resourceSyncServer.removeResourceSaver(resourceKey)
-    } finally {
-      super.onResourceUnloaded(resourceKey)
-    }
-  }
-
   def resync(resourceName: String) {
     zk.resync(resourceName)
   }
@@ -132,30 +123,14 @@ class ResourceImporterManager(resourceSyncServer: ResourceSyncServer,
     })
   }
 
+  override protected def afterObjectRemoved(obj: ResourceImporter) {
+    obj.destroyNoSQL()
+  }
+
   /**
    * 创建对象
    */
   protected def createObject(rd: ResourceDefinition, version: Int) = {
-    rd.resourceType match {
-      case ResourceType.Virtual =>
-        resourceSyncServer.createResourceSaverIfPresent(rd, version, idNoSQL = idNoSQL)
-        null
-      case other =>
-        var saverDelegated: Option[String => Option[ResourceSaver]] = None
-        if (other == ResourceType.Data) {
-          //仅仅是资源提供者，则要得到真实的资源保存器
-          saverDelegated = Some(targetSaverFinder)
-        }
-        val saver = resourceSyncServer.createResourceSaverIfPresent(rd, version, saverDelegated, idNoSQL)
-        new ResourceImporter(rd, this, periodicExecutor, parallelExecutor, version, saver, syncConfig)
-    }
-  }
-
-  def targetSaverFinder(resourceName: String): Option[ResourceSaver] = {
-    resourceSyncServer.getSaver(resourceName)
-  }
-
-  override protected def afterObjectRemoved(obj: ResourceImporter) {
-    resourceSyncServer.destroyResourceSaver(obj.rd.name)
+    new ResourceImporter(rd, this, periodicExecutor, parallelExecutor, version, syncConfig)
   }
 }

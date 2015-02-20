@@ -1,33 +1,23 @@
-// Copyright 2014,2015 the original author or authors. All rights reserved.
-// site: http://www.ganshane.com
-package monad.core.services
+package monad.sync.internal
 
 import java.util.concurrent.ConcurrentHashMap
 
 import com.google.protobuf.ByteString
-import monad.core.services.FetchSyncDataSupport.NoSQLGetter
 import monad.jni.services.JNIErrorCode
-import monad.jni.services.gen._
+import monad.jni.services.gen.{SyncBinlogKey, SyncBinlogValue}
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.{MonadException, LoggerSupport}
+import monad.support.services.{LoggerSupport, MonadException}
 
 import scala.annotation.tailrec
-
 
 /**
  * 抓取同步数据
  */
-object FetchSyncDataSupport {
-  type NoSQLGetter = {
-    def nosql: SyncNoSQL
-  }
-}
-
 trait FetchSyncDataSupport {
-  this: NoSQLGetter with LoggerSupport =>
+  this: SyncNoSQLSupport with LoggerSupport =>
   private val minSeqMap = new ConcurrentHashMap[Short, Long]()
 
-  def doFetchSyncData(request: SyncRequest, logKeptNum: Int = 0): SyncResponse = {
+  def doFetchSyncData(request: SyncRequest, logKeptNum: Int = 0): SyncResponse.Builder = {
     val partitionId = request.getPartitionId.toShort
     val startLog = request.getLogSeqFrom
     val size = request.getSize
@@ -92,7 +82,7 @@ trait FetchSyncDataSupport {
       }
     }
 
-    syncResponseBuilder.build()
+    syncResponseBuilder
   }
 
   private def findMinBinlogSeqByPartitionId(partitionId: Short): Long = {
@@ -106,11 +96,11 @@ trait FetchSyncDataSupport {
 
   def GetBinlogValue(key: SyncBinlogKey): Array[Byte] = {
     val binlogValue = new SyncBinlogValue
-    val status = nosql.GetBinlogValue(key,binlogValue)
-    if(status.ok())
+    val status = nosql.GetBinlogValue(key, binlogValue)
+    if (status.ok())
       binlogValue.GetValue()
     else
-      throw new MonadException(status.GetState(),JNIErrorCode.JNI_STATUS_ERROR)
+      throw new MonadException(status.GetState(), JNIErrorCode.JNI_STATUS_ERROR)
   }
 
   private def updateMinBinlogSeq(partitionId: Short, toSeq: Long): Unit = {

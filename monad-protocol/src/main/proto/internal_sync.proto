@@ -15,12 +15,14 @@ message SyncRequest {
   extend BaseCommand {
     required SyncRequest cmd = 101;
   }
+  //资源名称
+  required string resource_name = 1;
   //数据分区ID
-  required int32 partition_id = 1;
+  required int32 partition_id = 2;
   //同步的序列号的其实位置,读取日志的时候，要大于等于这个值
-  required int64 log_seq_from = 2;
+  required int64 log_seq_from = 3;
   //同步的数据长度
-  optional int32 size = 3 [default = 1000];
+  optional int32 size = 4 [default = 1000];
 }
 /* 响应同步请求，发送同步数据 */
 message SyncResponse {
@@ -30,11 +32,13 @@ message SyncResponse {
   message ResponseData {
     required bytes binlog_value = 1;
   }
+  //资源名称
+  required string resource_name = 1;
   //分区ID
-  required int32 partition_id = 1;
+  required int32 partition_id = 2;
   //binlog的值
-  repeated ResponseData response_data = 2;
+  repeated ResponseData response_data = 3;
   //原始数据
   //发送给客户端的消息
-  optional bytes message = 3;
+  optional bytes message = 4;
 }

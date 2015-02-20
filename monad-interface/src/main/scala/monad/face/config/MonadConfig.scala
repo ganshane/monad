@@ -5,7 +5,7 @@ package monad.face.config
 import java.util
 import javax.xml.bind.annotation._
 
-import monad.face.MonadFaceConstants
+import monad.core.config.{NoSqlConfig, Partition}
 import monad.face.model.GroupConfig
 
 /**
@@ -42,24 +42,6 @@ trait ExtjsSupport {
 }
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "NoSqlConfig")
-class NoSqlConfig {
-  /** 缓存的大小，此单位为MB **/
-  @XmlElement(name = "cache_size_mb")
-  var cache: Int = 8
-  @XmlElement(name = "write_buffer_mb")
-  var writeBuffer: Int = 32
-  @XmlElement(name = "max_open_files")
-  var maxOpenFiles: Int = 30
-  /** 身份证数据库的存放地址 **/
-  @XmlElement(name = "path")
-  var path: String = _
-
-  @XmlElement(name = "type")
-  var noSqlType: String = MonadFaceConstants.LEVEL_DB_NOSQL
-}
-
-@XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Region")
 class Region {
   @XmlAttribute(name = "id")
@@ -89,7 +71,7 @@ class SyncConfig extends BinlogLengthConfig {
   var ignore_data_when_unqualified_field: Boolean = false
   @XmlElementWrapper(name = "data")
   @XmlElement(name = "region")
-  var nodes: java.util.List[Region] = new util.ArrayList[Region]()
+  var nodes: java.util.List[Partition] = new util.ArrayList[Partition]()
   @XmlElement(name = "nosql")
   var noSql: NoSqlConfig = new NoSqlConfig
   @XmlElement(name = "id_nosql")

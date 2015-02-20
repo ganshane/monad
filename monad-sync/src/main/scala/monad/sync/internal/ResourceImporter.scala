@@ -8,17 +8,17 @@ import java.util.Date
 import java.util.concurrent.Future
 import java.util.concurrent.locks.LockSupport
 import java.util.regex.Pattern
-import monad.core.services.{StartAtDelay, StartAtOnce, CronScheduleWithStartModel}
+
+import monad.core.services.{CronScheduleWithStartModel, StartAtDelay, StartAtOnce}
 import monad.face.config.SyncConfigSupport
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
-import monad.support.services.{MonadException, ServiceLifecycle, ServiceUtils}
+import monad.support.services.{LoggerSupport, MonadException, ServiceLifecycle, ServiceUtils}
 import monad.sync.internal.JdbcDatabase._
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -27,34 +27,29 @@ import scala.collection.JavaConversions._
  * @author jcai
  */
 class ResourceImporter(val rd: ResourceDefinition,
-                       importerManager: ResourceImporterManager,
+                       importerManager: ResourceImporterManagerImpl,
                        periodicExecutor: PeriodicExecutor,
                        parallelExecutor: ParallelExecutor,
                        version: Int,
-                       val saver: ResourceSaver,
                        syncConfig: SyncConfigSupport)
-  extends ServiceLifecycle {
-  private val logger = LoggerFactory getLogger getClass
+  extends ServiceLifecycle
+  with SyncNoSQLSupport
+  with LoggerSupport
+  with ResourceConfigLike {
   private val formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
   //所有列
   private val columns = rd.properties
   private val jobName = "monad-importer-%s".format(rd.name)
+  private val dataFetcher: DataFetcher = DataFetcher(this)
   private var isFull = false
   private var modifyKeyColumn: ResourceProperty = null
   private var modifyKeyColumnIndex: Int = -1
-  //增量的SQL
-  private var incrementSql: String = _
-  //最小值的sql
-  private var minValueSql: String = _
-  //最大值的sql
-  private var maxValueSql: String = _
   //定时器
   private var job: PeriodicJob = _
   //导入的线程
   private var importerFuture: Future[_] = null
   private[internal] implicit var conn: Connection = null;
-
   @volatile
   private var running: Boolean = true
   @volatile
@@ -62,16 +57,48 @@ class ResourceImporter(val rd: ResourceDefinition,
   @volatile
   private var importerThread: Thread = null
 
+  /**
+   * 增量字段定义
+   * @return 增量字段定义
+   */
+  override def incrementColumn: ResourceProperty = findIncrementColumn()
+
+  private def findIncrementColumn(): ResourceProperty = {
+    val isFull = rd.sync.policy == SyncPolicy.Full
+    if (isFull) {
+      modifyKeyColumn = new ResourceProperty
+      modifyKeyColumn.columnType = ColumnType.Long
+    } else {
+      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
+        if (modifyKeyColumn != null) {
+          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
+        }
+        modifyKeyColumn = col
+        modifyKeyColumnIndex = index
+      }
+      if (modifyKeyColumn == null)
+        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
+    }
+    modifyKeyColumn
+  }
+
+  /**
+   * 得到资源配置定义
+   * @return 资源配置定义
+   */
+  override def resourceDefinition: ResourceDefinition = rd
+
   def start() {
     logger.info("[{}] start importer with version:{}", rd.name, version)
     init()
     startScheduler()
+    startNoSQL()
   }
 
   def init() {
     isFull = rd.sync.policy == SyncPolicy.Full
     //检查增量字段列定义
-    checkModifyKey()
+    findIncrementColumn()
 
     //验证资源配置
     validateResourceConfig()
@@ -79,136 +106,8 @@ class ResourceImporter(val rd: ResourceDefinition,
     //检查列
     modifyDefaultColumnTypeAsString()
 
-    //构造SQL
-    buildSQL()
-
   }
 
-  private def buildSQL() {
-    //创建select语句
-    val selects = columns.map(_.name).map { name =>
-      if (name.startsWith("_")) "\"" + name + "\"" else name
-    }.mkString(",")
-
-    isFull match {
-      case true =>
-        initFullSyncSQLByDriver("select " + selects + " from (" + rd.sync.jdbc.sql + ")")
-      case false =>
-        val sqlBuilder = new StringBuilder()
-        sqlBuilder.append("select " + selects + " from (").append(rd.sync.jdbc.sql).append(" ) x_  where ")
-        sqlBuilder.append(modifyKeyColumn.name).append(">?").append(" and ").
-          append(modifyKeyColumn.name).append("<=?").
-          append(" order by ").append(modifyKeyColumn.name).append(" asc")
-
-        //增量数据的Sql
-        incrementSql = sqlBuilder.toString()
-        //最小时间sql
-        minValueSql = "select min(" + modifyKeyColumn.name + ") from ( " + rd.sync.jdbc.sql + " ) x_"
-        maxValueSql = "select max(" + modifyKeyColumn.name + ") from ( " + rd.sync.jdbc.sql + " ) x_"
-    }
-
-  }
-
-  private def initFullSyncSQLByDriver(sql: String) {
-    if (rd.sync.jdbc.driver.indexOf("oracle") > -1) {
-      incrementSql = oracleGetLimitString(sql)
-      minValueSql = oracleGetLimitString(sql, Some("min"))
-      maxValueSql = oracleGetLimitString(sql, Some("max"))
-    } else if (rd.sync.jdbc.driver.indexOf("ibm") > -1) {
-      incrementSql = db2GetLimitString(sql)
-      minValueSql = db2GetLimitString(sql, Some("min"))
-      maxValueSql = db2GetLimitString(sql, Some("max"))
-    } else if (rd.sync.jdbc.driver.indexOf("mysql") > -1) {
-      incrementSql = mysqlGetLimitString(sql)
-      minValueSql = mysqlGetLimitString(sql, Some("min"))
-      maxValueSql = mysqlGetLimitString(sql, Some("max"))
-    }
-  }
-
-  //=== mysql
-  private def mysqlGetLimitString(sqlStr: String, valueQuery: Option[String] = None): String = {
-    valueQuery match {
-      case Some(str) =>
-        "select " + str + " from (" + sqlStr + ") x_ limit ?,?"
-      case None =>
-        sqlStr + " limit ?, ?"
-    }
-  }
-
-  //=== oracle implements from org.hibernate.dialect.Oracle8iDialect
-  private def oracleGetLimitString(sqlStr: String, valueQuery: Option[String] = None): String = {
-    val sql = sqlStr.trim()
-
-    val pagingSelect = new StringBuffer(sql.length() + 100)
-
-    valueQuery match {
-      case Some(str) =>
-        pagingSelect.append("select ").append(str).append("(rownum) from ( ")
-      case None =>
-        pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ")
-    }
-
-    pagingSelect.append(sql)
-
-    valueQuery match {
-      case Some(str) =>
-        pagingSelect.append(" ) ")
-      case None =>
-        pagingSelect.append(" ) row_ ) where rownum_ > ? and rownum_ <= ?")
-    }
-
-    pagingSelect.toString
-  }
-
-  private def db2GetLimitString(sql: String, valueQuery: Option[String] = None): String = {
-    val startOfSelect = sql.toLowerCase.indexOf("select")
-
-    val pagingSelect = new StringBuffer(sql.length() + 100)
-      .append(sql.substring(0, startOfSelect)) // add the comment
-      .append("select ")
-    if (valueQuery.isDefined)
-      pagingSelect.append(valueQuery.get).append("(rownumber_)")
-    else
-      pagingSelect.append("*")
-    pagingSelect.append(" from ( select ") // nest the main query in an outer select
-      .append(db2GetRowNumber(sql)); // add the rownnumber bit into the outer query select list
-
-    if (db2HasDistinct(sql)) {
-      pagingSelect.append(" row_.* from ( ") // add another (inner) nested select
-        .append(sql.substring(startOfSelect)) // add the main query
-        .append(" ) as row_"); // close off the inner nested select
-    } else {
-      pagingSelect.append(sql.substring(startOfSelect + 6)); // add the main query
-    }
-
-    pagingSelect.append(" ) as temp_")
-
-    //add the restriction to the outer select
-    if (valueQuery.isEmpty)
-      pagingSelect.append(" where rownumber_ between ?+1 and ?")
-
-    pagingSelect.toString
-  }
-
-  private def db2GetRowNumber(sql: String): String = {
-    val rownumber = new StringBuffer(50)
-      .append("rownumber() over(")
-
-    val orderByIndex = sql.toLowerCase.indexOf("order by")
-
-    if (orderByIndex > 0 && !db2HasDistinct(sql)) {
-      rownumber.append(sql.substring(orderByIndex))
-    }
-
-    rownumber.append(") as rownumber_,")
-
-    rownumber.toString
-  }
-
-  //=== db2 implements from org.hibernate.dialect.DB2Dialect
-  private def db2HasDistinct(sql: String): Boolean = {
-    sql.toLowerCase.indexOf("select distinct") >= 0
-  }
 
   private def modifyDefaultColumnTypeAsString() {
     for ((col, index) <- columns.view.zipWithIndex if col.columnType == null) {
@@ -218,24 +117,6 @@ class ResourceImporter(val rd: ResourceDefinition,
     for ((col, index) <- columns.view.zipWithIndex) {
       col.resourceDefinition = rd
     }
-  }
-
-  private def checkModifyKey() {
-    if (isFull) {
-      modifyKeyColumn = new ResourceProperty
-      modifyKeyColumn.columnType = ColumnType.Long
-      return
-    }
-
-    for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
-      if (modifyKeyColumn != null) {
-        throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
-      }
-      modifyKeyColumn = col
-      modifyKeyColumnIndex = index
-    }
-    if (modifyKeyColumn == null)
-      throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
   }
 
   private def validateResourceConfig() {
@@ -314,7 +195,7 @@ class ResourceImporter(val rd: ResourceDefinition,
       importData()
     } catch {
       case e: Throwable =>
-        logger.error("[" + rd.name + "] fail to import data ,sql:\n" + incrementSql, e)
+        logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
     }
 
     closeJdbc(conn)
@@ -329,13 +210,13 @@ class ResourceImporter(val rd: ResourceDefinition,
   def importData() {
     logger.info("[{}] load data ...", rd.name)
     if (System.getProperty("showsql", "false") == "true") {
-      logger.info("[{}]sql:{}", rd.name, incrementSql)
+      logger.info("[{}]sql:{}", rd.name, dataFetcher.buildIncrementSQL())
     }
     //先得到本身库中的最大值
-    var maxValue = saver.findMaxValue
+    var maxValue = findMaxTimestamp()
     if (maxValue.isEmpty) {
       //查询库中的最小值当做开始值
-      maxValue = queryOne[Option[Long]](minValueSql) { rs =>
+      maxValue = queryOne[Option[Long]](dataFetcher.buildMinValueSQL()) { rs =>
         val maxValueOption = modifyKeyColumn.readJdbcValue(rs, 1).asInstanceOf[Option[Long]]
         if (maxValueOption.isDefined)
           Some(maxValueOption.get - 1000) //向前一秒
@@ -351,7 +232,7 @@ class ResourceImporter(val rd: ResourceDefinition,
 
     //得到目标库中的最大值
     var dbMaxValue: Option[Long] = None
-    dbMaxValue = queryOne(maxValueSql) { rs =>
+    dbMaxValue = queryOne(dataFetcher.buildMaxValueSQL()) { rs =>
       modifyKeyColumn.readJdbcValue(rs, 1).asInstanceOf[Option[Long]]
     }
     if (dbMaxValue.isEmpty) {
@@ -396,7 +277,7 @@ class ResourceImporter(val rd: ResourceDefinition,
 
     var num = totalNum
     use(autoCommit = false) { conn =>
-      val st = conn.prepareStatement(incrementSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+      val st = conn.prepareStatement(dataFetcher.buildIncrementSQL(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
       st.setFetchSize(rd.sync.jdbc.batchSize)
       try {
         modifyKeyColumn.columnType.getColumnType.asInstanceOf[MonadColumnType[Long]].setJdbcParameter(st, 1, beginValue, modifyKeyColumn)
@@ -444,7 +325,7 @@ class ResourceImporter(val rd: ResourceDefinition,
             throw me;
           case e =>
             //假如设置忽略
-            if (syncConfig.sync.ignore_data_when_unqualified_field) {
+            if (config.sync.ignore_data_when_unqualified_field) {
               throw e;
             } else {
               //不忽略当前行，则仅仅输出
@@ -473,6 +354,12 @@ class ResourceImporter(val rd: ResourceDefinition,
     }
     false
   }
+
+  /**
+   * 得到全局的同步配置定义
+   * @return 同步配置定义
+   */
+  override def config: SyncConfigSupport = syncConfig
 
   private[internal] def buildConnection()() {
     if (conn == null || conn.isClosed) {
@@ -503,10 +390,11 @@ class ResourceImporter(val rd: ResourceDefinition,
     if (conn != null) {
       closeJdbc(conn)
     }
-
+    shutdownNoSQL()
   }
 
   override def toString = {
     "%s importer".format(rd.name)
   }
+
 }
