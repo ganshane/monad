@@ -43,6 +43,7 @@ MonadStatus SyncNoSQL::PutDataWithBinlog(const leveldb::Slice& key,
 
   //得到分区的数据统计信息
   uint32_t count = FindOrLoadPartitionCount(binlog_options.partition_id);
+  uint32_t old_count = count;
   
   //create batch
   leveldb::WriteBatch batch;
@@ -84,11 +85,16 @@ MonadStatus SyncNoSQL::PutDataWithBinlog(const leveldb::Slice& key,
                                data_seq_key,
                                data);
   batch.Put(binlog_key.ToString(), binlog_value.ToString());
-  
+  //写入时间戳
+  DataTimestampKey data_timestamp_key(KV);
+  DataTimestampValue data_timestamp_value(binlog_options.timestamp);
+  batch.Put(data_timestamp_key.ToString(), data_timestamp_value.ToString());
   //写入分区的数据总量
-  SyncPartitionDataCountKey data_count_key(binlog_options.partition_id);
-  SyncPartitionDataCountValue data_count_value(count);
-  batch.Put(data_count_key.ToString(), data_count_value.ToString());
+  if(old_count != count){
+    SyncPartitionDataCountKey data_count_key(binlog_options.partition_id);
+    SyncPartitionDataCountValue data_count_value(count);
+    batch.Put(data_count_key.ToString(), data_count_value.ToString());
+  }
   
   leveldb::WriteOptions write_opts;
   leveldb::Status l_status = _db->Write(write_opts, &batch);
