@@ -67,8 +67,13 @@ trait SyncNoSQLSupport
     noSQLOptions.setMax_mmap_size(config.sync.noSql.maxMmapSize)
     noSQLOptions.setLog_keeped_num(1000)
     noSQLOptions.setWrite_buffer_mb(config.sync.noSql.writeBuffer)
-    syncNoSQL = Some(new SyncNoSQL(config.sync.noSql.path + "/" + resourceDefinition.name, noSQLOptions))
+    val dir = config.sync.noSql.path + "/" + resourceDefinition.name
+    FileUtils.forceMkdir(new File(dir))
+    syncNoSQL = Some(new SyncNoSQL(dir, noSQLOptions))
     noSQLOptions.delete()
+    //加载分区信息
+
+    loadPartitionInfo()
   }
 
   def destroyNoSQL() {

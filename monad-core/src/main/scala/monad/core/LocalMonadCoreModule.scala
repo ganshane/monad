@@ -2,15 +2,14 @@
 // site: http://www.ganshane.com
 package monad.core
 
-import monad.core.config.{LocalStoreConfigSupport, ZkClientConfigSupport}
+import monad.core.config.LocalStoreConfigSupport
 import monad.core.internal._
 import monad.core.services._
 import monad.rpc.internal.RpcServerFinderWithZk
 import monad.rpc.services.RpcServerFinder
-import monad.support.services.{ServiceLifecycle, ZookeeperTemplate}
+import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Match}
-import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{FactoryDefaults, ServiceOverride, SymbolProvider}
 import org.apache.tapestry5.plastic.MethodInvocation
 import org.slf4j.Logger
@@ -42,6 +41,7 @@ object LocalMonadCoreModule {
     new LocalSimpleStore(config.localStoreDir)
   }
 
+  /*
   def buildZookeeperTemplate(config: ZkClientConfigSupport,periodExecutor:PeriodicExecutor): ZookeeperTemplate = {
     val rootZk = new ZookeeperTemplate(config.zk.address)
     rootZk.start()
@@ -56,14 +56,15 @@ object LocalMonadCoreModule {
 
     zk
   }
+  */
 
   @Contribute(classOf[ServiceLifecycleHub])
   def provideZk(configuration: OrderedConfiguration[ServiceLifecycle],
-                @Local zk: ZookeeperTemplate,
+                //           @Local zk: ZookeeperTemplate,
                 @Local heartbeat: MachineHeartbeat,
                 @Local metricsService: MetricsService) {
     configuration.add("metrics", metricsService, "before:*")
-    configuration.add("zk", zk, "after:metrics")
+    //configuration.add("zk", zk, "after:metrics")
     configuration.add("heartbeat", heartbeat, "after:*")
   }
 

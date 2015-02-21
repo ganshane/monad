@@ -5,7 +5,8 @@ package monad.face
 import monad.core.services.ServiceLifecycleHub
 import monad.face.internal.remote.RemoteGroupServiceApiImpl
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
-import monad.support.services.ServiceLifecycle
+import monad.support.internal.HttpRestClientImpl
+import monad.support.services.{HttpRestClient, ServiceLifecycle}
 import org.apache.tapestry5.ioc.annotations.Contribute
 import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
 
@@ -16,7 +17,7 @@ import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
 object RemoteGroupModule {
   def bind(binder: ServiceBinder) {
     binder.bind(classOf[GroupZookeeperTemplate]).withId("GroupZookeeperTemplate")
-    //binder.bind(classOf[HttpRestClient],classOf[HttpRestClientImpl]).withId("HttpRestClient")
+    binder.bind(classOf[HttpRestClient], classOf[HttpRestClientImpl]).withId("HttpRestClient")
     binder.bind(classOf[GroupServerApi], classOf[RemoteGroupServiceApiImpl]).withId("GroupServerApi")
   }
 

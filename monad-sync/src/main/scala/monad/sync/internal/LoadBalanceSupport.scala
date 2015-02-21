@@ -16,8 +16,8 @@ import monad.support.services.{LoggerSupport, MonadException}
 trait LoadBalanceSupport {
   this: SyncNoSQLSupport with LoggerSupport with SyncConfigLike =>
   protected val partitionInfoData = new ConcurrentHashMap[Short, PartitionInfo]()
-  protected val servers: Array[PartitionInfo] = loadPartitionInfo()
   private val random = new Random()
+  protected var servers: Array[PartitionInfo] = _
 
   /**
    * balance data with partition.
@@ -109,7 +109,7 @@ trait LoadBalanceSupport {
       info("load partition:{},binlog:{},dataSeq:" + dataSeq, partition.id, lastBinlogSeq)
       partitionInfoData.put(partition.id, new PartitionInfo(partition, new AtomicLong(lastBinlogSeq), new AtomicInteger(dataSeq)))
     }
-    partitionInfoData.values().toArray(new Array[PartitionInfo](partitionInfoData.size()))
+    servers = partitionInfoData.values().toArray(new Array[PartitionInfo](partitionInfoData.size()))
   }
 
   private def findMaxDataSeqByPartitionId(partitionId: Short): Int = {

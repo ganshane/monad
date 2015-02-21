@@ -2,15 +2,17 @@
 // site: http://www.ganshane.com
 package monad.face.internal.remote
 
+import java.io.StringReader
 import java.lang.reflect.Type
 import java.util.{List => JList}
 
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
 import com.google.gson.{Gson, JsonParser}
 import monad.face.ApiConstants
 import monad.face.config.GroupApiSupport
 import monad.face.model.{GroupConfig, ResourceDefinition}
-import monad.face.services.{MonadFaceExceptionCode, GroupServerApi}
+import monad.face.services.{GroupServerApi, MonadFaceExceptionCode}
 import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
 import org.slf4j.LoggerFactory
 
@@ -42,7 +44,9 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       case e: Throwable =>
         throw new MonadException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
     }
-    val json = new JsonParser().parse(jsonStr).getAsJsonObject
+    val jsonReader = new JsonReader(new StringReader(jsonStr))
+    jsonReader.setLenient(true)
+    val json = new JsonParser().parse(jsonReader).getAsJsonObject
     if (json.get(ApiConstants.SUCCESS).getAsBoolean) {
       var genericType: Type = null
       if (rawType.isDefined) {

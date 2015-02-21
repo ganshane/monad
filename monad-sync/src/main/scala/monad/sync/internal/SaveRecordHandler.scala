@@ -13,6 +13,7 @@ import monad.jni.services.gen.DataCommandType
 import monad.support.MonadSupportConstants
 import monad.support.services.MonadException
 import monad.sync.model.DataEvent
+import monad.sync.services.ResourceImporterManager
 
 import scala.collection.JavaConversions._
 
@@ -20,7 +21,7 @@ import scala.collection.JavaConversions._
  * 保存记录的操作
  * @author jcai
  */
-class SaveRecordHandler(manager: ResourceImporterManagerImpl) extends EventHandler[DataEvent] {
+class SaveRecordHandler(manager: ResourceImporterManager) extends EventHandler[DataEvent] {
   private val threadNameFlag = new AtomicBoolean(false)
 
   def onEvent(event: DataEvent, sequence: Long, endOfBatch: Boolean) {

@@ -26,7 +26,7 @@ object LocalMonadSyncModule {
   @Contribute(classOf[ResourceDefinitionLoaderListener])
   def provideResourceDefinitionLoaderListener(
                                                configuration: OrderedConfiguration[ResourceDefinitionLoaderListener],
-                                               resourceImporterManager: ResourceImporterManagerImpl) {
+                                               resourceImporterManager: ResourceImporterManager) {
     configuration.add("importer", resourceImporterManager, "after:node")
   }
 

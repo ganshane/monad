@@ -16,6 +16,7 @@ import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
 import monad.support.services.{LoggerSupport, MonadException, ServiceLifecycle, ServiceUtils}
 import monad.sync.internal.JdbcDatabase._
+import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
@@ -27,7 +28,7 @@ import scala.collection.JavaConversions._
  * @author jcai
  */
 class ResourceImporter(val rd: ResourceDefinition,
-                       importerManager: ResourceImporterManagerImpl,
+                       importerManager: ResourceImporterManager,
                        periodicExecutor: PeriodicExecutor,
                        parallelExecutor: ParallelExecutor,
                        version: Int,
@@ -63,25 +64,6 @@ class ResourceImporter(val rd: ResourceDefinition,
    */
   override def incrementColumn: ResourceProperty = findIncrementColumn()
 
-  private def findIncrementColumn(): ResourceProperty = {
-    val isFull = rd.sync.policy == SyncPolicy.Full
-    if (isFull) {
-      modifyKeyColumn = new ResourceProperty
-      modifyKeyColumn.columnType = ColumnType.Long
-    } else {
-      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
-        if (modifyKeyColumn != null) {
-          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
-        }
-        modifyKeyColumn = col
-        modifyKeyColumnIndex = index
-      }
-      if (modifyKeyColumn == null)
-        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
-    }
-    modifyKeyColumn
-  }
-
   /**
    * 得到资源配置定义
    * @return 资源配置定义
@@ -108,6 +90,24 @@ class ResourceImporter(val rd: ResourceDefinition,
 
   }
 
+  private def findIncrementColumn(): ResourceProperty = {
+    val isFull = rd.sync.policy == SyncPolicy.Full
+    if (isFull) {
+      modifyKeyColumn = new ResourceProperty
+      modifyKeyColumn.columnType = ColumnType.Long
+    } else {
+      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
+        if (modifyKeyColumn != null) {
+          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
+        }
+        modifyKeyColumn = col
+        modifyKeyColumnIndex = index
+      }
+      if (modifyKeyColumn == null)
+        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
+    }
+    modifyKeyColumn
+  }
 
   private def modifyDefaultColumnTypeAsString() {
     for ((col, index) <- columns.view.zipWithIndex if col.columnType == null) {
@@ -157,6 +157,7 @@ class ResourceImporter(val rd: ResourceDefinition,
             }
             importerManager.importData(rd.name, result, System.currentTimeMillis(), version)
           }
+          info("[{}] finish to import test data", rd.name)
         }
       })
     } else {
@@ -323,7 +324,7 @@ class ResourceImporter(val rd: ResourceDefinition,
               MonadSyncExceptionCode.FAIL_READ_DATA_FROM_DB,
               "fail to read " + col.name + " value from db")
             throw me;
-          case e =>
+          case e: Throwable =>
             //假如设置忽略
             if (config.sync.ignore_data_when_unqualified_field) {
               throw e;
