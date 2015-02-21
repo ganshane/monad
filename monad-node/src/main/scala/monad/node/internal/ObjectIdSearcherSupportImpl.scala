@@ -1,6 +1,7 @@
 package monad.node.internal
 
 import javax.naming.SizeLimitExceededException
+
 import monad.face.config.IndexConfigSupport
 import monad.face.model.IdShardResult
 import monad.node.internal.support.SearcherManagerSupport

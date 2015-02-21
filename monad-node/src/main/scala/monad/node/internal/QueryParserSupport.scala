@@ -3,6 +3,7 @@
 package monad.node.internal
 
 import java.util
+
 import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model.{AnalyzerCreator, ColumnType, ResourceDefinition}

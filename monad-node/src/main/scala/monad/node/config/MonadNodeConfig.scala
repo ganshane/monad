@@ -4,9 +4,8 @@ package monad.node.config
 
 import javax.xml.bind.annotation.{XmlAccessType, XmlAccessorType, XmlRootElement}
 
-import monad.core.config._
 import monad.face.config
-import monad.face.config.{GroupApiSupport, DicPathSupport, IndexConfigSupport}
+import monad.face.config.{DicPathSupport, GroupApiSupport, IndexConfigSupport}
 
 /**
  * 节点配置类

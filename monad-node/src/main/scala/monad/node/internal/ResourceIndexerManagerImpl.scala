@@ -8,12 +8,11 @@ import java.util.concurrent.{Executors, ThreadFactory}
 import com.google.gson.JsonObject
 import com.lmax.disruptor.EventFactory
 import com.lmax.disruptor.dsl.Disruptor
-import monad.core.services.{StartAtOnce, CronScheduleWithStartModel, LogExceptionHandler}
+import monad.core.services.{CronScheduleWithStartModel, LogExceptionHandler, StartAtOnce}
 import monad.face.annotation.Rpc
 import monad.face.config.IndexConfigSupport
 import monad.face.model._
-import monad.face.services.{GroupZookeeperTemplate, DocumentSource, ResourceSearcherSource}
-import monad.jni.{NoSQLOptions, NodeIdNoSQL}
+import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
 import monad.node.services.{ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
 import monad.support.services.MonadException

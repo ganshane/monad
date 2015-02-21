@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.lmax.disruptor.EventHandler
 import monad.face.model.IndexEvent
 import monad.face.services.DocumentSource
-import monad.jni.DataCommandType
+import monad.jni.services.gen.DataCommandType
 import monad.node.services.ResourceIndexerManager
 import org.slf4j.LoggerFactory
 

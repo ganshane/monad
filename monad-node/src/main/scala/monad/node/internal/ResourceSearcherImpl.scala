@@ -5,6 +5,7 @@ package monad.node.internal
 import java.util.Date
 import java.util.concurrent.ExecutorService
 import javax.naming.SizeLimitExceededException
+
 import monad.face.config.IndexConfigSupport
 import monad.face.model.{ResourceDefinition, ShardResult}
 import monad.face.services.ResourceSearcher

@@ -2,16 +2,15 @@
 // site: http://www.ganshane.com
 package monad.node
 
-import monad.api.services.ResourceRequest
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
 import monad.node.internal._
-import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
-import monad.support.services.{MonadException, ServiceLifecycle}
+import monad.node.services.ResourceIndexerManager
+import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.services.Builtin
-import org.apache.tapestry5.ioc.{MappedConfiguration, OrderedConfiguration, ScopeConstants, ServiceBinder}
+import org.apache.tapestry5.ioc.{MappedConfiguration, OrderedConfiguration, ServiceBinder}
 
 /**
  * 本地的节点模块
@@ -44,23 +43,5 @@ object LocalMonadNodeModule {
                                                configuration: OrderedConfiguration[ResourceDefinitionLoaderListener],
                                                resourceIndexerManager: ResourceIndexerManager) {
     configuration.add("node", resourceIndexerManager, "before:*")
-  }
-
-  @Marker(Array(classOf[Builtin]))
-  @Scope(ScopeConstants.PERTHREAD)
-  def buildResourceSearcher(resourceRequest: ResourceRequest, indexerManager: ResourceIndexerManager): ResourceSearcher = {
-    val name = resourceRequest.getResourceDefinition.name
-    val indexer = indexerManager.getObject(name)
-    if (indexer == null) {
-      throw new MonadException("未能获取搜索类" + name,
-        MonadNodeExceptionCode.RESOURCE_SEARCH_NO_FOUND
-      )
-    }
-    indexer.getResourceSearcher
-  }
-
-  @Scope(ScopeConstants.PERTHREAD)
-  def buildResourceIndexer(resourceRequest: ResourceRequest, indexerManager: ResourceIndexerManager): ResourceIndexer = {
-    indexerManager.getObject(resourceRequest.getResourceDefinition.name)
   }
 }
