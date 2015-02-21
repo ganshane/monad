@@ -32,7 +32,7 @@ object LocalMonadSyncModule {
 
   @Contribute(classOf[ServiceLifecycleHub])
   def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
-                              importerManager: ResourceImporterManagerImpl) {
+                              importerManager: ResourceImporterManager) {
     configuration.add(MonadFaceConstants.LIFE_IMPORTER, importerManager,
       "after:" + MonadFaceConstants.LIFE_INDEXER,
       "after:" + MonadFaceConstants.LIFE_GROUP_ZOOKEEPER

@@ -4,7 +4,9 @@ package monad.sync.config
 
 import javax.xml.bind.annotation.{XmlRootElement, XmlType}
 
-import monad.face.config.{GroupApiSupport, SyncConfigSupport, LogFileSupport}
+import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport, ZkClientConfigSupport}
+import monad.face.config.{GroupApiSupport, SyncConfigSupport}
+import monad.rpc.config.RpcBindSupport
 
 /**
  * 针对同步模块的配置
@@ -14,6 +16,10 @@ import monad.face.config.{GroupApiSupport, SyncConfigSupport, LogFileSupport}
 @XmlType(name = "MonadSyncConfig")
 class MonadSyncConfig
   extends SyncConfigSupport
+  with LocalStoreConfigSupport
+  with RpcBindSupport
+  with ZkClientConfigSupport
+  with HeartbeatConfigSupport
   with LogFileSupport
   with GroupApiSupport
 

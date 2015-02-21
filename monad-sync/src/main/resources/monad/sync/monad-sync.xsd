@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
            elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
   <xs:element name="monad_sync" type="monadSyncType"/>
   <xs:complexType name="monadSyncType">
     <xs:sequence>
@@ -9,9 +10,24 @@
           <xs:documentation>配置日志文件的路径</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element type="xs:string" name="group_api" minOccurs="1" maxOccurs="1">
+      <xs:element type="xs:string" name="local_store_dir" minOccurs="0" maxOccurs="1">
         <xs:annotation>
-          <xs:documentation>配置组API的地址</xs:documentation>
+          <xs:documentation>本地化存储的配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="rpcType" name="rpc" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置RPC绑定的的地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="zkType" name="zk" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置Zookeeper服务器相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="heartbeatType" name="heartbeat" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置心跳相关信息</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element type="syncType" name="sync" minOccurs="1" maxOccurs="1">
@@ -23,19 +39,9 @@
   </xs:complexType>
   <xs:complexType name="syncType">
     <xs:sequence>
-      <xs:element type="xs:string" name="bind" minOccurs="1" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>配置同步服务器绑定的的地址，通常为: tcp://*:7777</xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element type="xs:int" name="db_reader_num" minOccurs="0" maxOccurs="1" default="5">
         <xs:annotation>
           <xs:documentation>读取数据库的线程数，默认为5</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="xs:int" name="sync_server_worker" minOccurs="0" maxOccurs="1" default="1">
-        <xs:annotation>
-          <xs:documentation>给各个节点同步的线程数，默认为1</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element type="xs:int" name="binlog_length" minOccurs="0" maxOccurs="1">
@@ -67,7 +73,7 @@
   </xs:complexType>
   <xs:complexType name="nodesType">
     <xs:sequence>
-      <xs:element name="region" type="nodeServerType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="partition" type="nodeServerType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="nodeServerType">
@@ -86,39 +92,4 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-  <xs:complexType name="nosqlType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="path">
-        <xs:annotation>
-          <xs:documentation>数据的保存目录，此目录应该存在，如果不存在将出现错误信息</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="xs:int" name="cache_size_mb" default="8">
-        <xs:annotation>
-          <xs:documentation>读数据的缓存大小，默认：8</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="xs:int" name="write_buffer_mb" minOccurs="0" maxOccurs="1" default="32">
-        <xs:annotation>
-          <xs:documentation>写数据的buffer大小，默认：32</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="xs:int" name="max_open_files" minOccurs="0" maxOccurs="1" default="30">
-        <xs:annotation>
-          <xs:documentation>最大打开文件数，默认：30</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="NoSQLType" name="type" minOccurs="0" maxOccurs="1" default="Leveldb">
-        <xs:annotation>
-          <xs:documentation>NoSQL的类型，默认:Leveldb,一般情况不用更改</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:simpleType name="NoSQLType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Bdb"/>
-      <xs:enumeration value="Leveldb"/>
-    </xs:restriction>
-  </xs:simpleType>
 </xs:schema>

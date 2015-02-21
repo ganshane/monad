@@ -70,7 +70,7 @@ class SyncConfig extends BinlogLengthConfig {
   @XmlElement(name = "ignore_row_when_unqualified_field")
   var ignore_data_when_unqualified_field: Boolean = false
   @XmlElementWrapper(name = "data")
-  @XmlElement(name = "region")
+  @XmlElement(name = "partition")
   var nodes: java.util.List[Partition] = new util.ArrayList[Partition]()
   @XmlElement(name = "nosql")
   var noSql: NoSqlConfig = new NoSqlConfig

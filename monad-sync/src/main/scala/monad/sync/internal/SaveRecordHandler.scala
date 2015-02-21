@@ -13,7 +13,6 @@ import monad.jni.services.gen.DataCommandType
 import monad.support.MonadSupportConstants
 import monad.support.services.MonadException
 import monad.sync.model.DataEvent
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -22,7 +21,6 @@ import scala.collection.JavaConversions._
  * @author jcai
  */
 class SaveRecordHandler(manager: ResourceImporterManagerImpl) extends EventHandler[DataEvent] {
-  private final val logger = LoggerFactory getLogger getClass
   private val threadNameFlag = new AtomicBoolean(false)
 
   def onEvent(event: DataEvent, sequence: Long, endOfBatch: Boolean) {
