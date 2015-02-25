@@ -4,9 +4,8 @@ package monad.api.config
 
 import javax.xml.bind.annotation.XmlRootElement
 
-import monad.core.config._
 import monad.face.config
-import monad.face.config.{GroupApiSupport, DicPathSupport, ApiConfigSupport}
+import monad.face.config.{ApiConfigSupport, DicPathSupport, GroupApiSupport}
 
 /**
  * api configuration

@@ -12,7 +12,7 @@
   <version>dev-SNAPSHOT</version>
   <name>Monad Data Process Engine</name>
   <modules>
-    <module>monad-all</module>
+    <module>monad-api</module>
     <module>monad-cloud</module>
     <module>monad-core</module>
     <module>monad-extjs</module>

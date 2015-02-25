@@ -6,7 +6,7 @@ import java.net.NetworkInterface
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 
-import monad.api.services.{ObjectIdCreator, MonadApiExceptionCode}
+import monad.api.services.{MonadApiExceptionCode, ObjectIdCreator}
 import monad.support.services.MonadException
 import org.slf4j.LoggerFactory
 
