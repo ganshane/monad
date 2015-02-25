@@ -33,10 +33,12 @@ namespace monad {
     batch.Put(key.ToString(), binlog_value.ToString());
     LogDebug("write seq:%lld binlog seql:%lld ", key.Seq(), binlog_value.Seq());
 
-    //写入数据统计数据
-    SlaveDataCountKey count_key;
-    SlaveDataCountValue count_value(tmp_count);
-    batch.Put(count_key.ToString(), count_value.ToString());
+     //写入数据统计数据,仅当数据不等时候
+    if(tmp_count != _data_count){
+      SlaveDataCountKey count_key;
+      SlaveDataCountValue count_value(tmp_count);
+      batch.Put(count_key.ToString(), count_value.ToString());
+    }
 
     leveldb::Status status = _db->Write(leveldb::WriteOptions(), &batch);
     if (status.ok()) {
