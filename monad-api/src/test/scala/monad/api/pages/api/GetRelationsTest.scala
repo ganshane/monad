@@ -4,8 +4,8 @@ package monad.api.pages.api
 
 import monad.api.services.RelationService
 import monad.face.model.ResourceRelation
-import org.easymock.EasyMock._
 import org.junit.Test
+import org.mockito.Mockito
 
 /**
  *
@@ -15,17 +15,16 @@ import org.junit.Test
 class GetRelationsTest {
   @Test
   def test_getRelation() {
-    val relationService = createMock(classOf[RelationService])
+    val relationService = Mockito.mock(classOf[RelationService])
     val rel = new ResourceRelation.Rel
     rel.name = "name"
     rel.cnName = "cnName"
-    expect(relationService.findRelations).andReturn(List(rel).iterator)
+    Mockito.when(relationService.findRelations).thenReturn(List(rel).iterator)
 
-    replay(relationService)
     val getRelation = new GetRelations
     getRelation.setRelationService(relationService)
 
     getRelation.onActivate
-    verify(relationService)
+    Mockito.verify(relationService).findRelations
   }
 }

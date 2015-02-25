@@ -3,8 +3,8 @@
 package monad.api.pages.api
 
 import monad.api.services.DynamicTraceService
-import org.easymock.EasyMock
 import org.junit.Test
+import org.mockito.Mockito
 
 
 /**
@@ -16,16 +16,15 @@ class GetDynamicResourcesTest {
 
   @Test
   def test_api() {
-    val dts = EasyMock.createMock(classOf[DynamicTraceService])
+    val dts = Mockito.mock(classOf[DynamicTraceService])
     val it = List("test1")
-    EasyMock.expect(dts.getDynamicResource).andReturn(it.iterator)
+    Mockito.when(dts.getDynamicResource).thenReturn(it.iterator)
 
-    EasyMock.replay(dts)
 
     val gdr = new GetDynamicResources
     gdr.setDynamicTraceService(dts)
     gdr.onActivate
 
-    EasyMock.verify(dts)
+    Mockito.verify(dts).getDynamicResource
   }
 }
