@@ -8,9 +8,9 @@
   <log_file>${server_home}/log</log_file>
   <group_api>http://localhost:9081/api</group_api>
   <sync>
-    <nodes>
-      <server id="s1" weight="1"/>
-      <server id="s2" weight="10"/>
-    </nodes>
+    <data>
+      <partition id="1" weight="1"/>
+      <partition id="2" weight="10"/>
+    </data>
   </sync>
 </monad_sync>
