@@ -121,7 +121,7 @@ trait ApiConfigSupport {
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "IndexConfig")
-class IndexConfig extends BinlogLengthConfig with monad.core.config.NoSqlConfigSupport {
+class IndexConfig extends BinlogLengthConfig {
   /** 索引所在目录 **/
   @XmlElement(name = "path")
   var path: String = "target/index-tmp"
@@ -131,8 +131,6 @@ class IndexConfig extends BinlogLengthConfig with monad.core.config.NoSqlConfigS
   /** 需要进行提交时候的数量 **/
   @XmlElement(name = "need_commit")
   var needCommit: Int = 100000
-  @XmlElement(name = "sync_server")
-  var syncServer: String = _
   @XmlElement(name = "max_bytes_per_sec")
   var maxBytesPerSec: Double = 0
   //是否开启多线程查询支持
@@ -145,7 +143,7 @@ class IndexConfig extends BinlogLengthConfig with monad.core.config.NoSqlConfigS
   //var idNoSql: NoSqlConfig = _
 }
 
-trait IndexConfigSupport extends PartitionIdSupport {
+trait IndexConfigSupport extends PartitionIdSupport with monad.core.config.NoSqlConfigSupport {
   @XmlElement(name = "index")
   var index: IndexConfig = new IndexConfig
 }

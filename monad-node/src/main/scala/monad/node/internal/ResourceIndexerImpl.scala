@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.google.gson.{JsonObject, JsonParser}
 import com.lmax.disruptor.EventTranslator
 import monad.face.MonadFaceConstants
-import monad.face.config.{IndexConfigSupport, ServerIdSupport}
+import monad.face.config.IndexConfigSupport
 import monad.face.model.{AnalyzerCreator, IndexEvent, ResourceDefinition}
 import monad.face.services.{DataTypeUtils, ResourceSearcher, ResourceSearcherSource}
 import monad.jni.services.gen.{DataCommandType, NoSQLKey, SlaveNoSQLSupport}
@@ -132,13 +132,12 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
     indexWriter = new IndexWriter(directory, iwc)
     try {
-      val serverIdSupport = indexConfigSupport.asInstanceOf[ServerIdSupport]
       //如果大于1，则开启多线程支持，默认是单线程查询模式
       if (indexConfigSupport.index.queryThread > 1) {
-        resourceSearcher = searcherSource.newResourceSearcher(rd, indexWriter, serverIdSupport.regionId, searchExecutor)
+        resourceSearcher = searcherSource.newResourceSearcher(rd, indexWriter, indexConfigSupport.partitionId, searchExecutor)
       }
       else
-        resourceSearcher = searcherSource.newResourceSearcher(rd, indexWriter, serverIdSupport.regionId, null)
+        resourceSearcher = searcherSource.newResourceSearcher(rd, indexWriter, indexConfigSupport.partitionId, null)
       resourceSearcher.asInstanceOf[ResourceSearcherImpl].config = indexConfigSupport
       resourceSearcher.start()
       maybeOutputRegionInfo(0)
@@ -180,8 +179,8 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     FileUtils.moveDirectory(indexPath, tmpPath)
     FileUtils.deleteQuietly(tmpPath)
     //删除NoSQL数据
-    val originPath = new File(indexConfigSupport.index.noSql.path + "/" + rd.name)
-    tmpPath = new File(indexConfigSupport.index.noSql.path + "/" + rd.name + ".tmp")
+    val originPath = new File(indexConfigSupport.noSql.path + "/" + rd.name)
+    tmpPath = new File(indexConfigSupport.noSql.path + "/" + rd.name + ".tmp")
     FileUtils.moveDirectory(originPath, tmpPath)
     FileUtils.deleteQuietly(tmpPath)
   }

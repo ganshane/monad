@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.core.internal
 
-import monad.core.config.NoSqlConfigSupport
+import monad.core.config.NoSqlConfig
 import monad.core.services.SlaveNoSQLService
 import monad.jni.services.gen.{NoSQLOptions, SlaveNoSQLSupport}
 import monad.support.services.LoggerSupport
@@ -10,7 +10,7 @@ import monad.support.services.LoggerSupport
 /**
  * processor nosql instance
  */
-abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfigSupport)
+abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfig)
   extends SlaveNoSQLService
   with LoggerSupport {
 
@@ -35,14 +35,14 @@ abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfigSupport)
   def startNoSQLInstance(): Unit = {
     info("start processor nosql instance")
     val noSQLOptions = new NoSQLOptions()
-    noSQLOptions.setMax_open_files(config.noSql.maxOpenFiles)
-    noSQLOptions.setCache_size_mb(config.noSql.cache)
-    noSQLOptions.setBlock_size_kb(config.noSql.blockSizeKb)
-    noSQLOptions.setTarget_file_size(config.noSql.targetFileSize)
-    noSQLOptions.setMax_mmap_size(config.noSql.maxMmapSize)
+    noSQLOptions.setMax_open_files(config.maxOpenFiles)
+    noSQLOptions.setCache_size_mb(config.cache)
+    noSQLOptions.setBlock_size_kb(config.blockSizeKb)
+    noSQLOptions.setTarget_file_size(config.targetFileSize)
+    noSQLOptions.setMax_mmap_size(config.maxMmapSize)
     noSQLOptions.setLog_keeped_num(1000)
-    noSQLOptions.setWrite_buffer_mb(config.noSql.writeBuffer)
-    slaveNoSQLOpt = Some(createNoSQLInstance(config.noSql.path, noSQLOptions))
+    noSQLOptions.setWrite_buffer_mb(config.writeBuffer)
+    slaveNoSQLOpt = Some(createNoSQLInstance(config.path, noSQLOptions))
     noSQLOptions.delete()
 
   }

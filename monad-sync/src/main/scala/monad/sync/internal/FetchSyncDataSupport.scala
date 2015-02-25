@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import com.google.protobuf.ByteString
 import monad.jni.services.JNIErrorCode
-import monad.jni.services.gen.{SyncBinlogKey, SyncBinlogValue}
+import monad.jni.services.gen.{StatusCode, SyncBinlogKey, SyncBinlogValue}
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
 import monad.support.services.{LoggerSupport, MonadException}
 
@@ -99,8 +99,10 @@ trait FetchSyncDataSupport {
     val status = nosql.GetBinlogValue(key, binlogValue)
     if (status.ok())
       binlogValue.GetValue()
+    else if (status.code() == StatusCode.kNotFound)
+      null
     else
-      throw new MonadException(status.GetState(), JNIErrorCode.JNI_STATUS_ERROR)
+      throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
   }
 
   private def updateMinBinlogSeq(partitionId: Short, toSeq: Long): Unit = {

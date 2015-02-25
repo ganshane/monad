@@ -7,6 +7,7 @@ import com.lmax.disruptor.dsl.Disruptor
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.IndexEvent
 import monad.face.services.RpcSearcherFacade
+import monad.node.internal.DataSynchronizer
 import monad.support.services.ServiceLifecycle
 import org.apache.lucene.store.RateLimiter
 
@@ -17,6 +18,7 @@ import org.apache.lucene.store.RateLimiter
 trait ResourceIndexerManager
   extends AbstractResourceDefinitionLoaderListener[ResourceIndexer]
   with RpcSearcherFacade
+  with DataSynchronizer
   with ServiceLifecycle {
   /**
    * 获得disruptor对象

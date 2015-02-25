@@ -16,7 +16,7 @@ import monad.support.services.ZookeeperTemplate
  * implements NodeService
  */
 class NodeNoSQLServiceImpl(config: IndexConfigSupport)
-  extends SlaveNoSQLServiceImplSupport(config.index) {
+  extends SlaveNoSQLServiceImplSupport(config.noSql) {
 
   override protected def createNoSQLInstance(path: String, noSQLOption: NoSQLOptions): SlaveNoSQLSupport = {
     new SlaveNoSQLSupport(path, noSQLOption)

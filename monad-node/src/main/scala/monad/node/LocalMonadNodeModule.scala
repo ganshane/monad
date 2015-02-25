@@ -2,15 +2,18 @@
 // site: http://www.ganshane.com
 package monad.node
 
+import com.google.protobuf.ExtensionRegistry
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
+import monad.protocol.internal.InternalSyncProto
+import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcClientMessageFilter, RpcClientMessageHandler}
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.services.Builtin
-import org.apache.tapestry5.ioc.{MappedConfiguration, OrderedConfiguration, ServiceBinder}
+import org.apache.tapestry5.ioc.{Configuration, MappedConfiguration, OrderedConfiguration, ServiceBinder}
 
 /**
  * 本地的节点模块
@@ -43,5 +46,20 @@ object LocalMonadNodeModule {
                                                configuration: OrderedConfiguration[ResourceDefinitionLoaderListener],
                                                resourceIndexerManager: ResourceIndexerManager) {
     configuration.add("node", resourceIndexerManager, "before:*")
+  }
+
+  @Contribute(classOf[RpcClientMessageHandler])
+  def provideRpcClientMessageHandler(configuration: OrderedConfiguration[RpcClientMessageFilter],
+                                     nosqlService: DataSynchronizer) {
+    configuration.add("NodeSyncResponse", new DataSyncMessageFilter(nosqlService))
+  }
+
+  @Contribute(classOf[ExtensionRegistry])
+  def provideProtobufCommand(configuration: Configuration[ProtobufExtensionRegistryConfiger]) {
+    configuration.add(new ProtobufExtensionRegistryConfiger {
+      override def config(registry: ExtensionRegistry): Unit = {
+        InternalSyncProto.registerAllExtensions(registry)
+      }
+    })
   }
 }

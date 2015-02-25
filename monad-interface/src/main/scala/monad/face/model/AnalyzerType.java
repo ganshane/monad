@@ -7,23 +7,29 @@ package monad.face.model;
 
 /**
  * 分析器类型
+ *
  * @author jcai
  */
 public enum AnalyzerType {
-    Standard(1),
-    MMSeg(0);
+    Standard(0),
+    MMSeg(1),
+    Smart(2);
 
     public int constructorLen;
+
     AnalyzerType(int constructorLen) {
         this.constructorLen = constructorLen;
     }
-    public Class clazz(){
+
+    public Class clazz() {
         try {
-            switch (ordinal()){
+            switch (ordinal()) {
                 case 0:
                     return Class.forName("org.apache.lucene.analysis.standard.StandardAnalyzer");
                 case 1:
-                    return Class.forName("monad.mmseg.analysis.MMSegAnalyzer");
+                    return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
+                case 2:
+                    return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
                 default:
                     throw new IllegalStateException("Wrong class");
             }

@@ -26,9 +26,13 @@ object MonadNodeApp
     logger.info("Starting node server ....")
     val classes = List[Class[_]](
       Class.forName("monad.core.LocalMonadCoreModule"),
+      Class.forName("monad.face.ResourceModule"),
+      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.core.ServiceLifecycleModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcClientModule"),
+      Class.forName("monad.rpc.LocalRpcServerModule"),
       Class.forName("monad.node.LocalMonadNodeModule"),
       Class.forName("monad.node.MonadNodeModule")
     )

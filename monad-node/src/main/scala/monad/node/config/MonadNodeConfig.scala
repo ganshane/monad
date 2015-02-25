@@ -4,8 +4,8 @@ package monad.node.config
 
 import javax.xml.bind.annotation.{XmlAccessType, XmlAccessorType, XmlRootElement}
 
-import monad.core.config.{HeartbeatConfigSupport, LogFileSupport, ZkClientConfigSupport}
-import monad.face.config.IndexConfigSupport
+import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport, ZkClientConfigSupport}
+import monad.face.config.{GroupApiSupport, IndexConfigSupport}
 import monad.rpc.config.RpcBindSupport
 
 /**
@@ -16,7 +16,9 @@ import monad.rpc.config.RpcBindSupport
 @XmlAccessorType(XmlAccessType.FIELD)
 class MonadNodeConfig
   extends IndexConfigSupport
+  with LocalStoreConfigSupport
   with RpcBindSupport
   with LogFileSupport
   with HeartbeatConfigSupport
   with ZkClientConfigSupport
+  with GroupApiSupport

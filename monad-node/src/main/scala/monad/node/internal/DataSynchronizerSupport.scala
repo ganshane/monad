@@ -66,8 +66,6 @@ trait DataSynchronizerSupport
   def startSynchronizer(masterMachinePath: String, periodicExecutor: PeriodicExecutor, rpcClient: RpcClient) {
     this.masterMachinePath = masterMachinePath
 
-    //初始化分区信息
-    resources = getResourceList
     this.rpcClient = rpcClient
     val job = periodicExecutor.addJob(new CronScheduleWithStartModel("0/5 * * * * ? *", StartAtDelay), "sync-database-for-node", new Runnable {
       override def run(): Unit = {
@@ -77,14 +75,20 @@ trait DataSynchronizerSupport
           warn("no response data from meta server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
+          //初始化分区信息
           try {
-            info("begin to sync resource:{}", resources(0))
-            val future = sendSyncRequest(None)
-            if (future.isEmpty) {
-              //没有写入成功
+            resources = getResourceList
+            if (resources.length == 0) {
               semaphore.release()
             } else {
-              future.get.getChannel.getCloseFuture.addListener(closeListener)
+              info("begin to sync resource:{}", resources(0))
+              val future = sendSyncRequest(None)
+              if (future.isEmpty) {
+                //没有写入成功
+                semaphore.release()
+              } else {
+                future.get.getChannel.getCloseFuture.addListener(closeListener)
+              }
             }
           } catch {
             case e: Throwable => //发生异常则释放lock
