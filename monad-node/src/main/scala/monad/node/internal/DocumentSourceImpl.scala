@@ -20,6 +20,8 @@ import scala.collection.JavaConversions._
  * @author jcai
  */
 class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) extends DocumentSource {
+  //sid field
+  val sidField = new NumericDocValuesField(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD, 0)
   private val logger = LoggerFactory getLogger getClass
   private val cacheCreator = new ConcurrentHashMap[String, DocumentCreator]()
   private val idField = new IntField(MonadFaceConstants.OBJECT_ID_FIELD_NAME, 1, IntField.TYPE_NOT_STORED)
@@ -52,6 +54,10 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
     //设置主键字段
     idField.setIntValue(event.id)
     doc.add(idField)
+
+    //用来快速更新
+    sidField.setIntValue(event.id)
+    doc.add(sidField)
 
 
     //设置更新时间

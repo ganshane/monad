@@ -60,6 +60,7 @@ object MonadFaceConstants {
   final val UPDATE_TIME_FIELD_NAME = "_ut"
   final val OBJECT_ID_PAYLOAD_FIELD = "_PL"
   final val OBJECT_ID_PAYLOAD_VALUE = "_UID"
+  final val DELETED_SID = java.lang.Integer.MIN_VALUE
   //进行频次搜索时候，输出结果中的次数
   final val FACET_COUNT = "_count"
   final val DYNAMIC_DESC = "_desc"
@@ -70,5 +71,6 @@ object MonadFaceConstants {
 
   final val MACHINE_SYNC = MonadCoreConstants.MACHINES + "/sync"
   final val MACHINE_NODE = MonadCoreConstants.MACHINES + "/node-%s"
+
 
 }

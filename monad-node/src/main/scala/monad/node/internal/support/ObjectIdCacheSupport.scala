@@ -10,6 +10,7 @@ import monad.face.MonadFaceConstants
 import monad.face.services.DataTypeUtils
 import org.apache.lucene.index.AtomicReader.CoreClosedListener
 import org.apache.lucene.index.SegmentReader
+import org.apache.lucene.util.Bits
 import org.slf4j.LoggerFactory
 
 private[monad] object GlobalObjectIdCache {
@@ -91,11 +92,14 @@ trait ObjectIdCacheSupport {
   private def readObjectIdAsArray(name: String, reader: SegmentReader): IdBuffer = {
     val docValues = reader.getNumericDocValues(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD)
     val maxDoc = reader.maxDoc()
-    var value = 0L
     val buffer = new JNAIdBuffer(reader.maxDoc(), getPayloadBytesLength)
-    0 until maxDoc foreach { i =>
-      value = docValues.get(i)
-      buffer.put(value)
+    val liveDocs: Bits = reader.getLiveDocs
+    for (i <- 0 until maxDoc) {
+      if (liveDocs != null && !liveDocs.get(i)) {
+        buffer.put(MonadFaceConstants.DELETED_SID)
+      } else {
+        buffer.put(docValues.get(i))
+      }
     }
 
     buffer

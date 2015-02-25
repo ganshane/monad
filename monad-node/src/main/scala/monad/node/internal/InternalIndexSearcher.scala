@@ -21,11 +21,13 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
   extends IndexSearcher(reader, executor)
   with ObjectIdCacheSupport {
   //默认只有数据的Id，为整型
-  private var payloadLength = 4
+  private val payloadLength = 4
+  /*
   //如果分析的话，加上数据的hash值
   if (findObjectIdColumn) {
     payloadLength = GlobalObjectIdCache.FULL_LENGTH
   }
+  */
 
   for (readerContext <- leafContexts) {
     loadObjectIdWithLocalCache(rd.name, readerContext.reader().asInstanceOf[SegmentReader])
