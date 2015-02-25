@@ -5,7 +5,7 @@ package monad.face.config
 import java.util
 import javax.xml.bind.annotation._
 
-import monad.core.config.{NoSqlConfig, Partition}
+import monad.core.config.{NoSqlConfig, Partition, PartitionIdSupport}
 import monad.face.model.GroupConfig
 
 /**
@@ -121,7 +121,7 @@ trait ApiConfigSupport {
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "IndexConfig")
-class IndexConfig extends BinlogLengthConfig {
+class IndexConfig extends BinlogLengthConfig with monad.core.config.NoSqlConfigSupport {
   /** 索引所在目录 **/
   @XmlElement(name = "path")
   var path: String = "target/index-tmp"
@@ -140,15 +140,12 @@ class IndexConfig extends BinlogLengthConfig {
   var queryThread = 1
   @XmlElement(name = "query_max_limit")
   var queryMaxLimit = -1
-  //nosql保存路径
-  @XmlElement(name = "nosql")
-  var noSql: NoSqlConfig = new NoSqlConfig
   //保存id
-  @XmlElement(name = "id_nosql")
-  var idNoSql: NoSqlConfig = _
+  //@XmlElement(name = "id_nosql")
+  //var idNoSql: NoSqlConfig = _
 }
 
-trait IndexConfigSupport extends ServerIdSupport {
+trait IndexConfigSupport extends PartitionIdSupport {
   @XmlElement(name = "index")
   var index: IndexConfig = new IndexConfig
 }

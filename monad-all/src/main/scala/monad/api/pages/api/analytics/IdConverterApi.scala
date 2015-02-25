@@ -2,11 +2,8 @@ package monad.api.pages.api.analytics
 
 import javax.inject.Inject
 
-import monad.api.MonadApiConstants
 import monad.face.services.RpcSearcherFacade
-import monad.support.MonadSupportConstants
 import org.apache.tapestry5.services.{Request, Response}
-import org.apache.tapestry5.util.TextStreamResponse
 
 /**
  * 把ID转换为真实数据
@@ -21,6 +18,7 @@ class IdConverterApi {
   private var idFacade: RpcSearcherFacade = _
 
   def onActivate() = {
+    /*
     val ids = request.getParameter("q").split(",")
     val regions = request.getParameter("r").split(",")
     val sb = new StringBuilder()
@@ -41,5 +39,6 @@ class IdConverterApi {
     }
     response.setHeader(MonadApiConstants.HEADER_ACCESS_CONTROL_ALLOW, "*")
     new TextStreamResponse("text/palin", sb.toString())
+    */
   }
 }

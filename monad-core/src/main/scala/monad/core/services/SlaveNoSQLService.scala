@@ -7,6 +7,6 @@ import monad.jni.services.gen.SlaveNoSQLSupport
 /**
  * Created by jcai on 14-8-23.
  */
-trait SlaveNoSQLService extends DataSynchronizer {
-  def nosql(): Option[SlaveNoSQLSupport]
+trait SlaveNoSQLService {
+  def nosqlOpt(): Option[SlaveNoSQLSupport]
 }

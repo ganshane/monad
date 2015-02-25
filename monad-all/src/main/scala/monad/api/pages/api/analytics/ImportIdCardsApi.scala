@@ -2,12 +2,8 @@ package monad.api.pages.api.analytics
 
 import javax.inject.Inject
 
-import monad.face.model.{IdShardResult, IdShardResultCollect}
 import monad.face.services.RpcSearcherFacade
-import org.apache.lucene.util.OpenBitSet
 import org.apache.tapestry5.services.Request
-
-import scala.collection.mutable
 
 /**
  * 导入身份证号码
@@ -19,7 +15,8 @@ class ImportIdCardsApi {
   @Inject
   private var idFacade: RpcSearcherFacade = _
 
-  def onActivate(): IdShardResultCollect = {
+  def onActivate() = {
+    /*
     val ids = request.getParameter("q").split(",")
     val bitSet = new OpenBitSet(10240)
     //TODO 并行
@@ -52,5 +49,6 @@ class ImportIdCardsApi {
     collect.results = allShard
 
     return collect
+      */
   }
 }

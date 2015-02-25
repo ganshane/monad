@@ -5,7 +5,6 @@ package monad.api.services
 
 import com.google.gson.JsonObject
 import monad.api.model.SearchRequest
-import monad.face.model.IdShardResult
 
 /**
  * 所有搜索的管理
@@ -35,7 +34,7 @@ trait SearcherFacade {
    * @param searchRequest 搜索请求
    * @return
    */
-  def idSearch(searchRequest: SearchRequest): IdShardResult
+  //def idSearch(searchRequest: SearchRequest): IdShardResult
 
   /**
    * 支持针对某一字段的频次分析

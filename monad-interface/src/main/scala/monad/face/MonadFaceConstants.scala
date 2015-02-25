@@ -5,6 +5,7 @@ package monad.face
 import java.nio.charset.Charset
 
 import com.google.gson.{GsonBuilder, JsonParser}
+import monad.core.MonadCoreConstants
 import org.apache.lucene.util.Version
 
 /**
@@ -67,6 +68,7 @@ object MonadFaceConstants {
   final val HIGHLIGHT_PREFIX = "<em>"
   final val HIGHLIGHT_SUFFIX = "</em>"
 
-  final val MACHINE_SYNC = "sync"
+  final val MACHINE_SYNC = MonadCoreConstants.MACHINES + "/sync"
+  final val MACHINE_NODE = MonadCoreConstants.MACHINES + "/node-%s"
 
 }

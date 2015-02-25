@@ -2,11 +2,8 @@
 // site: http://www.ganshane.com
 package monad.api.model
 
-import com.carrotsearch.hppc.ObjectObjectOpenHashMap
-import com.carrotsearch.hppc.procedures.ObjectObjectProcedure
 import com.google.gson.JsonArray
 import monad.face.model.ShardResult
-import monad.node.internal.FacetData.SfzhStat
 import org.apache.lucene.util.PriorityQueue
 import org.slf4j.LoggerFactory
 
@@ -19,6 +16,7 @@ import org.slf4j.LoggerFactory
 object SearchResult {
   private val logger = LoggerFactory getLogger getClass
 
+  /*
   def mergeFacet(field: String, shardHits: Array[ShardResult]): SearchResult = {
     val result = new ObjectObjectOpenHashMap[String, SfzhStat]
     var count = 0
@@ -75,6 +73,7 @@ object SearchResult {
     new SearchResult(total, hits, servers, all, Some(faceCount))
 
   }
+  */
 
   def merge(start: Int, offset: Int, shardHits: Array[ShardResult]): SearchResult = {
     val queue: PriorityQueue[ShardRef] = new ScoreMergeSortQueue(shardHits)

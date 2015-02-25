@@ -4,8 +4,9 @@ package monad.node.config
 
 import javax.xml.bind.annotation.{XmlAccessType, XmlAccessorType, XmlRootElement}
 
-import monad.face.config
-import monad.face.config.{DicPathSupport, GroupApiSupport, IndexConfigSupport}
+import monad.core.config.{HeartbeatConfigSupport, LogFileSupport, ZkClientConfigSupport}
+import monad.face.config.IndexConfigSupport
+import monad.rpc.config.RpcBindSupport
 
 /**
  * 节点配置类
@@ -15,6 +16,7 @@ import monad.face.config.{DicPathSupport, GroupApiSupport, IndexConfigSupport}
 @XmlAccessorType(XmlAccessType.FIELD)
 class MonadNodeConfig
   extends IndexConfigSupport
-  with config.LogFileSupport
-  with DicPathSupport
-  with GroupApiSupport
+  with RpcBindSupport
+  with LogFileSupport
+  with HeartbeatConfigSupport
+  with ZkClientConfigSupport

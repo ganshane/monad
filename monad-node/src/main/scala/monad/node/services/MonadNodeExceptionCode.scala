@@ -34,4 +34,6 @@ object MonadNodeExceptionCode {
 
   case object OBJECT_ID_IS_NULL extends ErrorCode(5013)
 
+  case object OVERFLOW_RESOURCE_RANGE extends ErrorCode(5014)
+
 }

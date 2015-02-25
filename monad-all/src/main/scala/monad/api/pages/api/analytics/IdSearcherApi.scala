@@ -1,10 +1,7 @@
 package monad.api.pages.api.analytics
 
-import java.util.Date
-
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
-import monad.face.model.IdShardResultCollect
 import monad.face.services.ResourceDefinitionLoader
 import monad.support.services.MonadException
 import org.apache.tapestry5.ioc.Messages
@@ -29,7 +26,8 @@ class IdSearcherApi {
   @Inject
   private var messages: Messages = _
 
-  def onActivate(): IdShardResultCollect = {
+  def onActivate() = {
+    /*
     val searchRequest = new SearchRequest
     searchRequest.includeData = false
     //search query keyword
@@ -43,6 +41,7 @@ class IdSearcherApi {
     logger.info("[" + searchRequest.resourceName + "] idsearch q:[{}],time:{}ms", q, (end - begin))
 
     return r.asInstanceOf[IdShardResultCollect]
+    */
   }
 
   protected def initResource(searchRequest: SearchRequest) {

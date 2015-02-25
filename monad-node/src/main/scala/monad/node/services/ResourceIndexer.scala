@@ -3,6 +3,7 @@
 package monad.node.services
 
 import monad.face.services.ResourceSearcher
+import monad.jni.services.gen.SlaveNoSQLSupport
 import monad.support.services.ServiceLifecycle
 import org.apache.lucene.document.Document
 
@@ -42,4 +43,6 @@ trait ResourceIndexer
   def findObject(key: Array[Byte]): Option[Array[Byte]]
 
   def findObjectId(idSeq: Int): Option[Array[Byte]]
+
+  def nosqlOpt(): Option[SlaveNoSQLSupport]
 }

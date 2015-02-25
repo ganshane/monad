@@ -104,8 +104,10 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
    * @param searchRequest 搜索请求
    * @return
    */
+  /*
   def idSearch(searchRequest: SearchRequest) = {
     searcherQueue.idSearch(searchRequest.q)
   }
+  */
 }
 

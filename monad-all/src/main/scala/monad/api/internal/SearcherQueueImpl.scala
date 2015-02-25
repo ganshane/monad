@@ -55,6 +55,7 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
   private def internalFacetSearch(searchResults: ShardResult, field: String): SearchResult = {
     var results: Array[ShardResult] = null
     var result: SearchResult = null
+    /*
     if (searchResults.isInstanceOf[ShardResultCollect]) {
       //集群查询情况下读取所有的值
       val shardResults = searchResults.asInstanceOf[ShardResultCollect]
@@ -71,6 +72,7 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
       result.nodeSuccess = 1
 
     }
+    */
 
     result
   }
@@ -80,11 +82,6 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     var topN = start + offset
     if (topN < 1000) topN = 1000
     val searchResults = resourceSearcher.collectSearch(rd.name, q, sortStr, topN)
-    internalSearch(searchResults, start, offset)
-  }
-
-  def search2(q: String, start: Int, offset: Int, sortStr: String): SearchResult = {
-    val searchResults = resourceSearcher.collectSearch2(rd.name, q, sortStr, start + offset)
     internalSearch(searchResults, start, offset)
   }
 
@@ -111,9 +108,16 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     result
   }
 
+  def search2(q: String, start: Int, offset: Int, sortStr: String): SearchResult = {
+    val searchResults = resourceSearcher.collectSearch2(rd.name, q, sortStr, start + offset)
+    internalSearch(searchResults, start, offset)
+  }
+
+  /*
   def idSearch(q: String) = {
     resourceSearcher.searchObjectId(rd.name, q)
   }
+  */
 
   def createHighlighter(q: String): (Highlighter, Analyzer) = {
     val parser = new MultiFieldQueryParser(this.defaultSearchFields, analyzer)

@@ -3,7 +3,6 @@
 package monad.node.internal
 
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -13,10 +12,10 @@ import monad.face.MonadFaceConstants
 import monad.face.config.{IndexConfigSupport, ServerIdSupport}
 import monad.face.model.{AnalyzerCreator, IndexEvent, ResourceDefinition}
 import monad.face.services.{DataTypeUtils, ResourceSearcher, ResourceSearcherSource}
-import monad.jni.services.gen.NoSQLOptions
+import monad.jni.services.gen.{DataCommandType, NoSQLKey, SlaveNoSQLSupport}
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
-import monad.support.services.{MonadException, ServiceUtils}
+import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
@@ -25,7 +24,8 @@ import org.apache.lucene.index._
 import org.apache.lucene.search.NumericRangeQuery
 import org.apache.lucene.store.{Directory, IOContext, MMapDirectory, RateLimitedDirectoryWrapper}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
-import org.slf4j.LoggerFactory
+
+import scala.annotation.tailrec
 
 /**
  * 实现数据索引功能
@@ -37,9 +37,9 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
                           indexerManager: ResourceIndexerManager,
                           version: Int,
                           searchExecutor: ExecutorService)
-  extends ResourceIndexer {
+  extends NodeNoSQLServiceImpl(indexConfigSupport)
+  with ResourceIndexer with LoggerSupport {
   private final val parser = new JsonParser
-  private val logger = LoggerFactory getLogger getClass
   private val needMerge = new AtomicInteger()
   private val logFile = new File(indexConfigSupport.index.path + "/" + rd.name + "/_log_seq")
   private var analyzerObj: Analyzer = _
@@ -47,26 +47,11 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private var mergeScheduler: ConcurrentMergeScheduler = _
   private var resourceSearcher: ResourceSearcher = _
   private var indexPath: File = _
-  private var nosql: SlaveNo = _
   private var jobRunning = true
 
   def start() {
     logger.info("[{}] start node,version:{}", rd.name, version)
-    //启动nosql
-    val nosqlOptions = new NoSQLOptions()
-    nosqlOptions.setCache_size_mb(indexConfigSupport.index.noSql.cache)
-    nosqlOptions.setWrite_buffer_mb(indexConfigSupport.index.noSql.writeBuffer)
-    nosqlOptions.setMax_open_files(indexConfigSupport.index.noSql.maxOpenFiles)
-    nosqlOptions.setLog_keeped_num(indexConfigSupport.index.binlogLength)
-    try {
-      nosql = new NodeNoSQL(
-        indexConfigSupport.index.noSql.path + "/" + rd.name,
-        nosqlOptions)
-      if (idNosql.isDefined)
-        nosql.SetIdNoSQL(idNosql.get)
-    } finally {
-      nosqlOptions.delete()
-    }
+    startNoSQLInstance()
     init()
   }
 
@@ -173,10 +158,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
     //关闭之前，先回滚已经提交的数据
     rollback()
-    if (nosql != null) {
-      nosql.StopNoSQL()
-      nosql.delete()
-    }
+    shutdownNoSQLInstance()
 
     if (resourceSearcher != null)
       resourceSearcher.shutdown()
@@ -186,19 +168,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private def rollback() {
     if (indexWriter != null)
       indexWriter.rollback()
-  }
-
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
   }
 
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
@@ -217,56 +186,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     FileUtils.deleteQuietly(tmpPath)
   }
 
-  def DoSyncData() {
-    logger.info("[{}] start to sync data ,start log {}", rd.name, nosql.GetLastLogSeq())
-    nosql.DoSyncData(indexConfigSupport.index.syncServer, rd.name, indexConfigSupport.regionId)
-    logger.info("[{}] finish to sync data,last log seq {} data:" + nosql.GetDataStatCount(), rd.name, nosql.GetLastLogSeq())
-  }
-
-  def index() {
-    val indexSeq = readLastLog() + 1
-    val nosqlSeq = nosql.GetLastLogSeq()
-    var log_data: Array[Byte] = null
-    var seq_running = 0L
-    indexSeq to nosqlSeq foreach { seq =>
-      if (!jobRunning)
-        throw new MonadException(MonadNodeExceptionCode.INDEXER_WILL_SHUTDOWN)
-      log_data = nosql.FindNextBinlog(seq)
-      if (log_data == null) {
-        throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
-      }
-      val binlog = new NoSQLBinlogValue(log_data)
-      val keyBytes = binlog.keyBytes()
-      val valBytes = nosql.Get(keyBytes)
-      var data: JsonObject = null
-      if (valBytes != null) {
-        data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
-      }
-      val command = binlog.commandType()
-      command match {
-        case DataCommandType.PUT | DataCommandType.UPDATE =>
-          if (data != null) {
-            indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), binlog.objectId())
-          }
-        case DataCommandType.DEL =>
-          indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), None)
-
-      }
-      seq_running = seq
-
-      //分步提交
-      if ((seq_running & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
-        triggerCommit(seq_running)
-      }
+  def index(): Unit = {
+    val nosql = nosqlOpt().get
+    val latestSeq = nosql.FindLastBinlog()
+    val fromSeq = readLastLog() + 1
+    if (fromSeq <= latestSeq) {
+      info("begin to index from {} to {}", fromSeq, latestSeq)
+      val range = Range.Long.inclusive(fromSeq, latestSeq, 1)
+      indexRange(-1, nosql, range)
+      info("finish to index from {} to {}", fromSeq, latestSeq)
     }
-    if (seq_running > 0) {
-      triggerCommit(seq_running)
-      //删除本NoSQL的binlog日志,保留最新的10条
-      if (seq_running > 10)
-        nosql.DeleteBinlog(seq_running - 10)
+    if (latestSeq - fromSeq > 100) {
+      nosql.DeleteBinlogRange(fromSeq, latestSeq - 100)
     }
     else
-      logger.info("[{}] no data indexed,current log_seq {}", rd.name, nosqlSeq)
+      logger.info("[{}] no data indexed,current log_seq {}", rd.name, latestSeq)
   }
 
   def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
@@ -294,12 +228,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         event.version = version
       }
     })
-  }
-
-  private def readLastLog(): Long = {
-    if (!logFile.exists()) return 0L
-    val bytes = FileUtils.readFileToByteArray(logFile)
-    DataTypeUtils.convertAsLong(Some(bytes)).get
   }
 
   def indexDocument(doc: Document, dataVersion: Int) {
@@ -351,12 +279,27 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
   }
 
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    /*
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
+    */
+  }
+
   private def writeLastLog(seq: Long) {
     FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
   }
 
   def findObject(key: Array[Byte]) = {
-    val value = nosql.Get(key)
+    val value = nosqlOpt().get.Get(key)
     if (value != null) Some(value) else None
   }
 
@@ -365,10 +308,57 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   def findObjectId(idSeq: Int) = {
+    /*
     val buffer = ByteBuffer.allocate(5)
     buffer.putChar(DataType.ID_SEQ.swigValue().asInstanceOf[Char])
     buffer.putInt(idSeq)
     val value = nosql.RawGet(buffer.array())
     if (value == null) None else Some(value)
+  */
+    None
+  }
+
+  @tailrec
+  private def indexRange(lastSeq: Long, nosql: SlaveNoSQLSupport, range: Seq[Long]): Unit = {
+    range.headOption match {
+      case Some(seq) =>
+        //commit
+        if (lastSeq % indexConfigSupport.index.needCommit == 0) {
+          triggerCommit(lastSeq)
+        }
+        val binlogValue = nosql.FindNextBinlog(seq)
+        if (binlogValue == null) {
+          throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
+        }
+        val nosqlKey = new NoSQLKey(binlogValue.Key())
+        val keyBytes = nosqlKey.Key()
+        val valBytes = nosql.Get(nosqlKey)
+
+        var data: JsonObject = null
+        if (valBytes != null) {
+          data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
+        }
+        val command = binlogValue.CommandType()
+        command match {
+          case DataCommandType.PUT | DataCommandType.UPDATE =>
+            if (data != null) {
+              indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), None)
+            }
+          case DataCommandType.DEL =>
+            indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), None)
+
+        }
+
+        indexRange(seq, nosql, range.tail)
+      case None =>
+        //commit
+        triggerCommit(lastSeq)
+    }
+  }
+
+  private def readLastLog(): Long = {
+    if (!logFile.exists()) return 0L
+    val bytes = FileUtils.readFileToByteArray(logFile)
+    DataTypeUtils.convertAsLong(Some(bytes)).get
   }
 }

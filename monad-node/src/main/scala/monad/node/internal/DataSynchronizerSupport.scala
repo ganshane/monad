@@ -1,11 +1,13 @@
 // Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.core.services
+package monad.node.internal
 
 import java.util.concurrent.Semaphore
 
+import monad.core.services.{CronScheduleWithStartModel, StartAtDelay}
 import monad.jni.services.JNIErrorCode
 import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
+import monad.node.services.MonadNodeExceptionCode
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalSyncProto
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
@@ -13,6 +15,8 @@ import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.jboss.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
+
+import scala.annotation.tailrec
 
 /**
  * spout data synchronizer
@@ -22,9 +26,11 @@ trait DataSynchronizer {
 
   def processSyncData(response: InternalSyncProto.SyncResponse): Boolean
 
-  def getPartitionData: Array[Short]
+  def getResourceList: Array[String]
 
-  def findNoSQLByPartitionId(partitionId: Short): Option[SlaveNoSQLSupport]
+  def getPartitionId: Short
+
+  def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport]
 
   def unlock(channel: Channel)
 }
@@ -44,8 +50,8 @@ trait DataSynchronizerSupport
   private var syncJob: Option[PeriodicJob] = None
   @volatile
   private var processTime: Long = 0
-  private var partitionIndex = 0
-  private var partitions: Array[Short] = _
+  private var resourceIndex = 0
+  private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
   private var masterMachinePath: String = _
 
@@ -61,18 +67,18 @@ trait DataSynchronizerSupport
     this.masterMachinePath = masterMachinePath
 
     //初始化分区信息
-    partitions = getPartitionData
+    resources = getResourceList
     this.rpcClient = rpcClient
-    val job = periodicExecutor.addJob(new CronScheduleWithStartModel("0/5 * * * * ? *", StartAtDelay), "sync-database-for-processor", new Runnable {
+    val job = periodicExecutor.addJob(new CronScheduleWithStartModel("0/5 * * * * ? *", StartAtDelay), "sync-database-for-node", new Runnable {
       override def run(): Unit = {
         val timeDiff = System.currentTimeMillis() - processTime
-        partitionIndex = 0
+        resourceIndex = 0
         if (timeDiff > thirtySeconds) {
           warn("no response data from meta server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
           try {
-            info("begin to sync partition:{}", partitions(0))
+            info("begin to sync resource:{}", resources(0))
             val future = sendSyncRequest(None)
             if (future.isEmpty) {
               //没有写入成功
@@ -103,21 +109,11 @@ trait DataSynchronizerSupport
     }
   }
 
-  private[monad] def constructSyncRequest = {
-    val partitionId = partitions(partitionIndex)
-    val builder = SyncRequest.newBuilder()
-    builder.setPartitionId(partitionId)
-    val nosqlOpt = findNoSQLByPartitionId(partitionId)
-    builder.setLogSeqFrom(nosqlOpt.get.FindLastBinlog() + 1)
-    builder.setSize(ONE_BATCH_SIZE)
-    builder.build()
-  }
-
   /**
    * process response from sync server
    */
   def processSyncData(response: InternalSyncProto.SyncResponse): Boolean = {
-    val nosqlOpt = findNoSQLByPartitionId(response.getPartitionId.toShort)
+    val nosqlOpt = findNoSQLByResourceName(response.getResourceName)
     nosqlOpt match {
       case Some(nosql) =>
         val nosql = nosqlOpt.get
@@ -144,10 +140,10 @@ trait DataSynchronizerSupport
     val currentPartitionCompleted = response.getResponseDataCount < ONE_BATCH_SIZE
     if (currentPartitionCompleted) {
       info("finish sync partition[{}] data", response.getPartitionId)
-      partitionIndex += 1
-      val r = partitionIndex < partitions.length //未超出所有分区
+      resourceIndex += 1
+      val r = resourceIndex < resources.length //未超出所有分区
       if (r)
-        info("begin to sync partition:{}", partitions(partitionIndex))
+        info("begin to sync resource:{}", resources(resourceIndex))
 
       return r
     }
@@ -159,6 +155,27 @@ trait DataSynchronizerSupport
    */
   def shutdownSynchronizer(): Unit = {
     syncJob.foreach(_.cancel())
+  }
+
+  @tailrec
+  private def constructSyncRequest: SyncRequest = {
+    if (resourceIndex >= resources.length)
+      throw new MonadException("reach resource range", MonadNodeExceptionCode.OVERFLOW_RESOURCE_RANGE)
+    val rd = resources(resourceIndex)
+    try {
+      val builder = SyncRequest.newBuilder()
+      builder.setPartitionId(getPartitionId)
+      builder.setResourceName(rd)
+      val nosqlOpt = findNoSQLByResourceName(rd)
+      builder.setLogSeqFrom(nosqlOpt.get.FindLastBinlog() + 1)
+      builder.setSize(ONE_BATCH_SIZE)
+      builder.build()
+    } catch {
+      case e: Throwable =>
+        error("[" + rd + "] fail to construct sync request ", e)
+        resourceIndex += 1
+        constructSyncRequest
+    }
   }
 }
 

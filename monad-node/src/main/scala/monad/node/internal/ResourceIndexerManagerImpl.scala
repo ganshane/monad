@@ -8,18 +8,19 @@ import java.util.concurrent.{Executors, ThreadFactory}
 import com.google.gson.JsonObject
 import com.lmax.disruptor.EventFactory
 import com.lmax.disruptor.dsl.Disruptor
-import monad.core.services.{CronScheduleWithStartModel, LogExceptionHandler, StartAtOnce}
+import monad.core.services.LogExceptionHandler
+import monad.face.MonadFaceConstants
 import monad.face.annotation.Rpc
 import monad.face.config.IndexConfigSupport
 import monad.face.model._
 import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
+import monad.jni.services.gen.SlaveNoSQLSupport
 import monad.node.services.{ResourceIndexer, ResourceIndexerManager}
-import monad.support.MonadSupportConstants
-import monad.support.services.MonadException
+import monad.rpc.services.RpcClient
+import monad.support.services.LoggerSupport
 import org.apache.lucene.store.RateLimiter
 import org.apache.lucene.store.RateLimiter.SimpleRateLimiter
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
-import org.slf4j.LoggerFactory
 
 /**
  * 实现资源索引管理
@@ -29,10 +30,10 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
                                  documentSource: DocumentSource,
                                  searcherSource: ResourceSearcherSource,
                                  groupZookeeper: GroupZookeeperTemplate,
-                                 periodicExecutor: PeriodicExecutor
+                                 periodicExecutor: PeriodicExecutor,
+                                 rpcClient: RpcClient
                                   )
-  extends ResourceIndexerManager {
-  private val logger = LoggerFactory getLogger getClass
+  extends ResourceIndexerManager with DataSynchronizerSupport with LoggerSupport {
   //针对数据的检测
   private val EVENT_FACTORY = new EventFactory[IndexEvent] {
     def newInstance() = new IndexEvent()
@@ -50,15 +51,12 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
       t
     }
   })
-  @volatile
-  private var running = false
   private var job: PeriodicJob = _
   private var rateLimiter: Option[RateLimiter] = None
 
   if (indexConfig.index.maxBytesPerSec > 0) {
     rateLimiter = Some(new SimpleRateLimiter(indexConfig.index.maxBytesPerSec / 1024.0 / 1024.0))
   }
-  private var idNoSQL: Option[NodeIdNoSQL] = None
 
   /**
    * 启动对象实例
@@ -74,66 +72,31 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
 
     TimeOutCollector.start()
 
-    //启动id数据库
-    if (indexConfig.index.idNoSql != null) {
-      val nosqlOptions = new NoSQLOptions()
-      nosqlOptions.setCache_size_mb(indexConfig.index.idNoSql.cache)
-      nosqlOptions.setWrite_buffer_mb(indexConfig.index.idNoSql.writeBuffer)
-      nosqlOptions.setMax_open_files(indexConfig.index.idNoSql.maxOpenFiles)
-      nosqlOptions.setLog_keeped_num(indexConfig.index.binlogLength)
-      try {
-        idNoSQL = Some(new NodeIdNoSQL(indexConfig.index.idNoSql.path, nosqlOptions))
-      } finally {
-        nosqlOptions.delete()
-      }
-    }
-    //定时更新数据
-    val jobName = "monad-indexer"
-    job = periodicExecutor.addJob(new CronScheduleWithStartModel("0 * * * * ? *", StartAtOnce),
-      jobName, new Runnable {
-        def run() {
-          val oldName = Thread.currentThread().getName
-          Thread.currentThread().setName(jobName)
-          try {
-            SyncAndIndex()
-          } finally {
-            if (oldName != null)
-              Thread.currentThread().setName(oldName)
-          }
-        }
-      })
-    running = true
+    startSynchronizer(MonadFaceConstants.MACHINE_SYNC, periodicExecutor, rpcClient)
   }
 
-  def SyncAndIndex() {
-    logger.info("begin to sync {}", objects.keySet())
-    val it = objects.keySet().iterator()
-    while (it.hasNext && running) {
-      val key = it.next()
-      try {
-        directGetObject(key).asInstanceOf[ResourceIndexerImpl].DoSyncData()
-        if (running)
-          directGetObject(key).asInstanceOf[ResourceIndexerImpl].index()
-      } catch {
-        case e: MonadException =>
-          logger.error(e.toString)
-        case e: Throwable =>
-          logger.error(e.toString, e)
-      }
-    }
-    logger.info("finish to sync all resource ,running :{}", running)
+
+  override def getResourceList: Array[String] = {
+    objects.keySet().toArray(new Array[String](objects.size()))
   }
+
+  override def getPartitionId: Short = {
+    indexConfig.partitionId
+  }
+
+  override def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport] = {
+    directGetObject(resourceName).nosqlOpt()
+  }
+
 
   /**
    * 关闭对象
    */
   def shutdown() {
     logger.info("closing resource index manager ....")
-    running = false
+    shutdownSynchronizer()
     TimeOutCollector.shutdown()
     disruptor.shutdown()
-    if (idNoSQL.isDefined)
-      idNoSQL.get.delete()
   }
 
   def getDisruptor = disruptor
@@ -141,7 +104,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   def getRateLimiter = rateLimiter
 
   def setRegionInfo(name: String, jsonObject: JsonObject) {
-    groupZookeeper.setRegionIndexInfo(name, indexConfig.regionId, jsonObject)
+    groupZookeeper.setRegionIndexInfo(name, indexConfig.partitionId, jsonObject)
   }
 
   /**
@@ -183,34 +146,11 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     directGetObject(resourceName).findObject(key)
   }
 
-  /**
-   * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
-   * @param serverId 服务器ID
-   * @param idSeq id序列
-   * @return id的值
-   */
-  def findObjectId(serverId: Short, idSeq: Int) = {
-    if (idNoSQL.isDefined) {
-      val value = idNoSQL.get.GetId(idSeq)
-      if (value == null) None else Some(value)
-    } else {
-      None
-    }
-  }
-
-  def findObjectIdSeq(id: String): Option[IdSeqShardResult] = {
-    if (idNoSQL.isDefined) {
-      val value = idNoSQL.get.GetIdSeq(id.getBytes(MonadSupportConstants.UTF8_ENCODING_CHARSET))
-      if (value > 0) Some(new IdSeqShardResult(value, indexConfig.regionId)) else None
-    } else {
-      None
-    }
-  }
 
   protected def createObject(rd: ResourceDefinition, version: Int) = {
     if (ResourceType.Data == rd.resourceType) null
     else
-      new ResourceIndexerImpl(rd, indexConfig, searcherSource, this, version, searchExecutor, idNoSQL)
+      new ResourceIndexerImpl(rd, indexConfig, searcherSource, this, version, searchExecutor)
   }
 
   override protected def afterObjectRemoved(obj: ResourceIndexer) {
