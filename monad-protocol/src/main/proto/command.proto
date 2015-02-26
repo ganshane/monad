@@ -8,8 +8,12 @@ option java_outer_classname = "CommandProto";
 
 message BaseCommand {
   extensions 100 to max;
+
+  required int64 task_id = 1;
   /**
     internal_sync#SyncRequest  101
     internal_sync#SyncResponse 102
+    internal_maxdoc#MaxdocQueryRequest  103
+    internal_maxdoc#MaxdocQueryResponse 104
    */
 }

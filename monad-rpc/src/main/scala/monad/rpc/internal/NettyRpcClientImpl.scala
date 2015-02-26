@@ -11,7 +11,7 @@ import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
-import monad.rpc.services.{ProtobufCommandHelper, RpcClient, RpcClientMessageHandler, RpcServerFinder}
+import monad.rpc.services._
 import monad.support.services.{LoggerSupport, ServiceWaitingInitSupport}
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
@@ -28,6 +28,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   with ProtobufCommandHelper
   with ServiceWaitingInitSupport
   with LoggerSupport {
+  private val taskIdSeq = new AtomicLong(0)
   private val executor = Executors.newFixedThreadPool(6, new ThreadFactory {
     private val seq = new AtomicInteger(0)
 
@@ -48,21 +49,41 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
 
   override def writeMessage(serverPath: String, message: BaseCommand): Option[ChannelFuture] = {
     val serverLocationOpt = rpcServerFinder.find(serverPath)
+    val taskId = taskIdSeq.incrementAndGet()
+    val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
     serverLocationOpt match {
       case Some(serverLocation) =>
-        writeMessage(serverLocation, message)
+        writeMessage(serverLocation, messageWithTaskId)
       case None =>
         None
     }
   }
 
-  def writeMessageToMultiServer[T](serverPathPrefix: String, extension: GeneratedExtension[BaseCommand, T], value: T): Array[Option[ChannelFuture]] = {
-    rpcServerFinder.findMulti(serverPathPrefix).map {
-      writeMessage(_, wrap(extension, value))
-    }
+
+  override def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture] = {
+    writeMessageWithChannel(channel, wrap(extension, value))
   }
 
-  override def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
+  override def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture] = {
+    val taskId = taskIdSeq.incrementAndGet()
+    val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
+    Some(channel.write(messageWithTaskId))
+  }
+
+  def writeMessageToMultiServer[T](serverPathPrefix: String, rpcMerger: RpcMerger,
+                                   extension: GeneratedExtension[BaseCommand, T], value: T): (Long, Array[Option[ChannelFuture]]) = {
+    val servers = rpcServerFinder.findMulti(serverPathPrefix);
+    rpcMerger.startRequest(servers.size)
+    val taskId = taskIdSeq.incrementAndGet()
+    val message = wrap(extension, value)
+    val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
+    val futures = servers.map {
+      writeMessage(_, messageWithTaskId)
+    }
+    (taskId, futures)
+  }
+
+  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
     var channelGroup = channels.get(serverLocation)
 
     if (channelGroup == null) {

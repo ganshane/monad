@@ -107,7 +107,7 @@ trait DataSynchronizerSupport
     val message = wrap(SyncRequest.cmd, constructSyncRequest)
     val futureOpt = channelOpt match {
       case Some(channel) =>
-        Some(channel.write(message))
+        rpcClient.writeMessageWithChannel(channel, message)
       case None =>
         rpcClient.writeMessage(masterMachinePath, message)
     }

@@ -19,7 +19,7 @@ trait RpcClient extends ServiceLifecycle {
    * @param message message will be sent
    * @return send future
    */
-  def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture]
+  //def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): (Long,Option[ChannelFuture])
 
   /**
    * send message to remote server
@@ -28,9 +28,14 @@ trait RpcClient extends ServiceLifecycle {
    * @return send result future
    */
   def writeMessage(serverPath: String, message: BaseCommand): Option[ChannelFuture]
+
+  def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
+
+  def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture]
   def writeMessage[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
 
-  def writeMessageToMultiServer[T](serverPathPrefix: String, extension: GeneratedExtension[BaseCommand, T], value: T): Array[Option[ChannelFuture]]
+  def writeMessageToMultiServer[T](serverPathPrefix: String, merger: RpcMerger,
+                                   extension: GeneratedExtension[BaseCommand, T], value: T): (Long, Array[Option[ChannelFuture]])
 }
 
 trait RpcClientSupport {
@@ -82,4 +87,15 @@ trait RpcServerFinder {
    * @return 服务器地址
    */
   def findMulti(pathPrefix: String): Array[RpcServerLocation]
+}
+
+/**
+ * 多个服务器请求的时候进行操作的类
+ */
+trait RpcMerger {
+  /**
+   * 开始请求
+   * @param serverSize 服务器的个数
+   */
+  def startRequest(serverSize: Int)
 }
