@@ -22,7 +22,7 @@ import scala.annotation.tailrec
  * spout data synchronizer
  */
 trait DataSynchronizer {
-  def sendSyncRequest(channelOpt: Option[Channel])
+  def sendSyncRequest(channelOpt: Option[Channel]): Option[ChannelFuture]
 
   def processSyncData(response: InternalSyncProto.SyncResponse): Boolean
 
@@ -32,7 +32,7 @@ trait DataSynchronizer {
 
   def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport]
 
-  def unlock()
+  def unlock(channel: Channel)
 }
 
 trait DataSynchronizerSupport
@@ -42,6 +42,11 @@ trait DataSynchronizerSupport
   private final val thirtySeconds = 30 * 1000
   private val ONE_BATCH_SIZE = 1000
   private val semaphore = new Semaphore(1)
+  private val closeListener = new ChannelFutureListener {
+    override def operationComplete(future: ChannelFuture): Unit = {
+      semaphore.release()
+    }
+  }
   private var syncJob: Option[PeriodicJob] = None
   @volatile
   private var processTime: Long = 0
@@ -50,8 +55,12 @@ trait DataSynchronizerSupport
   private var rpcClient: RpcClient = _
   private var masterMachinePath: String = _
 
-  override def unlock(): Unit = {
+  override def unlock(channel: Channel): Unit = {
+    try {
+      channel.getCloseFuture.removeListener(closeListener)
+    } finally {
       semaphore.release()
+    }
   }
 
   def startSynchronizer(masterMachinePath: String, periodicExecutor: PeriodicExecutor, rpcClient: RpcClient) {
@@ -73,7 +82,13 @@ trait DataSynchronizerSupport
               semaphore.release()
             } else {
               info("begin to sync resource:{}", resources(0))
-              sendSyncRequest(None)
+              val futureOpt = sendSyncRequest(None)
+              futureOpt match {
+                case Some(future) =>
+                  future.getChannel.getCloseFuture.addListener(closeListener)
+                case None =>
+                  semaphore.release()
+              }
             }
           } catch {
             case e: Throwable => //发生异常则释放lock
@@ -87,7 +102,7 @@ trait DataSynchronizerSupport
       syncJob = Some(job)
   }
 
-  def sendSyncRequest(channelOpt: Option[Channel]) {
+  def sendSyncRequest(channelOpt: Option[Channel]) = {
     processTime = System.currentTimeMillis()
     val message = wrap(SyncRequest.cmd, constructSyncRequest)
     val futureOpt = channelOpt match {
@@ -101,8 +116,10 @@ trait DataSynchronizerSupport
       case Some(future) =>
         addListenerToFuture(future)
       case None =>
-        unlock()
+      //do nothing
     }
+
+    futureOpt
   }
 
   /**
@@ -157,7 +174,7 @@ trait DataSynchronizerSupport
       override def operationComplete(future: ChannelFuture): Unit = {
         //cancel or fail
         if (!future.isSuccess)
-          unlock()
+          unlock(future.getChannel)
       }
     })
   }
@@ -206,7 +223,7 @@ class DataSyncMessageFilter(ds: DataSynchronizer)
       if (isContinue) {
         ds.sendSyncRequest(Some(channel))
       } else {
-        ds.unlock()
+        ds.unlock(channel)
       }
     }
     true
