@@ -27,6 +27,10 @@ object LocalRpcClientModule {
       override def find(path: String): Option[RpcServerLocation] = {
         throw new UnsupportedOperationException
       }
+
+      override def findMulti(pathPrefix: String): Array[RpcServerLocation] = {
+        throw new UnsupportedOperationException
+      }
     }
   }
 

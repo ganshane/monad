@@ -56,6 +56,12 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     }
   }
 
+  def writeMessageToMultiServer[T](serverPathPrefix: String, extension: GeneratedExtension[BaseCommand, T], value: T): Array[Option[ChannelFuture]] = {
+    rpcServerFinder.findMulti(serverPathPrefix).map {
+      writeMessage(_, wrap(extension, value))
+    }
+  }
+
   override def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
     var channelGroup = channels.get(serverLocation)
 

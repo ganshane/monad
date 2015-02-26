@@ -28,8 +28,9 @@ trait RpcClient extends ServiceLifecycle {
    * @return send result future
    */
   def writeMessage(serverPath: String, message: BaseCommand): Option[ChannelFuture]
-
   def writeMessage[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
+
+  def writeMessageToMultiServer[T](serverPathPrefix: String, extension: GeneratedExtension[BaseCommand, T], value: T): Array[Option[ChannelFuture]]
 }
 
 trait RpcClientSupport {
@@ -74,4 +75,11 @@ trait RpcServerFinder {
    * @return
    */
   def find(path: String): Option[RpcServerLocation]
+
+  /**
+   * 查找多个服务器，以pathPrefix开头
+   * @param pathPrefix 路径开头
+   * @return 服务器地址
+   */
+  def findMulti(pathPrefix: String): Array[RpcServerLocation]
 }

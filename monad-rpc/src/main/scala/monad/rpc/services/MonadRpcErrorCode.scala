@@ -11,4 +11,6 @@ object MonadRpcErrorCode {
 
   case object OVER_BIND_COUNT extends ErrorCode(5001)
 
+  case object SERVER_NOT_FOUND extends ErrorCode(5002)
+
 }
