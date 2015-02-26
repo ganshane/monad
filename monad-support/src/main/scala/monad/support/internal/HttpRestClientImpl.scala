@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-21
  */
-object HttpRestClient {
+object HttpRestClientInstance {
   final val httpClient: CloseableHttpClient = createHttpClient
 
   private def createHttpClient: CloseableHttpClient = {
@@ -50,7 +50,7 @@ class HttpRestClientImpl extends HttpRestClient {
         m.foreach { case (k, v) => get.addHeader(k, v)}
       }
 
-      val response: CloseableHttpResponse = HttpRestClient.httpClient.execute(get.build())
+      val response: CloseableHttpResponse = HttpRestClientInstance.httpClient.execute(get.build())
       val entity: HttpEntity = response.getEntity
       try {
         if (response.getStatusLine.getStatusCode == 200) {
@@ -96,7 +96,7 @@ class HttpRestClientImpl extends HttpRestClient {
         m.foreach { case (k, v) => post.addHeader(k, v)}
       }
 
-      val response: CloseableHttpResponse = HttpRestClient.httpClient.execute(post.build())
+      val response: CloseableHttpResponse = HttpRestClientInstance.httpClient.execute(post.build())
       val entity: HttpEntity = response.getEntity
       try {
         if (response.getStatusLine.getStatusCode == 200) {
