@@ -29,6 +29,8 @@ trait RpcClient extends ServiceLifecycle {
   def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture]
   def writeMessage[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
 
+  def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand]
+
   def writeMessageToMultiServer[T, R](serverPathPrefix: String, merger: RpcClientMerger[R],
                                       extension: GeneratedExtension[BaseCommand, T], value: T): Future[R]
 }

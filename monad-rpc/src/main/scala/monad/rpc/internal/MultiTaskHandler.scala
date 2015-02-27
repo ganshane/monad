@@ -16,6 +16,27 @@ object MultiTaskHandler {
 
   def findTask(taskId: Long) = tasks.get(taskId)
 
+  def createBlockTask(taskId: Long) = {
+    createMergerTask(taskId, 1, new RpcClientMerger[BaseCommand] {
+      private var command: BaseCommand = _
+
+      /**
+       * 处理接受的消息
+       */
+      override def handle(commandRequest: BaseCommand, channel: Channel): Unit = {
+        command = commandRequest
+      }
+
+      /**
+       * 得到merge之后的结果
+       * @return merge之后的结果
+       */
+      override def get: BaseCommand = {
+        command
+      }
+    })
+  }
+
   def createMergerTask[T](taskId: Long, serverSize: Int, rpcMerger: RpcClientMerger[T]) = {
     val future = new InternalRequestMerger[T](taskId, rpcMerger)
     tasks.put(taskId, future)

@@ -3,9 +3,9 @@
 package monad.rpc.internal
 
 import java.net.InetSocketAddress
+import java.util.concurrent._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReferenceArray}
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.{ConcurrentHashMap, Executors, ThreadFactory, TimeUnit}
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
@@ -59,6 +59,32 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     }
   }
 
+  def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand] = {
+    val serverLocationOpt = rpcServerFinder.find(serverPath)
+    val taskId = taskIdSeq.incrementAndGet()
+    val future = MultiTaskHandler.createBlockTask(taskId)
+    val messageWithTaskId = wrap(taskId, extension, value)
+    serverLocationOpt match {
+      case Some(serverLocation) =>
+        val channelFutureOpt = writeMessage(serverLocation, messageWithTaskId)
+        channelFutureOpt match {
+          case Some(channelFuture) =>
+            channelFuture.addListener(new ChannelFutureListener {
+              override def operationComplete(channelFuture: ChannelFuture): Unit = {
+                if (!channelFuture.isSuccess) {
+                  future.countDown()
+                }
+              }
+            })
+          case None =>
+            future.countDown()
+        }
+      case None =>
+        future.countDown()
+    }
+
+    future
+  }
 
   override def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture] = {
     writeMessageWithChannel(channel, wrap(extension, value))
