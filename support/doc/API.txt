@@ -1,0 +1,164 @@
+== Welome to Monad API
+  monad-api提供给给第三方应用的接口，接口如下：
+
+=== 数量查询接口
+  接口地址：/api/count
+  输入参数：
+    i 对应资源的名称，譬如：wbswry
+    q 查询的关键词，譬如：xm:张三
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的数据数组
+    status:一些状态值，用来出现异常时候的处理
+
+  例子：
+    查询wbswry资源的符合姓名是张三的总数
+    请求为：/api/count?i=wbswry&q=xm:张三
+
+=== 数据查询接口
+  接口地址：/api/search
+  输入参数：
+    i 对应资源的名称，譬如：wbswry
+    q 查询的关键词，譬如：xm:张三
+    start 查询的起始位置
+    offset/limit 查询的偏移量
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0, "data" : [{k1:"v1",k2:"v2"},{k1:"Vn",k2:"Vn"}]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的数据数组
+    status:一些状态值，用来出现异常时候的处理
+
+  例子：
+    查询wbswry资源的第30条到第50条 ,
+    请求为：/api/search?i=wbswry&q=xm:张三&start=30&offset=20
+
+=== 数据详情查询接口
+  接口地址：/api/detail
+  输入参数：
+    i 对应资源的名称，譬如：wbswry
+    _id 对象id
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"status" : 0, "data" : {k1:"v1",k2:"v2"}}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    data: 对应的数据对象
+    status:一些状态值，用来出现异常时候的处理
+
+  例子：
+    请求为：/api/detail?i=wbswry&_id=xxxx
+
+=== 关系定义查询API
+  接口地址：/api/GetRelations
+  输入参数： 无
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0, "data" : [{k1:"v1",k2:"v2"},{k1:"Vn",k2:"Vn"}]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的关系定义
+    status:一些状态值，用来出现异常时候的处理
+
+=== 关系数据查询
+  接口地址：/api/relation
+  输入参数：
+    r 对应关系名称，譬如：th
+    con1 : 关系定义条件1
+    con2 : 关系定义条件2
+    con3 : 关系定义条件3
+    ......
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0, "data" : [{k1:"v1",k2:"v2"},{k1:"Vn",k2:"Vn"}]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的数据数组
+    status:一些状态值，用来出现异常时候的处理
+
+  例子：
+    查询同户关系
+    请求为：/api/relation?r=th&th1=12345
+
+=== 得到动态资源定义
+  接口地址：/api/GetDynamicResources
+  输入参数：无
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0, "data" : ["wbswry","gnlglk"]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的动态资源列表
+    status:一些状态值，用来出现异常时候的处理
+
+
+=== 查询轨迹
+  接口地址：/api/trace
+  输入参数：
+    i 对应资源的名称，譬如：wbswry
+    con1 条件1
+    con2 条件2
+    con3 条件3
+    start 查询的起始位置
+    offset/limit 查询的偏移量
+
+  输出:
+    为JSON字符串,注意，此结果中的数据项的名称已经变为动态资源定义的名称
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0, "data" : [{k1:"v1",k2:"v2"},{k1:"Vn",k2:"Vn"}]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的数据数组
+    status:一些状态值，用来出现异常时候的处理
+
+  例子：
+    查询wbswry资源的第30条到第50条 ,
+    请求为：/api/trace?i=wbswry&xm=张三&sfzh=123456&start=30&offset=20
+
+
+=== 频次查询
+  接口地址：/api/facet
+  输入参数：
+    i 对应资源的名称，譬如：wbswry
+    q 查询的关键字
+    f 需要统计的频次字段
+    u 频次的上限范围
+    l 频次的下限范围
+
+    cont1 动态轨迹中的字段1(例如开始时间 kssj)
+    cont2 动态轨迹中的字段1
+    ....
+
+
+  输出:
+    为JSON字符串，
+    {"success" : true,"total" : 1,"time" : 433,"status" : 0,"data" : [{k1:"v1",k2:"v2"},{k1:"Vn",k2:"Vn"}]}
+
+    success: 执行查询成功的标示，true代表成功，false代表失败
+    total: 查询结果的总数
+    time: 查询耗时长（毫秒)
+    data: 对应的数据数组,注意的是，每条数据中包含了 _count 属性，此属性为统计的值
+    status:一些状态值，用来出现异常时候的处理
+
