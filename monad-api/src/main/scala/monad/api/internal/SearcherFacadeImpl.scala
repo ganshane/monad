@@ -20,7 +20,7 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   private final val ONE_MINUTE = 60
   private val semaphore = new Semaphore(apiConfig.api.concurrentQuery)
 
-  def getDocumentNum: Int = searcherQueue.getDocumentNum
+  def getDocumentNum: Long = searcherQueue.getDocumentNum
 
   def facetSearch(searchRequest: SearchRequest): JsonObject = {
     extractor.extract(searchRequest, { request =>

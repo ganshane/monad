@@ -127,7 +127,7 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
       new QueryTermScorer(query)), this.analyzer)
   }
 
-  def getDocumentNum: Int = {
+  def getDocumentNum: Long = {
     resourceSearcher.maxDoc(rd.name)
   }
 

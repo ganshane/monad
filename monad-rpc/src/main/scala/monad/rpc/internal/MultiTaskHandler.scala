@@ -17,14 +17,14 @@ object MultiTaskHandler {
   def findTask(taskId: Long) = tasks.get(taskId)
 
   def createMergerTask[T](taskId: Long, serverSize: Int, rpcMerger: RpcClientMerger[T]) = {
-    val future = new InternalRequestMerger[T](rpcMerger)
+    val future = new InternalRequestMerger[T](taskId, rpcMerger)
     tasks.put(taskId, future)
     future.startRequest(taskId, serverSize)
 
     future
   }
 
-  private[internal] class InternalRequestMerger[T](rpcMerger: RpcClientMerger[T]) extends Future[T] {
+  private[internal] class InternalRequestMerger[T](taskId: Long, rpcMerger: RpcClientMerger[T]) extends Future[T] {
     private var cancelled = false
     private var countDownLatch: CountDownLatch = _
 
@@ -67,12 +67,14 @@ object MultiTaskHandler {
       rpcMerger.get
     }
 
-    override def isDone: Boolean = {
-      countDownLatch.getCount == 0
-    }
-
     def countDown(): Unit = {
       countDownLatch.countDown()
+      if (isDone) //完成的话，则删除此任务
+        tasks.remove(taskId)
+    }
+
+    override def isDone: Boolean = {
+      countDownLatch.getCount == 0
     }
   }
 

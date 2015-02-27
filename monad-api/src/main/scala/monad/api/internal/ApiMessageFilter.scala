@@ -13,7 +13,8 @@ import org.jboss.netty.channel.Channel
  * @since 2015-02-26
  */
 object ApiMessageFilter {
-  def createMaxdocMerger = new MaxdocMerger
+
+  def createMaxdocMerger:RpcClientMerger[Long] = new MaxdocMerger
 
   private class MaxdocMerger extends RpcClientMerger[Long] {
     private val maxdoc = new AtomicLong(0)

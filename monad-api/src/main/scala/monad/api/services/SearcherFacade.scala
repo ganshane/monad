@@ -18,7 +18,7 @@ trait SearcherFacade {
    * @return 文档数目
    * @since 0.1
    */
-  def getDocumentNum: Int
+  def getDocumentNum: Long
 
   /**
    * 搜索

@@ -156,7 +156,14 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
       //针对多个任务异步执行需要merger的支持
       val task = MultiTaskHandler.findTask(command.getTaskId)
       if (task != null) {
-        task.handle(command, e.getChannel)
+        try {
+          task.handle(command, e.getChannel)
+        } catch {
+          case e: Throwable =>
+            error(e.getMessage, e)
+        } finally {
+          task.countDown()
+        }
       } else {
         if (!handler.handle(command, e.getChannel)) {
           warn("message not handled " + command.toString)
