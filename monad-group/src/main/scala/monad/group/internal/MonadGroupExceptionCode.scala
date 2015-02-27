@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 package monad.group.internal
 
 import monad.support.services.ErrorCode

@@ -1,4 +1,4 @@
-// Copyright 2013 The EGF IT Software Department.
+// Copyright 2013,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 package monad.face
 

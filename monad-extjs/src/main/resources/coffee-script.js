@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 /**
  * CoffeeScript Compiler v1.9.0
  * http://coffeescript.org

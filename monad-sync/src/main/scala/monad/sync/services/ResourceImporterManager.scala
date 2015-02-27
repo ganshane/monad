@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 package monad.sync.services
 
 import java.util.concurrent.Future

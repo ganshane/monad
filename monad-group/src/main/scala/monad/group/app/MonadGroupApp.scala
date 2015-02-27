@@ -1,5 +1,5 @@
-// Copyright 2011,2012,2013 The EGF IT Software Department.
-// site: http://www.egfit.com
+// Copyright 2011,2012,2013,2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 package monad.group.app
 
 import monad.core.MonadCoreSymbols
