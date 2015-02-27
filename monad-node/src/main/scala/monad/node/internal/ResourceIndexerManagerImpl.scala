@@ -16,7 +16,6 @@ import monad.face.model._
 import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
 import monad.jni.services.gen.SlaveNoSQLSupport
 import monad.node.services.{ResourceIndexer, ResourceIndexerManager}
-import monad.protocol.internal.InternalSyncProto.SyncResponse
 import monad.rpc.services.RpcClient
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.lucene.store.RateLimiter
@@ -84,23 +83,8 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     directGetObject(resourceName).nosqlOpt()
   }
 
-  /**
-   * process response from sync server
-   */
-  override def processSyncData(response: SyncResponse): Boolean = {
-    val isContinue = super.processSyncData(response)
-    if (!isContinue) {
-      try {
-        indexAllResources()
-      } catch {
-        case e: Throwable =>
-          error(e.toString, e)
-      }
-    }
-    isContinue
-  }
 
-  def indexAllResources(): Unit = {
+  override def afterFinishSync(): Unit = {
     getResourceList.foreach { r =>
       try {
         info("[{}] begin index ...", r)

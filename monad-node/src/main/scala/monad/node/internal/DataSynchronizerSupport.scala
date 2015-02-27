@@ -33,6 +33,8 @@ trait DataSynchronizer {
   def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport]
 
   def unlock(channel: Channel)
+
+  def afterFinishSync()
 }
 
 trait DataSynchronizerSupport
@@ -50,6 +52,8 @@ trait DataSynchronizerSupport
   private var syncJob: Option[PeriodicJob] = None
   @volatile
   private var processTime: Long = 0
+  @volatile //判断数据同步后的操作
+  private var afterDoing = false
   private var resourceIndex = 0
   private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
@@ -59,7 +63,7 @@ trait DataSynchronizerSupport
     try {
       channel.getCloseFuture.removeListener(closeListener)
     } finally {
-      semaphore.release()
+      finishRequest()
     }
   }
 
@@ -71,7 +75,7 @@ trait DataSynchronizerSupport
       override def run(): Unit = {
         val timeDiff = System.currentTimeMillis() - processTime
         resourceIndex = 0
-        if (timeDiff > thirtySeconds) {
+        if (timeDiff > thirtySeconds && !afterDoing) {
           warn("no response data from meta server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
@@ -79,7 +83,7 @@ trait DataSynchronizerSupport
           try {
             resources = getResourceList
             if (resources.length == 0) {
-              semaphore.release()
+              finishRequest()
             } else {
               info("begin to sync resource:{}", resources(0))
               val futureOpt = sendSyncRequest(None)
@@ -87,13 +91,13 @@ trait DataSynchronizerSupport
                 case Some(future) =>
                   future.getChannel.getCloseFuture.addListener(closeListener)
                 case None =>
-                  semaphore.release()
+                  finishRequest()
               }
             }
           } catch {
             case e: Throwable => //发生异常则释放lock
-              semaphore.release()
               error(e.getMessage, e)
+              finishRequest()
           }
         }
       }
@@ -167,6 +171,19 @@ trait DataSynchronizerSupport
    */
   def shutdownSynchronizer(): Unit = {
     syncJob.foreach(_.cancel())
+  }
+
+  private def finishRequest(): Unit = {
+    try {
+      afterDoing = true
+      afterFinishSync()
+    } catch {
+      case e: Throwable =>
+        error(e.getMessage, e)
+    } finally {
+      afterDoing = false
+      semaphore.release()
+    }
   }
 
   private def addListenerToFuture(future: ChannelFuture): Unit = {
