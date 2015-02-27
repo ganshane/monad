@@ -217,12 +217,6 @@
         <artifactId>rhino</artifactId>
         <version>1.7R5</version>
       </dependency>
-      <!-- Fast, efficient Java serialization -->
-      <dependency>
-        <groupId>com.esotericsoftware.kryo</groupId>
-        <artifactId>kryo</artifactId>
-        <version>2.24.0</version>
-      </dependency>
       <!-- h2database -->
       <dependency>
         <groupId>com.h2database</groupId>
@@ -252,28 +246,17 @@
         <artifactId>jetty-jsp</artifactId>
         <version>${jetty-release-version}</version>
       </dependency>
+      <!-- local memory cache -->
+      <dependency>
+        <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+        <artifactId>concurrentlinkedhashmap-lru</artifactId>
+        <version>1.4.2</version>
+      </dependency>
       <!-- jansi -->
       <dependency>
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
         <version>1.8</version>
-      </dependency>
-      <!-- hawtio -->
-      <dependency>
-        <groupId>io.hawt</groupId>
-        <artifactId>hawtio-core</artifactId>
-        <version>${hawtio-release-version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.hawt</groupId>
-        <artifactId>hawtio-app</artifactId>
-        <version>${hawtio-release-version}</version>
-      </dependency>
-      <!-- commons dbutils -->
-      <dependency>
-        <groupId>commons-dbutils</groupId>
-        <artifactId>commons-dbutils</artifactId>
-        <version>1.6</version>
       </dependency>
       <!-- slf4j -->
       <dependency>

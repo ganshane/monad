@@ -32,10 +32,6 @@
       <artifactId>monad-rpc</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.carrotsearch</groupId>
-      <artifactId>hppc</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-highlighter</artifactId>
     </dependency>
@@ -73,7 +69,6 @@
     <dependency>
       <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
       <artifactId>concurrentlinkedhashmap-lru</artifactId>
-      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -82,11 +77,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
-      <version>1.6.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.esotericsoftware.kryo</groupId>
-      <artifactId>kryo</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
@@ -112,20 +102,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <type>jar</type>
-      <scope>test</scope>
-      <version>3.1</version>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
-    <finalName>monad-core-${project.version}</finalName>
+    <finalName>monad-node-${project.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
