@@ -24,5 +24,5 @@ message InternalFindDocResponse {
     required InternalFindDocResponse cmd = 108;
   }
   required string resource_name = 1;
-  repeated bytes json = 2;
+  optional bytes json = 2;
 }

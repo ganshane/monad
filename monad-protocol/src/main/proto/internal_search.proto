@@ -29,9 +29,10 @@ message InternalSearchResponse {
     required int32 id = 1;
     required float score = 2;
   }
-  required string resource_name = 1;
-  required int32 total = 2;
-  required int32 maxdoc = 3;
-  required float max_score = 4;
-  repeated DocScore results = 5;
+  required int32 partition_id = 1;
+  required string resource_name = 2;
+  required int32 total = 3;
+  required int32 maxdoc = 4;
+  required float max_score = 5;
+  repeated DocScore results = 6;
 }

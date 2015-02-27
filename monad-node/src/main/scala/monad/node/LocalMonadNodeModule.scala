@@ -6,7 +6,7 @@ import com.google.protobuf.ExtensionRegistry
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
-import monad.node.internal.NodeMessageFilter.{InternalSearchMessageFilter, MaxdocMessageFilter}
+import monad.node.internal.NodeMessageFilter.{InternalFindDocRequestMessageFilter, InternalSearchMessageFilter, MaxdocMessageFilter}
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
 import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto, InternalSyncProto}
@@ -59,6 +59,7 @@ object LocalMonadNodeModule {
   def provideRpcServerMessageHandler(configuration: OrderedConfiguration[RpcServerMessageFilter]) {
     configuration.addInstance("MaxdocQueryRequest", classOf[MaxdocMessageFilter])
     configuration.addInstance("InternalSearchRequest", classOf[InternalSearchMessageFilter])
+    configuration.addInstance("InternalFindDocRequest", classOf[InternalFindDocRequestMessageFilter])
   }
 
   @Contribute(classOf[RpcServerListener])

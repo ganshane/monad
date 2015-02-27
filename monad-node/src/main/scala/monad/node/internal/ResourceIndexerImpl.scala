@@ -12,7 +12,7 @@ import monad.face.MonadFaceConstants
 import monad.face.config.IndexConfigSupport
 import monad.face.model.{AnalyzerCreator, IndexEvent, ResourceDefinition}
 import monad.face.services.{DataTypeUtils, ResourceSearcher, ResourceSearcherSource}
-import monad.jni.services.gen.{DataCommandType, NoSQLKey, SlaveNoSQLSupport}
+import monad.jni.services.gen.{DataCommandType, NormalSeqDataKey, SlaveNoSQLSupport}
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
 import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
@@ -169,6 +169,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.rollback()
   }
 
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    /*
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
+    */
+  }
+
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
     resourceSearcher
   }
@@ -242,14 +257,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  def deleteDocument(id: Int, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.deleteDocuments(createIdTerm(id))
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
-    }
-  }
-
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
       logger.warn("[" + rd.name + "] indexer version({}) != data version({})", version, dataVersion)
@@ -268,6 +275,14 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
+  def deleteDocument(id: Int, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      indexWriter.deleteDocuments(createIdTerm(id))
+      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+    }
+  }
+
   def commit(lastSeq: Long, dataVersion: Int) {
     obtainIndexWriter
 
@@ -280,27 +295,13 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
   }
 
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    /*
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
-    */
-  }
-
   private def writeLastLog(seq: Long) {
     FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
   }
 
   def findObject(key: Array[Byte]) = {
-    val value = nosqlOpt().get.Get(key)
+    val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, DataTypeUtils.convertAsInt(key));
+    val value = nosqlOpt().get.Get(nosqlKey)
     if (value != null) Some(value) else None
   }
 
@@ -331,8 +332,8 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         if (binlogValue == null) {
           throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
         }
-        val nosqlKey = new NoSQLKey(binlogValue.Key())
-        val keyBytes = nosqlKey.Key()
+        val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
+        val key = nosqlKey.DataSeq()
         val valBytes = nosql.Get(nosqlKey)
 
         var data: JsonObject = null
@@ -343,10 +344,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         command match {
           case DataCommandType.PUT | DataCommandType.UPDATE =>
             if (data != null) {
-              indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), None)
+              indexData(key, data, command.swigValue(), None)
             }
           case DataCommandType.DEL =>
-            indexData(DataTypeUtils.convertAsInt(keyBytes), data, command.swigValue(), None)
+            indexData(key, data, command.swigValue(), None)
 
         }
 

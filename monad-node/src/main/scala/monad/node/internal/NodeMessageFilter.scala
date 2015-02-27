@@ -1,7 +1,9 @@
 package monad.node.internal
 
+import com.google.protobuf.ByteString
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.CommandProto.BaseCommand
+import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
 import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
 import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
@@ -46,6 +48,7 @@ object NodeMessageFilter {
       searchResponse.setMaxdoc(shardResult.maxDoc)
       searchResponse.setMaxScore(shardResult.maxScore)
       searchResponse.setTotal(shardResult.totalRecord)
+      searchResponse.setPartitionId(shardResult.serverHash)
 
       shardResult.results.foreach { s =>
         val r = searchResponse.addResultsBuilder()
@@ -54,6 +57,29 @@ object NodeMessageFilter {
       }
 
       response.writeMessage(commandRequest, InternalSearchResponse.cmd, searchResponse.build())
+
+      true
+    }
+  }
+
+  class InternalFindDocRequestMessageFilter(searcher: RpcSearcherFacade) extends RpcServerMessageFilter {
+    override def handle(commandRequest: BaseCommand, response: CommandResponse, handler: RpcServerMessageHandler): Boolean = {
+      if (!commandRequest.hasExtension(InternalFindDocRequest.cmd)) {
+        return handler.handle(commandRequest, response)
+      }
+
+      val request = commandRequest.getExtension(InternalFindDocRequest.cmd)
+      val result = searcher.findObject(12, request.getResourceName, CodingHelper.convertAsBytes(request.getId))
+      val findDocResponse = InternalFindDocResponse.newBuilder()
+      findDocResponse.setResourceName(request.getResourceName)
+      result match {
+        case Some(bytes) =>
+          findDocResponse.setJson(ByteString.copyFrom(bytes))
+        case None =>
+        //do nothing
+      }
+
+      response.writeMessage(commandRequest, InternalFindDocResponse.cmd, findDocResponse.build())
 
       true
     }

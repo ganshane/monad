@@ -22,7 +22,7 @@ object ApiMessageFilter {
   def createCollectSearchMerger(): RpcClientMerger[ShardResult] = new CollectSearchMerger
 
 
-  def createMaxdocMerger:RpcClientMerger[Long] = new MaxdocMerger
+  def createMaxdocMerger: RpcClientMerger[Long] = new MaxdocMerger
 
   private class CollectSearchMerger extends RpcClientMerger[ShardResult] with LoggerSupport {
     private val list = new CopyOnWriteArrayList[ShardResult]()
@@ -40,6 +40,7 @@ object ApiMessageFilter {
       shardResult.maxDoc = response.getMaxdoc
       shardResult.maxScore = response.getMaxScore
       shardResult.totalRecord = response.getTotal
+      shardResult.serverHash = response.getPartitionId.toShort
       //TODO 现在兼容老的API，需要调整为新的API
       val buffer = new ListBuffer[(Array[Byte], AnyVal)]()
       val it = response.getResultsList.iterator()
@@ -63,6 +64,7 @@ object ApiMessageFilter {
       collect
     }
   }
+
   private class MaxdocMerger extends RpcClientMerger[Long] {
     private val maxdoc = new AtomicLong(0)
 
