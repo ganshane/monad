@@ -3,7 +3,9 @@ package monad.node.internal
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
+import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
 import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
+import monad.support.services.CodingHelper
 
 /**
  * node message filter
@@ -22,10 +24,36 @@ object NodeMessageFilter {
       val maxDoc = searcher.maxDoc(request.getResourceName)
 
       val maxDocResponse = MaxdocQueryResponse.newBuilder()
-      maxDocResponse.setMaxdoc(maxDoc)
+      maxDocResponse.setMaxdoc(maxDoc.toInt)
       maxDocResponse.setResourceName(request.getResourceName)
 
       response.writeMessage(commandRequest, MaxdocQueryResponse.cmd, maxDocResponse.build())
+
+      true
+    }
+  }
+
+  class InternalSearchMessageFilter(searcher: RpcSearcherFacade) extends RpcServerMessageFilter {
+    override def handle(commandRequest: BaseCommand, response: CommandResponse, handler: RpcServerMessageHandler): Boolean = {
+      if (!commandRequest.hasExtension(InternalSearchRequest.cmd)) {
+        return handler.handle(commandRequest, response)
+      }
+
+      val request = commandRequest.getExtension(InternalSearchRequest.cmd)
+      val shardResult = searcher.collectSearch(request.getResourceName, request.getQ, request.getSort, request.getTopN)
+      val searchResponse = InternalSearchResponse.newBuilder()
+      searchResponse.setResourceName(request.getResourceName)
+      searchResponse.setMaxdoc(shardResult.maxDoc)
+      searchResponse.setMaxScore(shardResult.maxScore)
+      searchResponse.setTotal(shardResult.totalRecord)
+
+      shardResult.results.foreach { s =>
+        val r = searchResponse.addResultsBuilder()
+        r.setId(CodingHelper.DecodeInt32WithBigEndian(s._1))
+        r.setScore(s._2.asInstanceOf[Float])
+      }
+
+      response.writeMessage(commandRequest, InternalSearchResponse.cmd, searchResponse.build())
 
       true
     }

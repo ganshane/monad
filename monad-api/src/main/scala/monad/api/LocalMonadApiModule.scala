@@ -15,7 +15,7 @@ import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
 import monad.face.services.{ResourceDefinitionLoaderListener, RpcSearcherFacade}
-import monad.protocol.internal.InternalMaxdocQueryProto
+import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto}
 import monad.rpc.services.ProtobufExtensionRegistryConfiger
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc._
@@ -81,6 +81,8 @@ object LocalMonadApiModule {
     configuration.add(new ProtobufExtensionRegistryConfiger {
       override def config(registry: ExtensionRegistry): Unit = {
         InternalMaxdocQueryProto.registerAllExtensions(registry)
+        InternalSearchProto.registerAllExtensions(registry)
+        InternalFindDocProto.registerAllExtensions(registry)
       }
     })
   }

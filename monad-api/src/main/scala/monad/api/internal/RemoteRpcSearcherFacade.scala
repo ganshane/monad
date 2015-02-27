@@ -4,6 +4,7 @@ import monad.face.MonadFaceConstants
 import monad.face.model.ShardResult
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
+import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
 import monad.rpc.services.RpcClient
 
 /**
@@ -16,7 +17,15 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
    * search index with index name and keyword
    */
   override def collectSearch(resourceName: String, q: String, sort: String, topN: Int): ShardResult = {
-    throw new UnsupportedOperationException
+    val builder = InternalSearchRequest.newBuilder()
+    builder.setResourceName(resourceName)
+    builder.setQ(q)
+    if (sort != null)
+      builder.setSort(sort)
+
+    builder.setTopN(topN)
+    val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODE, ApiMessageFilter.createCollectSearchMerger(), InternalSearchRequest.cmd, builder.build())
+    future.get()
   }
 
   override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {

@@ -9,20 +9,20 @@ option optimize_for = SPEED;
 
 option java_package = "monad.protocol.internal";
 
-option java_outer_classname = "InternalMaxdocQueryProto";
+option java_outer_classname = "InternalFindDocProto";
 /* 向Sync服务器发送同步请求 */
-message MaxdocQueryRequest {
+message InternalFindDocRequest {
   extend BaseCommand {
-    required MaxdocQueryRequest cmd = 103;
+    required InternalFindDocRequest cmd = 107;
   }
   required string resource_name = 1;
+  required int32 id = 2;
 }
 /* 响应同步请求，发送同步数据 */
-message MaxdocQueryResponse {
+message InternalFindDocResponse {
   extend BaseCommand {
-    required MaxdocQueryResponse cmd = 104;
+    required InternalFindDocResponse cmd = 108;
   }
-  //资源名称
   required string resource_name = 1;
-  required int32 maxdoc = 2;
+  repeated bytes json = 2;
 }

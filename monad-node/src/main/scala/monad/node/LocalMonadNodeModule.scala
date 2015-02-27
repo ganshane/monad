@@ -6,10 +6,10 @@ import com.google.protobuf.ExtensionRegistry
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
-import monad.node.internal.NodeMessageFilter.MaxdocMessageFilter
+import monad.node.internal.NodeMessageFilter.{InternalSearchMessageFilter, MaxdocMessageFilter}
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
-import monad.protocol.internal.{InternalMaxdocQueryProto, InternalSyncProto}
+import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto, InternalSyncProto}
 import monad.rpc.services._
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._
@@ -58,6 +58,7 @@ object LocalMonadNodeModule {
   @Contribute(classOf[RpcServerMessageHandler])
   def provideRpcServerMessageHandler(configuration: OrderedConfiguration[RpcServerMessageFilter]) {
     configuration.addInstance("MaxdocQueryRequest", classOf[MaxdocMessageFilter])
+    configuration.addInstance("InternalSearchRequest", classOf[InternalSearchMessageFilter])
   }
 
   @Contribute(classOf[RpcServerListener])
@@ -71,6 +72,8 @@ object LocalMonadNodeModule {
       override def config(registry: ExtensionRegistry): Unit = {
         InternalSyncProto.registerAllExtensions(registry)
         InternalMaxdocQueryProto.registerAllExtensions(registry)
+        InternalSearchProto.registerAllExtensions(registry)
+        InternalFindDocProto.registerAllExtensions(registry)
       }
     })
   }
