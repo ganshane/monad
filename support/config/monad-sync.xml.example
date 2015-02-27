@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-   Copyright 2014,2015 Jun Tsai. All rights reserved.
+   Copyright 2014,2015 the original author or authors. All rights reserved.
    site: http://www.ganshane.com
 -->
 
@@ -8,11 +8,8 @@
   <log_file>${server.home}/log/nirvana.matcher.sync.log</log_file>
   <local_store_dir>${server.home}/config/local.sync</local_store_dir>
   <rpc>
-    <bind>127.0.0.1:5558</bind>
+    <bind>127.0.0.1:5559</bind>
   </rpc>
-  <zk>
-    <address>localhost:3333</address>
-  </zk>
   <group_api>http://localhost:9080/group/api</group_api>
   <sync>
     <data>

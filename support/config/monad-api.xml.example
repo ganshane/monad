@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<monad_api>
+    <log_file>${server.home}/log/monad.api.log</log_file>
+    <group_api>http://127.0.0.1:9080/group/api</group_api>
+    <local_store_dir>${server.home}/config/local.api</local_store_dir>
+    <web>
+      <bind>127.0.0.1:9081</bind>
+    </web>
+</monad_api>

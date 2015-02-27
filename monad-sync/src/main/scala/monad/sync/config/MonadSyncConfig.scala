@@ -4,7 +4,7 @@ package monad.sync.config
 
 import javax.xml.bind.annotation.{XmlRootElement, XmlType}
 
-import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport, ZkClientConfigSupport}
+import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport}
 import monad.face.config.{GroupApiSupport, SyncConfigSupport}
 import monad.rpc.config.RpcBindSupport
 
@@ -18,7 +18,6 @@ class MonadSyncConfig
   extends SyncConfigSupport
   with LocalStoreConfigSupport
   with RpcBindSupport
-  with ZkClientConfigSupport
   with HeartbeatConfigSupport
   with LogFileSupport
   with GroupApiSupport
