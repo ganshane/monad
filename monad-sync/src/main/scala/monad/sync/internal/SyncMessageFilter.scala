@@ -14,7 +14,6 @@ object SyncMessageFilter {
 
   /**
    * 内部数据同步消息处理，通常是spout和processor来请求数据
-   * @param syncNoSQLService sync nosql service
    */
   class InternalDataSyncRequestHandlerFilter(resourceImporterManager: ResourceImporterManager)
     extends RpcServerMessageFilter {

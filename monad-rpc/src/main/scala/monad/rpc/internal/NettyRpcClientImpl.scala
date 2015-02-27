@@ -70,17 +70,30 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     Some(channel.write(messageWithTaskId))
   }
 
-  def writeMessageToMultiServer[T](serverPathPrefix: String, rpcMerger: RpcMerger,
-                                   extension: GeneratedExtension[BaseCommand, T], value: T): (Long, Array[Option[ChannelFuture]]) = {
-    val servers = rpcServerFinder.findMulti(serverPathPrefix);
-    rpcMerger.startRequest(servers.size)
+  def writeMessageToMultiServer[T, R](serverPathPrefix: String, rpcMerger: RpcClientMerger[R],
+                                      extension: GeneratedExtension[BaseCommand, T], value: T) = {
+    val servers = rpcServerFinder.findMulti(serverPathPrefix)
     val taskId = taskIdSeq.incrementAndGet()
+    val future = MultiTaskHandler.createMergerTask(taskId, servers.length, rpcMerger)
     val message = wrap(extension, value)
     val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
-    val futures = servers.map {
-      writeMessage(_, messageWithTaskId)
+    servers.foreach { s =>
+      val channelFutureOpt = writeMessage(s, messageWithTaskId)
+      channelFutureOpt match {
+        case Some(f) =>
+          f.addListener(new ChannelFutureListener {
+            override def operationComplete(channelFuture: ChannelFuture): Unit = {
+              if (!channelFuture.isSuccess) {
+                future.countDown()
+              }
+            }
+          })
+        case None =>
+          future.countDown()
+      }
     }
-    (taskId, futures)
+
+    future
   }
 
   private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
@@ -140,8 +153,14 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   private class CommandClientHandler extends SimpleChannelUpstreamHandler {
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
       val command = e.getMessage.asInstanceOf[BaseCommand]
-      if (!handler.handle(command, e.getChannel)) {
-        warn("message not handled " + command.toString)
+      //针对多个任务异步执行需要merger的支持
+      val task = MultiTaskHandler.findTask(command.getTaskId)
+      if (task != null) {
+        task.handle(command, e.getChannel)
+      } else {
+        if (!handler.handle(command, e.getChannel)) {
+          warn("message not handled " + command.toString)
+        }
       }
     }
 

@@ -2,6 +2,8 @@
 // site: http://www.ganshane.com
 package monad.rpc.services
 
+import java.util.concurrent.Future
+
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
@@ -13,13 +15,6 @@ import org.jboss.netty.channel.{Channel, ChannelFuture}
  * rpc client
  */
 trait RpcClient extends ServiceLifecycle {
-  /**
-   * send message to remote server
-   * @param serverLocation remote rpc server location
-   * @param message message will be sent
-   * @return send future
-   */
-  //def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): (Long,Option[ChannelFuture])
 
   /**
    * send message to remote server
@@ -34,8 +29,8 @@ trait RpcClient extends ServiceLifecycle {
   def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture]
   def writeMessage[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
 
-  def writeMessageToMultiServer[T](serverPathPrefix: String, merger: RpcMerger,
-                                   extension: GeneratedExtension[BaseCommand, T], value: T): (Long, Array[Option[ChannelFuture]])
+  def writeMessageToMultiServer[T, R](serverPathPrefix: String, merger: RpcClientMerger[R],
+                                      extension: GeneratedExtension[BaseCommand, T], value: T): Future[R]
 }
 
 trait RpcClientSupport {
@@ -91,11 +86,17 @@ trait RpcServerFinder {
 
 /**
  * 多个服务器请求的时候进行操作的类
+ * 通常该类的实现，应该是每次请求新建一个
  */
-trait RpcMerger {
+trait RpcClientMerger[T] {
   /**
-   * 开始请求
-   * @param serverSize 服务器的个数
+   * 处理接受的消息
    */
-  def startRequest(serverSize: Int)
+  def handle(commandRequest: BaseCommand, channel: Channel)
+
+  /**
+   * 得到merge之后的结果
+   * @return merge之后的结果
+   */
+  def get: T
 }

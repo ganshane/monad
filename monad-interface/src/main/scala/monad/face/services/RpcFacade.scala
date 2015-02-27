@@ -31,7 +31,7 @@ trait RpcSearcherFacade {
   def collectSearch2(resourceName: String, q: String, sort: String, topN: Int): ShardResult
 
   @Rpc(mode = "all", merge = "collectMaxDoc")
-  def maxDoc(resourceName: String): Int
+  def maxDoc(resourceName: String): Long
 
   /**
    * 搜索对象
