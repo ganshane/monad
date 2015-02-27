@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
            elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
   <xs:element name="monad_api" type="apiType"/>
   <xs:complexType name="apiConfigType">
     <xs:sequence>
@@ -14,7 +15,16 @@
     <xs:sequence>
       <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1"/>
       <xs:element type="xs:string" name="group_api" minOccurs="1" maxOccurs="1"/>
-      <xs:element type="xs:string" name="dic_dir" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="local_store_dir" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>本地化存储的配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="webType" name="web" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置Web服务器相关参数</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element type="apiConfigType" name="api" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>

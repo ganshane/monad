@@ -72,6 +72,15 @@ trait ZkEphemeralPathSupport {
     }
   }
 
+  protected def retryFailedEphemeralNodes() {
+    info("retry to create ephemeral nodes")
+    val it = failedEphemeralNodes.iterator()
+    while (it.hasNext) {
+      val node = it.next()
+      createEphemeralPath(node.path, node.data, node.createMode, isPermanent = true)
+    }
+  }
+
   private def createEphemeralPath(path: String,
                                   data: Option[Array[Byte]],
                                   mode: CreateMode,
@@ -103,15 +112,6 @@ trait ZkEphemeralPathSupport {
     }
   }
 
-  protected def retryFailedEphemeralNodes() {
-    info("retry to create ephemeral nodes")
-    val it = failedEphemeralNodes.iterator()
-    while (it.hasNext) {
-      val node = it.next()
-      createEphemeralPath(node.path, node.data, node.createMode, isPermanent = true)
-    }
-  }
-
   protected def recreateEphemeralNodes() {
     //针对临时节点的再次创建
     ephemeralNodes.foreach(node => createEphemeralPath(node.path, node.data, node.createMode, isPermanent = true))
@@ -120,11 +120,10 @@ trait ZkEphemeralPathSupport {
   private[monad] def testCreateFailedEphemeral(path: String) {
     failedEphemeralNodes.add(new Node(path, None, CreateMode.EPHEMERAL))
   }
-
-  sealed class EphemeralMode
-
-  case object NormalEphemeralMode extends EphemeralMode
-
-  case object SequenceEphemeralMode extends EphemeralMode
-
 }
+
+sealed class EphemeralMode
+
+case object NormalEphemeralMode extends EphemeralMode
+
+case object SequenceEphemeralMode extends EphemeralMode

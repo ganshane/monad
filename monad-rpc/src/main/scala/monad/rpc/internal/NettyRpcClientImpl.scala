@@ -18,7 +18,7 @@ import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.{NioClientSocketChannelFactory, NioWorkerPool}
 
 /**
- * implements netty rpc client using netty framework
+ * implements rpc client using netty framework
  */
 class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
                          val registry: ExtensionRegistry,
@@ -81,6 +81,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
       val channelFutureOpt = writeMessage(s, messageWithTaskId)
       channelFutureOpt match {
         case Some(f) =>
+          //当在客户端写入失败，则应该减少计数器,TODO 处理服务器端错误或者Channel关闭
           f.addListener(new ChannelFutureListener {
             override def operationComplete(channelFuture: ChannelFuture): Unit = {
               if (!channelFuture.isSuccess) {
@@ -210,6 +211,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
         awaitServiceInit()
 
         val channelFuture = bootstrap.connect(new InetSocketAddress(serverLocation.host, serverLocation.port))
+        //TODO 对于超时时间做成可配置
         channelFuture.await(serverLocation.connectTimeoutInMillis, TimeUnit.MILLISECONDS) //等待5s进行连接
 
         if (!channelFuture.isSuccess) {

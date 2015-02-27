@@ -95,9 +95,9 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
       //调整parameter
       val response = invocation.getParameter(1).asInstanceOf[CommandResponse]
       val newResponse = new CommandResponse {
-        override def writeMessage[T](extension: GeneratedExtension[BaseCommand, T], value: T): Unit = {
+        override def writeMessage[T](commandRequest: BaseCommand, extension: GeneratedExtension[BaseCommand, T], value: T): ChannelFuture = {
           metricsResponse.mark()
-          response.writeMessage(extension, value)
+          response.writeMessage(commandRequest, extension, value)
         }
       }
       invocation.setParameter(1, newResponse)

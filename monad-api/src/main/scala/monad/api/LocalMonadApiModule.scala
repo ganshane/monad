@@ -7,16 +7,19 @@
 
 package monad.api
 
+import com.google.protobuf.ExtensionRegistry
 import monad.api.internal._
 import monad.api.services._
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
-import monad.face.services.ResourceDefinitionLoaderListener
+import monad.face.services.{ResourceDefinitionLoaderListener, RpcSearcherFacade}
+import monad.protocol.internal.InternalMaxdocQueryProto
+import monad.rpc.services.ProtobufExtensionRegistryConfiger
 import monad.support.services.ServiceLifecycle
+import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
-import org.apache.tapestry5.ioc.{MappedConfiguration, OrderedConfiguration, ScopeConstants, ServiceBinder}
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, RequestFilter, RequestHandler}
 
 /**
@@ -37,6 +40,7 @@ object LocalMonadApiModule {
     binder.bind(classOf[ResourceRequest], classOf[ResourceRequestImpl]).
       scope(ScopeConstants.PERTHREAD).
       withId("ResourceRequest")
+    binder.bind(classOf[RpcSearcherFacade], classOf[RemoteRpcSearcherFacade]).withId("RpcSearcherFacade")
   }
 
   def buildMemcachedClient(apiConfigSupport: ApiConfigSupport) = {
@@ -70,5 +74,14 @@ object LocalMonadApiModule {
   def provideOpenBitSetResultProcessor(configuration: MappedConfiguration[Class[_ <: AnyRef], ComponentEventResultProcessor[_ <: AnyRef]]) {
     configuration.addInstance(classOf[OpenBitSetWithNodes], classOf[OpenBitSetResultProcessor])
     configuration.addInstance(classOf[IdShardResultCollect], classOf[IdShardResultCollectResultProcessor])
+  }
+
+  @Contribute(classOf[ExtensionRegistry])
+  def provideProtobufCommand(configuration: Configuration[ProtobufExtensionRegistryConfiger]) {
+    configuration.add(new ProtobufExtensionRegistryConfiger {
+      override def config(registry: ExtensionRegistry): Unit = {
+        InternalMaxdocQueryProto.registerAllExtensions(registry)
+      }
+    })
   }
 }

@@ -114,7 +114,8 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
 class ServerResponse(channel: Channel)
   extends CommandResponse
   with ProtobufCommandHelper {
-  override def writeMessage[T](extension: GeneratedExtension[BaseCommand, T], value: T): Unit = {
-    channel.write(wrap(extension, value))
+
+  override def writeMessage[T](baseCommand: BaseCommand, extension: GeneratedExtension[BaseCommand, T], value: T) = {
+    channel.write(wrap(baseCommand.getTaskId, extension, value))
   }
 }

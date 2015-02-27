@@ -11,13 +11,12 @@ import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.{ResourceDefinition, ResourceType}
 import monad.face.services.RpcSearcherFacade
 import monad.support.services.ZookeeperTemplate
-import org.apache.tapestry5.ioc.services.Builtin
 
 /**
  * 搜索的实现
  * @author jcai
  */
-class SearcherQueueManagerImpl(resourceRequest: ResourceRequest, zookeeper: ZookeeperTemplate, @Builtin resourceSearcher: RpcSearcherFacade)
+class SearcherQueueManagerImpl(resourceRequest: ResourceRequest, zookeeper: ZookeeperTemplate, resourceSearcher: RpcSearcherFacade)
   extends AbstractResourceDefinitionLoaderListener[SearcherQueue] {
   protected def createObject(rd: ResourceDefinition, version: Int) = {
     if (ResourceType.Data == rd.resourceType) null

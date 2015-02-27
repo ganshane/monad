@@ -6,10 +6,11 @@ import com.google.protobuf.ExtensionRegistry
 import monad.core.services.ServiceLifecycleHub
 import monad.face.MonadFaceConstants
 import monad.face.services._
+import monad.node.internal.NodeMessageFilter.MaxdocMessageFilter
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
-import monad.protocol.internal.InternalSyncProto
-import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcClientMessageFilter, RpcClientMessageHandler}
+import monad.protocol.internal.{InternalMaxdocQueryProto, InternalSyncProto}
+import monad.rpc.services._
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.services.Builtin
@@ -54,11 +55,22 @@ object LocalMonadNodeModule {
     configuration.add("NodeSyncResponse", new DataSyncMessageFilter(nosqlService))
   }
 
+  @Contribute(classOf[RpcServerMessageHandler])
+  def provideRpcServerMessageHandler(configuration: OrderedConfiguration[RpcServerMessageFilter]) {
+    configuration.addInstance("MaxdocQueryRequest", classOf[MaxdocMessageFilter])
+  }
+
+  @Contribute(classOf[RpcServerListener])
+  def setupNodeServerAddress(configuration: OrderedConfiguration[RpcServerListener]) {
+    configuration.addInstance("node", classOf[NodeRpcServerListener])
+  }
+
   @Contribute(classOf[ExtensionRegistry])
   def provideProtobufCommand(configuration: Configuration[ProtobufExtensionRegistryConfiger]) {
     configuration.add(new ProtobufExtensionRegistryConfiger {
       override def config(registry: ExtensionRegistry): Unit = {
         InternalSyncProto.registerAllExtensions(registry)
+        InternalMaxdocQueryProto.registerAllExtensions(registry)
       }
     })
   }

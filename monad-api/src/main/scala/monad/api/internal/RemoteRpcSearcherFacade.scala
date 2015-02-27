@@ -1,5 +1,6 @@
 package monad.api.internal
 
+import monad.face.MonadFaceConstants
 import monad.face.model.ShardResult
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
@@ -40,7 +41,7 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
   override def maxDoc(resourceName: String): Long = {
     val builder = MaxdocQueryRequest.newBuilder()
     builder.setResourceName(resourceName)
-    val future = rpcClient.writeMessageToMultiServer("/nodes", ApiMessageFilter.createMaxdocMerger, MaxdocQueryRequest.cmd, builder.build())
+    val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODE, ApiMessageFilter.createMaxdocMerger, MaxdocQueryRequest.cmd, builder.build())
     future.get()
   }
 }

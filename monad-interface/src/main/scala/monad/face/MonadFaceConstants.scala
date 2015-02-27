@@ -70,7 +70,7 @@ object MonadFaceConstants {
   final val HIGHLIGHT_SUFFIX = "</em>"
 
   final val MACHINE_SYNC = MonadCoreConstants.MACHINES + "/sync"
-  final val MACHINE_NODE = MonadCoreConstants.MACHINES + "/node-%s"
+  final val MACHINE_NODE = MonadCoreConstants.MACHINES + "/nodes"
 
 
 }

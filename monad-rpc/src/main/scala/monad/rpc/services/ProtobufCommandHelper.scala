@@ -10,6 +10,10 @@ import monad.protocol.internal.CommandProto.BaseCommand
  */
 trait ProtobufCommandHelper {
   def wrap[T](extension: GeneratedMessage.GeneratedExtension[BaseCommand, T], value: T): BaseCommand = {
-    BaseCommand.newBuilder().setExtension(extension, value).build()
+    BaseCommand.newBuilder().setExtension(extension, value).setTaskId(-1L).build()
+  }
+
+  def wrap[T](taskId: Long, extension: GeneratedMessage.GeneratedExtension[BaseCommand, T], value: T): BaseCommand = {
+    BaseCommand.newBuilder().setExtension(extension, value).setTaskId(taskId).build()
   }
 }

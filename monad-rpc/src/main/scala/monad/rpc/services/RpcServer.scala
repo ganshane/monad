@@ -5,6 +5,7 @@ package monad.rpc.services
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.support.services.ServiceLifecycle
+import org.jboss.netty.channel.ChannelFuture
 
 /**
  * rpc server
@@ -19,7 +20,7 @@ trait RpcServerListener {
 }
 
 trait CommandResponse {
-  def writeMessage[T](extension: GeneratedExtension[BaseCommand, T], value: T)
+  def writeMessage[T](commandRequest: BaseCommand, extension: GeneratedExtension[BaseCommand, T], value: T): ChannelFuture
 }
 
 trait RpcServerMessageHandler {

@@ -23,7 +23,7 @@ object SyncMessageFilter {
 
       val syncRequest = commandRequest.getExtension(SyncRequest.cmd)
       val syncResponse = resourceImporterManager.fetchSyncData(syncRequest)
-      response.writeMessage(SyncResponse.cmd, syncResponse)
+      response.writeMessage(commandRequest, SyncResponse.cmd, syncResponse)
 
       true
     }

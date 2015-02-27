@@ -21,7 +21,7 @@ import scala.collection.JavaConversions._
  */
 class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) extends DocumentSource {
   //sid field
-  val sidField = new NumericDocValuesField(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD, 0)
+  private val sidField = new NumericDocValuesField(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD, 0)
   private val logger = LoggerFactory getLogger getClass
   private val cacheCreator = new ConcurrentHashMap[String, DocumentCreator]()
   private val idField = new IntField(MonadFaceConstants.OBJECT_ID_FIELD_NAME, 1, IntField.TYPE_NOT_STORED)
@@ -56,7 +56,7 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
     doc.add(idField)
 
     //用来快速更新
-    sidField.setIntValue(event.id)
+    sidField.setLongValue(event.id)
     doc.add(sidField)
 
 
@@ -72,7 +72,6 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
 
 class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
   private val cachedFields = scala.collection.mutable.Map[String, Field]()
-  private val idPayloadField = new NumericDocValuesField(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD, 0L)
   private var version = -1
 
   def newDocument(event: IndexEvent) = {
@@ -103,18 +102,6 @@ class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
         case _ =>
         //
       }
-    }
-    //存储主键字段
-    try {
-      var l: Long = event.id
-      if (event.objectId.isDefined) {
-        l += event.id << 32L
-      }
-      idPayloadField.setLongValue(l)
-      doc.add(idPayloadField)
-    } catch {
-      case e: IllegalArgumentException =>
-        throw MonadException.wrap(e)
     }
 
     doc

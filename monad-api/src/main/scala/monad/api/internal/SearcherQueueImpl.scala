@@ -35,6 +35,7 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
   private val keyword = new KeywordAnalyzer()
   private val fieldAnalyzers = new util.HashMap[String, Analyzer]()
   private val analyzer: PerFieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(this.analyzerObj, fieldAnalyzers)
+  private var defaultSearchFields = Array[String]()
   rd.properties.foreach(col => {
     //if (!col.primaryKey) {
     defaultSearchFields = defaultSearchFields :+ col.name
@@ -45,7 +46,6 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
       //analyzer.addAnalyzer(col.name,keyword)
     }
   })
-  private var defaultSearchFields = Array[String]()
 
   def facetSearch(q: String, field: String, upper: Int, lower: Int): SearchResult = {
     val searchResults = resourceSearcher.facetSearch(rd.name, q, field, upper, lower)

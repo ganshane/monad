@@ -24,5 +24,5 @@ message MaxdocQueryResponse {
   }
   //资源名称
   required string resource_name = 1;
-  required int32 maxdoc = 2;
+  required int64 maxdoc = 2;
 }

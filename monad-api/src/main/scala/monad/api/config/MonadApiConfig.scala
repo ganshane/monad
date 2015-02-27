@@ -4,8 +4,9 @@ package monad.api.config
 
 import javax.xml.bind.annotation.XmlRootElement
 
-import monad.face.config
+import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport}
 import monad.face.config.{ApiConfigSupport, DicPathSupport, GroupApiSupport}
+import monad.support.services.WebServerConfigSupport
 
 /**
  * api configuration
@@ -14,8 +15,11 @@ import monad.face.config.{ApiConfigSupport, DicPathSupport, GroupApiSupport}
  */
 @XmlRootElement(name = "monad_api")
 class MonadApiConfig
-  extends config.LogFileSupport
+  extends LogFileSupport
   with GroupApiSupport
+  with HeartbeatConfigSupport
+  with LocalStoreConfigSupport
   with DicPathSupport
   with ApiConfigSupport
+  with WebServerConfigSupport
 

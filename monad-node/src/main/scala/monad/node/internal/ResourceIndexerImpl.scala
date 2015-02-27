@@ -21,8 +21,8 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.MergePolicy.MergeSpecification
 import org.apache.lucene.index._
-import org.apache.lucene.search.NumericRangeQuery
 import org.apache.lucene.store.{Directory, IOContext, MMapDirectory, RateLimitedDirectoryWrapper}
+import org.apache.lucene.util.{BytesRefBuilder, NumericUtils}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 
 import scala.annotation.tailrec
@@ -235,6 +235,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.addDocument(doc)
   }
 
+  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      indexWriter.updateDocument(createIdTerm(id), doc)
+    }
+  }
+
+  def deleteDocument(id: Int, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      indexWriter.deleteDocuments(createIdTerm(id))
+      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+    }
+  }
+
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
       logger.warn("[" + rd.name + "] indexer version({}) != data version({})", version, dataVersion)
@@ -247,23 +262,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     indexWriter
   }
 
-  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      val query = NumericRangeQuery.newIntRange(MonadFaceConstants.OBJECT_ID_FIELD_NAME, id, id, true, true)
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
-      indexWriter.deleteDocuments(query)
-      indexWriter.addDocument(doc)
-    }
-  }
-
-  def deleteDocument(id: Int, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      val query = NumericRangeQuery.newIntRange(MonadFaceConstants.OBJECT_ID_FIELD_NAME, id, id, true, true)
-      indexWriter.deleteDocuments(query)
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
-    }
+  private def createIdTerm(id: Int) = {
+    val bb = new BytesRefBuilder
+    NumericUtils.intToPrefixCoded(id, 0, bb)
+    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
