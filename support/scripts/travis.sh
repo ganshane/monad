@@ -17,6 +17,7 @@ mkdir -p ${LIB_DIR}/mingw
 cd $LIB_DIR
 git clone --depth=1 --branch=bitcoin-fork https://github.com/bitcoin/leveldb.git
 
+#compile dll using mingw
 compile_mingw() {
 #  gcc-mingw-w64 g++-mingw-w64-x86-64 g++-mingw-w64-i686 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
 #  binutils-mingw-w64-i686 binutils-mingw-w64-x86-64
@@ -44,12 +45,14 @@ compile_mingw() {
   make
   cp src/libmonad4j.dll ${ROOT_DIR}/support/dll/monad4j-${ARCH}.dll
 }
+#win64  dll
 HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-  compile_mingw
+#win32  dll
 HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32- compile_mingw
 
 #compile linux version
 sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
-cd monad-c
+cd ${ROOT_DIR}/monad-c
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
