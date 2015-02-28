@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ROOT_DIR=$(pwd)
 #create jni directory
 mkdir -p ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen
