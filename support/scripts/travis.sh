@@ -15,7 +15,7 @@ mkdir -p ${LIB_DIR}/mingw
 cd $LIB_DIR
 git clone --depth=1 --branch=bitcoin-fork https://github.com/bitcoin/leveldb.git
 
-function compile_mingw(){
+compile_mingw() {
 #  gcc-mingw-w64 g++-mingw-w64-x86-64 g++-mingw-w64-i686 gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
 #  binutils-mingw-w64-i686 binutils-mingw-w64-x86-64
   mkdir -p ${LIB_DIR}/${ARCH}
