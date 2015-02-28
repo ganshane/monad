@@ -1,20 +1,7 @@
-language:
-- cpp
-matrix:
-  fast_finish: true
-  include:
-  - compiler: win64
-    env: HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-
-  - compiler: ' win32'
-    env: HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32-
-  - compiler: clang
-  - compiler: gcc
-branches:
-- all
+language: cpp
+compiler: gcc
+branches: all
 script: sh support/scripts/travis.sh
-os:
-- linux
-- osx
 before_install:
 - openssl aes-256-cbc -K $encrypted_c48dc063462f_key -iv $encrypted_c48dc063462f_iv
   -in support/gpg/gpg.sec.enc -out support/gpg/secring.gpg -d
