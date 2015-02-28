@@ -26,3 +26,4 @@ support/config/local*
 **/src/main/conf/development/*
 support/log
 monad-jni/src/main/java/monad/jni/services/gen
+support/gpg/gpg.sec

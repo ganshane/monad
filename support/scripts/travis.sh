@@ -64,5 +64,9 @@ sudo make install
 sudo ldconfig
 
 #building main scala project
+#gpg http://blog.sonatype.com/2010/01/how-to-generate-pgp-signatures-with-maven/
 cd $ROOT_DIR
-mvn clean test
+mvn -V -B -P deploy \
+  -Dgpg.defaultKeyring=false -Dgpg.passphrase=$GPG_PASS -Dgpg.keyname=$GPG_KEYID \
+  clean deploy  --settings support/settings.xml
+
