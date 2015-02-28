@@ -15,7 +15,7 @@
     <fileSet>
       <directory>../support/config</directory>
       <includes>
-        <include>monad-cloud.xml.example</include>
+        <include>monad-api.xml.example</include>
       </includes>
       <outputDirectory>config</outputDirectory>
     </fileSet>
@@ -23,7 +23,7 @@
       <directory>../support/bin</directory>
       <outputDirectory>bin</outputDirectory>
       <includes>
-        <include>monad-cloud</include>
+        <include>monad-api</include>
       </includes>
       <fileMode>755</fileMode>
     </fileSet>
@@ -33,7 +33,6 @@
       <includes>
         <include>changelog.txt</include>
         <include>README.txt</include>
-        <include>INSTALL-CLOUD.txt</include>
       </includes>
     </fileSet>
     <fileSet>

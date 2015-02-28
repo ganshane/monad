@@ -1,6 +1,6 @@
 // Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.core.services
+package monad.node.services
 
 import monad.jni.services.gen.SlaveNoSQLSupport
 

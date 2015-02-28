@@ -8,7 +8,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>monad-api</artifactId>
-  <name>Monad Data Searcher Engine</name>
+  <name>Monad Data Searcher API</name>
   <parent>
     <groupId>com.ganshane.monad</groupId>
     <artifactId>monad-project</artifactId>
@@ -115,88 +115,8 @@
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-
-        <!-- Tapestry-yuicompressor 升级到5.3.4之后，依赖的yuicompressor为2.4.7 -->
-        <executions>
-          <execution>
-            <id>repack-js</id>
-            <phase>package</phase>
-            <configuration>
-              <target>
-                <unjar dest="target/_rhino_tmp" src="target/dependencies/js-${rhino-release-version}.jar"/>
-                <unjar dest="target/_rhino_tmp"
-                       src="target/dependencies/yuicompressor-${yuicompressor-release-version}.jar"/>
-                <delete file="target/dependencies/js-${rhino-release-version}.jar"/>
-                <delete file="target/dependencies/yuicompressor-${yuicompressor-release-version}.jar"/>
-                <jar
-                    destfile="target/dependencies/js-${rhino-release-version}-cust-yuicompressor-${yuicompressor-release-version}-combined.jar"
-                    basedir="target/_rhino_tmp" manifest="target/_rhino_tmp/META-INF/MANIFEST.MF"/>
-                <delete dir="target/_rhino_tmp"/>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
-          <execution>
-            <id>cloud</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-cloud-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-cloud.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>group</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-group-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-group.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>node</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-node-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-node.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>sync</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-sync-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-sync.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
           <execution>
             <id>api</id>
             <phase>package</phase>
@@ -204,22 +124,9 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>monad-api-${project.version}-${BUILD_NUMBER}</finalName>
+              <finalName>monad-api-${project.version}</finalName>
               <descriptors>
                 <descriptor>support/assembly/bin-api.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>web</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-web-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-web.xml</descriptor>
               </descriptors>
             </configuration>
           </execution>

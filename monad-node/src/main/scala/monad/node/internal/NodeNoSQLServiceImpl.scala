@@ -2,7 +2,6 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import monad.core.internal.SlaveNoSQLServiceImplSupport
 import monad.face.config.IndexConfigSupport
 import monad.jni.services.gen.{NoSQLOptions, SlaveNoSQLSupport}
 

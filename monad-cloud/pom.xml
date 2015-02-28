@@ -1,9 +1,9 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-<!-- 
-   Copyright 2014,2015 the original author or authors. All rights reserved.
-   site: http://www.ganshane.com
--->
+  <!--
+     Copyright 2014,2015 the original author or authors. All rights reserved.
+     site: http://www.ganshane.com
+  -->
 
   <parent>
     <groupId>com.ganshane.monad</groupId>
@@ -18,6 +18,20 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>monad-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-jvm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.tapestry</groupId>
+          <artifactId>tapestry-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -31,9 +45,10 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
     </dependency>
+    <!-- jansi -->
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -79,89 +94,7 @@
               <overWriteIfNewer>true</overWriteIfNewer>
             </configuration>
           </execution>
-          <execution>
-            <id>copy-dependencies-all</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeScope>compile</includeScope>
-              <outputDirectory>${project.build.directory}/dependencies-all</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-            </configuration>
-          </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>proguard</id>
-            <phase>package</phase>
-            <configuration>
-              <target>
-                <!-- proguard -->
-                <mkdir dir="${project.build.directory}/proguard-in"/>
-                <move todir="${project.build.directory}/proguard-in">
-                  <fileset dir="${project.build.directory}/dependencies">
-                    <include name="monad-*.jar"/>
-                  </fileset>
-                </move>
-                <delete>
-                  <fileset dir="${project.build.directory}/dependencies-all" includes="monad-*.jar"/>
-                </delete>
-                <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                      todir="${project.build.directory}/proguard-in"/>
-                <taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpathref="maven.plugin.classpath"/>
-                <taskdef name="proguardconfiguration" classname="proguard.ant.ConfigurationTask"
-                         classpathref="maven.plugin.classpath"/>
-                <proguard configuration="../support/proguard/proguard.conf"
-                          printmapping="${project.build.directory}/proguard_mapping.txt" forceprocessing="false">
-                  <injar file="${project.build.directory}/proguard-in/monad-core-${project.version}.jar"
-                         filter="!monad/core/services/FetchSyncDataSupport*,
-                         !monad/core/services/DataSynchronizerSupport*,
-                         !**/*NoSQL*,
-                         !monad/core/LocalMonadCoreModule*,
-                         !monad/core/ProtobufProcessorModule*,
-                         !monad/core/internal/Rpc*,
-                         !monad/core/internal/MachineHeartbeatImpl*,
-                         !monad/core/services/DataSync*,
-                         !monad/core/internal/MonadCoreUtils*,
-                         !monad/core/internal/ProtobufResponseResultProcessor*,
-                         !monad/core/services/LogExceptionHandler*
-                         "
-                      />
-                  <injar file="${project.build.directory}/proguard-in/monad-support-${project.version}.jar"
-                         filter="!monad/support/services/Jetty*"
-                      />
-                  <injar file="${project.build.directory}/proguard-in/monad-jni-${project.version}.jar"/>
-                  <injar file="${project.build.directory}/proguard-in/monad-cloud-${project.version}.jar"/>
-                  <outjar file="${project.build.directory}/dependencies/${project.build.finalName}.jar"/>
-                  <libraryjar dir="${project.build.directory}/dependencies-all"/>
-                  <libraryjar file="${jdk-rt-path}"/>
-                  <!-- <libraryjar file="${java.home}/bundle/Classes/classes.jar" />-->
-                  <!-- <libraryjar file="${java.home}/lib/rt.jar" /> -->
-                </proguard>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>net.sf.proguard</groupId>
-            <artifactId>proguard-anttask</artifactId>
-            <version>${proguard-release-version}</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

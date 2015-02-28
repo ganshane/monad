@@ -1,10 +1,10 @@
 // Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.core.internal
+package monad.node.internal
 
 import monad.core.config.NoSqlConfig
-import monad.core.services.SlaveNoSQLService
 import monad.jni.services.gen.{NoSQLOptions, SlaveNoSQLSupport}
+import monad.node.services.SlaveNoSQLService
 import monad.support.services.LoggerSupport
 
 /**
