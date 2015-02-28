@@ -36,7 +36,7 @@ object MonadGroupApp
     )
     startServer(config.web, "monad.group", classes: _*)
     printTextWithNative("group@ " + config.web.bind,
-      "META-INF/maven/com.ganshane.moand/monad-group/version.properties",
+      "META-INF/maven/com.ganshane.monad/monad-group/version.properties",
       0, logger)
     logger.info("group server started")
 
@@ -44,35 +44,3 @@ object MonadGroupApp
   }
 }
 
-/*
-extends BaseJettyServer{
-  //logger
-  def main(args:Array[String]){
-      val serverHome = System.getProperty(MonadSystemSymbols.MONAD_SERVER_HOME,"support")
-      System.setProperty(MonadSystemSymbols.MONAD_SERVER_HOME,serverHome)
-      val groupConfig = MonadGroupModule.buildMonadGroupConfig(serverHome)
-      System.setProperty(MonadExtjsConstants.EXT_JS_DIR,groupConfig.extjsDir)
-
-      ContainerUtil.configLogger(groupConfig.logFile,"GROUP")
-      val logger = LoggerFactory getLogger  getClass
-      logger.info("Starting group server ....")
-      //config hazelcast using slf4j logger
-      System.setProperty("hazelcast.logging.type","slf4j")
-      val classes= Array[Class[_]](
-          Class.forName("monad.core.LocalMonadAssetModule"),
-          Class.forName("monad.core.LicenseModule"),
-          Class.forName("monad.core.ObjectLifecycleModule"),
-          Class.forName("monad.group.LocalMonadGroupModule"),
-          Class.forName("monad.group.MonadGroupModule"),
-          Class.forName("monad.extjs.MonadExtjsModule")
-      )
-      System.setProperty("tapestry.modules", classes.map(_.getName)mkString(","))
-      val (server, contextHandler) = createServer("monad.core")
-      server.start()
-      val port=System.getProperty("server.port","9080").toInt
-      ContainerUtil.printText("group@"+port,"META-INF/maven/com.egfit.monad/monad-all/version.properties")
-      logger.info("Group server started")
-      server.join()
-  }
-}
-*/

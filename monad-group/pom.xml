@@ -22,21 +22,39 @@
     <dependency>
       <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-jvm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.tapestry</groupId>
+          <artifactId>tapestry-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-interface</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>monad-rpc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>monad-jni</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-extjs</artifactId>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>org.apache.tapestry</groupId>
-      <artifactId>tapestry-yuicompressor</artifactId>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
@@ -50,18 +68,6 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
     </dependency>
     <!-- deprecated -->
     <dependency>
@@ -98,52 +104,8 @@
         <artifactId>maven-scala-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <!-- Tapestry-yuicompressor 升级到5.3.4之后，依赖的yuicompressor为2.4.7 -->
-        <executions>
-          <execution>
-            <id>repack-js</id>
-            <phase>package</phase>
-            <configuration>
-              <target>
-                <unjar dest="target/_rhino_tmp" src="target/dependencies/js-${rhino-release-version}.jar"/>
-                <unjar dest="target/_rhino_tmp"
-                       src="target/dependencies/yuicompressor-${yuicompressor-release-version}.jar"/>
-                <delete file="target/dependencies/js-${rhino-release-version}.jar"/>
-                <delete file="target/dependencies/yuicompressor-${yuicompressor-release-version}.jar"/>
-                <jar
-                    destfile="target/dependencies/js-${rhino-release-version}-cust-yuicompressor-${yuicompressor-release-version}-combined.jar"
-                    basedir="target/_rhino_tmp" manifest="target/_rhino_tmp/META-INF/MANIFEST.MF"/>
-                <delete dir="target/_rhino_tmp"/>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
-          <execution>
-            <id>cloud</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-cloud-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-cloud.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
           <execution>
             <id>group</id>
             <phase>package</phase>
@@ -154,58 +116,6 @@
               <finalName>monad-group-${project.version}-${BUILD_NUMBER}</finalName>
               <descriptors>
                 <descriptor>support/assembly/bin-group.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>node</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-node-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-node.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>sync</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-sync-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-sync.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>api</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-api-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-api.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>web</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>monad-web-${project.version}-${BUILD_NUMBER}</finalName>
-              <descriptors>
-                <descriptor>support/assembly/bin-web.xml</descriptor>
               </descriptors>
             </configuration>
           </execution>
