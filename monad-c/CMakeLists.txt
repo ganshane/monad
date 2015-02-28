@@ -1,4 +1,4 @@
-# Copyright 2014,2015 Jun Tsai. All rights reserved.
+# Copyright 2014,2015 the original author or authors. All rights reserved.
 # site: http://www.ganshane.com
 PROJECT(monad5)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
@@ -6,6 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(MONAD_VERSION_MAJOR 0)
 SET(MONAD_VERSION_MINOR 1)
 SET(MONAD_VERSION_PATCH 1)
+
 
 #check os
 IF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
@@ -16,18 +17,38 @@ ELSEif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET(CMAKE_MACOSX_RPATH 1)
   LINK_DIRECTORIES(/usr/local/lib)
   INCLUDE_DIRECTORIES(/usr/local/include)
+  SET(CMAKE_REQUIRED_INCLUDES "$CMAKE_REQUIRED_INCLUDES;/usr/local/include")
 ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-SET(MONAD_HAVE_LINUX true)
+  SET(MONAD_HAVE_LINUX true)
 ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-SET(MONAD_HAVE_WINDOWS true)
+  SET(MONAD_HAVE_WINDOWS true)
+  IF(MINGW)
+    SET(MONAD_HAVE_MINGW true)
+  ENDIF()
 ENDIF()
+
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX("leveldb/db.h" HAVE_LEVELDB_H)
+CHECK_INCLUDE_FILE_CXX ("rocksdb/db.h" HAVE_ROCKSDB_H)
+CHECK_INCLUDE_FILE_CXX ("leveldb/filter_policy.h" HAVE_LEVELDB_FILTER_POLICY_H)
 
 #define some variable
 OPTION(ENABLE_ROCKSDB "enable rocksdb" OFF)
 if(ENABLE_ROCKSDB)
+  IF(NOT HAVE_ROCKSDB_H)
+  MESSAGE(FATAL_ERROR "rocksdb/db.h not found!")
+  ENDIF()
   MESSAGE(STATUS "using rocksdb ")
   SET(MONAD_HAVE_ROCKSDB true)
+ELSEIF(NOT HAVE_LEVELDB_H)
+  MESSAGE(FATAL_ERROR "leveldb/db.h not found!")
 ENDIF()
+IF(HAVE_LEVELDB_FILTER_POLICY_H)
+  ADD_DEFINITIONS(-DHAVE_LEVELDB_FILTER_POLICY_H)
+ENDIF()
+
+
 OPTION(STATIC_LINK "statically link all library " OFF)
 IF(STATIC_LINK)
   ADD_LIBRARY(leveldb STATIC IMPORTED)
@@ -38,8 +59,6 @@ IF(STATIC_LINK)
   SET_PROPERTY(TARGET snappy PROPERTY IMPORTED_LOCATION /usr/local/lib/libsnappy.a)
 ENDIF(STATIC_LINK)
 
-INCLUDE(CheckIncludeFiles)
-INCLUDE(CheckIncludeFileCXX)
 
 # global config file
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/monad_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/monad_config.h)

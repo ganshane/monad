@@ -1,3 +1,5 @@
+// Copyright 2015 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 #ifndef MONAD_H_
 #define MONAD_H_
 
@@ -22,10 +24,10 @@
 #endif
 
 #if defined(WIN32)
-typedef unsigned __int32 monad_uint32_t;
-typedef unsigned __int64 monad_uint64_t;
-typedef __int32 monad_int32_t;
-typedef __int64 monad_int64_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef __int32 int32_t;
+typedef __int64 int64_t;
 #else
 #include <stdint.h>
 #endif
@@ -39,6 +41,14 @@ typedef __int64 monad_int64_t;
   #define UINT32_MAX        4294967295U
 #endif
 
+
+
+#include "monad_types.h"
+
 #include "logger.h"
+#include "status.h"
+
+//禁止默认的copy构造和copy赋值操作
+class Uncopyable;
 
 #endif //MONAD_H_

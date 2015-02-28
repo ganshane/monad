@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
+  <xs:element name="monad_sync" type="monadSyncType"/>
+  <xs:complexType name="monadSyncType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置日志文件的路径</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="local_store_dir" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>本地化存储的配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="rpcType" name="rpc" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置RPC绑定的的地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="heartbeatType" name="heartbeat" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置心跳相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="group_api" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置组API的地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="syncType" name="sync" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>同步的所有配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="syncType">
+    <xs:sequence>
+      <xs:element type="xs:int" name="db_reader_num" minOccurs="0" maxOccurs="1" default="5">
+        <xs:annotation>
+          <xs:documentation>读取数据库的线程数，默认为5</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="binlog_length" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>节点同步完成之后，保存的binlog的长度，默认为：1000</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:boolean" name="ignore_row_when_unqualified_field" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>当某一字段的数据不合格的时候，是否要忽略当前行的数据，默认为：false</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="nodesType" name="data" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置数据的分区信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="nosqlType" name="nosql" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置节点数据保存的策略</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="nosqlType" name="id_nosql" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>支持节点数据处理对象分析的支持，注意，如果没有配置将不支持ID分析</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="nodesType">
+    <xs:sequence>
+      <xs:element name="partition" type="nodeServerType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="nodeServerType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:unsignedByte" name="id" use="required">
+          <xs:annotation>
+            <xs:documentation>分区的ID，小于255的整数</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:int" name="weight" use="optional" default="1">
+          <xs:annotation>
+            <xs:documentation>分区的权重</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>

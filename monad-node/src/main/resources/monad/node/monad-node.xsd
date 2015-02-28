@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
+  <xs:element name="monad_node" type="nodeType"/>
+  <xs:complexType name="nodeType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置日志文件的路径</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="local_store_dir" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>本地化存储的配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:unsignedByte" name="partition_id" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>数据分区的ID，此属性很关键，务必小心注意</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="rpcType" name="rpc" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置RPC绑定的的地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="heartbeatType" name="heartbeat" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置心跳相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="group_api" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>组服务器的API地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="nosqlType" name="nosql" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>数据存储相关配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="indexType" name="index" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>索引相关配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="indexType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="path" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>索引存放路径</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="writer_buffer" minOccurs="0" maxOccurs="1" default="32">
+        <xs:annotation>
+          <xs:documentation>写索引时候的buffer,单位(MB)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:double" name="max_bytes_per_sec" minOccurs="0" maxOccurs="1" default="0">
+        <xs:annotation>
+          <xs:documentation>控制索引每秒写入的字节数,默认为0，则不进行控制</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="query_thread" minOccurs="0" maxOccurs="1" default="1">
+        <xs:annotation>
+          <xs:documentation>查询线程数,若次线程数大于1，则针对每个查询开启多线程查询，默认为1</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="query_max_limit" minOccurs="0" maxOccurs="1" default="-1">
+        <xs:annotation>
+          <xs:documentation>控制查询的最大数据限制，默认是-1,则不进行限制</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:int" name="binlog_length" minOccurs="0" maxOccurs="1" default="1000">
+        <xs:annotation>
+          <xs:documentation>节点上binlog保存的长度，默认:1000</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

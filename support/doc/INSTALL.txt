@@ -1,0 +1,106 @@
+== 安装指南
+
+=== 目录结构
+
+bin
+	可执行文件
+
+config
+	配置文件，采用yaml配置，配置文件必须需要采用UTF-8格式。
+
+dic
+	字典目录，分词的时候使用，添加多的字典能够提高分词的准确度，但是同时也降低了分词的速度。
+
+log
+	日志输出目录
+
+lib
+    依赖的jar包
+
+var
+    一些动态资源,包含了日志和进程号文件
+
+=== 系统需求
+
+1.硬件环境
+  CPU最好能支持numactl特性，改善内存和CPU的亲和力.
+
+2.操作系统
+    Linux 2.6 以上版本，推荐使用Debian 6
+
+3.软件环境
+    numactl     http://oss.sgi.com/projects/libnuma/
+    jdk (>=1.6) http://java.com/zh_CN/download/manual.jsp
+
+=== 安装
+1.安装分布式存储
+    分布式存储共分为三个部分
+    1.1 配置管理器
+        用来存储各个节点的配置信息
+        可执行文件: bin/monad-master
+        配置文件：  config/monad-master.conf
+
+        修改好配置文件后通过:
+        bin/monad-master start
+        进行启动
+
+    1.2 存储节点
+        存储节点
+        可执行文件: SHARD_ID=1 bin/monad-shard
+        配置文件：  config/monad-shard-1.conf
+        SHARD_ID变量和配置相对应  config/monad-shard-${SHARD_ID}.conf
+
+        修改好之后，运行下面命令
+        SHARD_ID=1 bin/monad-shard start
+        启动节点服务器
+
+
+    1.3 路由控制器
+
+        面向程序调用使用，用于和后端的集群进行交互
+        可执行文件: bin/monad-router
+        配置文件：  config/monad-router.conf
+
+        修改好配置文件后,运行下面命令
+        bin/monad-router start
+        启动路由控制器
+
+2. 数据处理程序
+    2.1 数据配置
+        所有的数据配置在config/dbs文件夹下,参见wbswry.yml
+
+    2.2 数据同步服务器
+        用来同步数据库服务器数据，把数据库中数据存储在分布式环境中
+        可执行文件: bin/monad-sync
+        配置文件：  config/monad-sync.yml
+
+        修改好配置文件后，运行下面命令
+        bin/monad-sync start
+        启动同步服务器
+
+    2.3 索引服务器
+        同来针对数据进行索引服务
+        可执行文件: bin/monad-index
+        配置文件：  config/monad-index.yml
+
+        修改好配置文件后，运行下面命令
+        bin/monad-index start
+        启动索引服务器
+
+    2.4 搜索服务器
+        提供搜索服务的搜索进程
+        可执行文件: bin/monad-search
+        配置文件：  config/monad-search.yml
+
+        修改好配置文件后，运行下面命令
+        bin/monad-search start
+        启动搜索进程服务
+
+    2.5 API服务器
+        提供各种应用交互的API服务器
+        可执行文件： bin/monad-api
+        配置文件:   config/monad-api.yml
+
+        修改好配置文件后，运行下面命令
+        bin/monad-api start
+        启动API服务器

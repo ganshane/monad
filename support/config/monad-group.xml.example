@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013,2014,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<monad_group>
+    <log_file>${server.home}/log/monad.group.log</log_file>
+    <extjs_dir>/Users/jcai/dev/ext-4.2.1.883</extjs_dir>
+    <web>
+      <bind>127.0.0.1:9080</bind>
+    </web>
+    <zk>
+      <address>127.0.0.1:3333</address>
+    </zk>
+    <group id="test">
+        <cn_name>test_group</cn_name>
+        <api_url>http://localhost:9081/api</api_url>
+    </group>
+</monad_group>

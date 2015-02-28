@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2014,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<monad_sync>
+  <log_file>${server.home}/log/nirvana.matcher.sync.log</log_file>
+  <local_store_dir>${server.home}/config/local.sync</local_store_dir>
+  <rpc>
+    <bind>127.0.0.1:5559</bind>
+  </rpc>
+  <group_api>http://localhost:9080/group/api</group_api>
+  <sync>
+    <data>
+      <partition id="1"  weight="1"/>
+    </data>
+    <nosql>
+      <!-- 数据存放路径 -->
+      <path>${server.home}/data/db-sync</path>
+      <!-- nosql 缓存大小,单位:MB -->
+      <cache_size_mb>8</cache_size_mb>
+    </nosql>
+  </sync>
+</monad_sync>

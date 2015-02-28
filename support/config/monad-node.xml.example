@@ -1,0 +1,27 @@
+<monad_node>
+<!-- 
+   Copyright 2012,2013,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+  <log_file>${server.home}/log/monad.node.log</log_file>
+  <local_store_dir>${server.home}/config/local.sync</local_store_dir>
+  <partition_id>1</partition_id>
+  <rpc>
+    <bind>127.0.0.1:5558</bind>
+  </rpc>
+  <group_api>http://127.0.0.1:9080/group/api</group_api>
+  <nosql>
+    <!-- 数据存放路径 -->
+    <path>${server.home}/data/db-node</path>
+    <!-- nosql 缓存大小,单位:MB -->
+    <cache_size_mb>8</cache_size_mb>
+  </nosql>
+  <!-- 索引配置 -->
+  <index>
+    <!-- 索引存放路径 -->
+    <path>${server.home}/data/index</path>
+    <!-- 写的时候的buffer,单位(MB) -->
+    <writer_buffer>32</writer_buffer>
+  </index>
+</monad_node>

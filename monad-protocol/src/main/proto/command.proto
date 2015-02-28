@@ -1,0 +1,23 @@
+package monad.proto;
+
+option optimize_for = SPEED;
+
+option java_package = "monad.protocol.internal";
+
+option java_outer_classname = "CommandProto";
+
+message BaseCommand {
+  extensions 100 to max;
+
+  required int64 task_id = 1;
+  /**
+    internal_sync#SyncRequest  101
+    internal_sync#SyncResponse 102
+    internal_maxdoc#MaxdocQueryRequest  103
+    internal_maxdoc#MaxdocQueryResponse 104
+    internal_search#InternalSearchRequest  105
+    internal_search#InternalSearchResponse 106
+    internal_find_doc#InternalFindDocRequest 107
+    internal_find_doc#InternalFindDocResponse 108
+   */
+}

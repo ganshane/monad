@@ -1,0 +1,22 @@
+<!--
+  ~ Copyright 2012 The EGF IT Software Department.
+  -->
+<!-- 
+   Copyright 2012,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<monad_cloud id="2">
+  <data_dir>${server.home}/data</data_dir>
+  <log_file>${server.home}/log/monad.cloud.log</log_file>
+  <port>2222</port>
+  <init_limit>5</init_limit>
+  <sync_limit>2</sync_limit>
+  <!--
+  <servers>
+      <server id="1">localhost:2888:3999</server>
+      <server id="2">localhost:2888:3999</server>
+      <server id="3">localhost:2888:3999</server>
+  </servers>
+  -->
+</monad_cloud>

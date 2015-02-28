@@ -1,0 +1,2 @@
+# Copyright {YEAR} {ORG}. All rights reserved.
+# site: http://www.ganshane.com

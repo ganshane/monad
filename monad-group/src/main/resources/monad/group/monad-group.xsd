@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
+  <xs:element name="monad_group" type="monadGroupType"/>
+  <xs:complexType name="groupType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="cn_name" maxOccurs="1" minOccurs="1"/>
+      <xs:element type="xs:string" name="api_url" maxOccurs="1" minOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="monadGroupType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="extjs_dir" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>extjs directory</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="webType" name="web" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置Web服务器相关参数</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="zkType" name="zk" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置Zookeeper服务器相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="heartbeatType" name="heartbeat" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置心跳相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="groupType" name="group" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>group server config</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

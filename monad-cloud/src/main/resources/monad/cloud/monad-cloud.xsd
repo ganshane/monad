@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+  <xs:element name="monad_cloud" type="cloudType"/>
+  <xs:complexType name="serversType">
+    <xs:sequence>
+      <xs:element type="serverType" name="server" maxOccurs="unbounded" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="cloudType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:integer" name="cloud_id" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="data_dir" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="port" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="init_limit" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="sync_limit" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="serversType" name="servers" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="serverType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="id" use="required"/>
+        <xs:attribute type="xs:string" name="address" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2012,2013,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<relations>
+  <!-- 关系配置,name:关系名称 cn_name:关系说明 resource:资源 -->
+  <rel name="th" cn_name="同户" resource="czrk">
+    <properties>
+      <!-- name:特征列对应实际列名 trait:特征列 -->
+      <property name="sfzh" trait="th1"></property>
+    </properties>
+  </rel>
+</relations>

@@ -1,0 +1,38 @@
+/**
+ * 查询最大文档数的接口
+ */
+package monad.proto;
+
+import "command.proto";
+
+option optimize_for = SPEED;
+
+option java_package = "monad.protocol.internal";
+
+option java_outer_classname = "InternalSearchProto";
+/* 向Sync服务器发送同步请求 */
+message InternalSearchRequest {
+  extend BaseCommand {
+    required InternalSearchRequest cmd = 105;
+  }
+  required string resource_name = 1;
+  required string q = 2;
+  optional string sort = 3;
+  required int32 top_n = 4 [default = 1000];
+}
+/* 响应同步请求，发送同步数据 */
+message InternalSearchResponse {
+  extend BaseCommand {
+    required InternalSearchResponse cmd = 106;
+  }
+  message DocScore {
+    required int32 id = 1;
+    required float score = 2;
+  }
+  required int32 partition_id = 1;
+  required string resource_name = 2;
+  required int32 total = 3;
+  required int32 maxdoc = 4;
+  required float max_score = 5;
+  repeated DocScore results = 6;
+}
