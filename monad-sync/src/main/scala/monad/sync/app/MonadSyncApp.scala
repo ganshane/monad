@@ -4,6 +4,7 @@ package monad.sync.app
 
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
+import monad.jni.services.JniLoader
 import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import monad.sync.MonadSyncModule
 import org.slf4j.LoggerFactory
@@ -21,6 +22,8 @@ object MonadSyncApp
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadSyncModule.buildMonadSyncConfig(serverHome)
     configLogger(config.logFile, "SYNC")
+    //预先加载JNI文件
+    JniLoader.loadJniLibrary(serverHome, config.logFile)
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting sync server ....")

@@ -3,7 +3,7 @@
 package monad.face.internal
 
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.{ConcurrentHashMap, Executors}
+import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import javax.annotation.PostConstruct
 
 import com.lmax.disruptor.dsl.Disruptor
@@ -92,7 +92,7 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
     resources.keySet().foreach(listener.onResourceUnloaded)
     resources.clear()
     hasClosed = true
-    disruptor.shutdown()
+    disruptor.shutdown(2, TimeUnit.SECONDS)
   }
 
   def getResourceDefinitions = resources.values().iterator()

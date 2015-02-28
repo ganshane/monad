@@ -3,7 +3,7 @@
 package monad.node.internal
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, ThreadFactory}
+import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
 
 import com.google.gson.JsonObject
 import com.lmax.disruptor.EventFactory
@@ -109,7 +109,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     logger.info("closing resource index manager ....")
     shutdownSynchronizer()
     TimeOutCollector.shutdown()
-    disruptor.shutdown()
+    disruptor.shutdown(2, TimeUnit.SECONDS)
   }
 
   def getDisruptor = disruptor
