@@ -113,7 +113,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>monad-group-${project.version}-${BUILD_NUMBER}</finalName>
+              <finalName>monad-group-${project.version}</finalName>
               <descriptors>
                 <descriptor>support/assembly/bin-group.xml</descriptor>
               </descriptors>

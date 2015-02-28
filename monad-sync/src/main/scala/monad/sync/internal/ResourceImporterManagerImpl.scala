@@ -82,7 +82,12 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
    */
   def shutdown() {
     debug("shutdown importer manager ...")
-    disruptor.shutdown(2, TimeUnit.SECONDS)
+    try {
+      disruptor.shutdown(2, TimeUnit.SECONDS)
+    } catch {
+      case e: Throwable =>
+        disruptor.halt()
+    }
     MonadUtils.shutdownExecutor(dbReader, "resource importer manager")
   }
 

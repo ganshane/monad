@@ -88,7 +88,12 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     logger.info("closing resource index manager ....")
     shutdownSynchronizer()
     TimeOutCollector.shutdown()
-    disruptor.shutdown(2, TimeUnit.SECONDS)
+    try {
+      disruptor.shutdown(2, TimeUnit.SECONDS)
+    } catch {
+      case e: Throwable =>
+        disruptor.halt()
+    }
   }
 
   override def getPartitionId: Short = {

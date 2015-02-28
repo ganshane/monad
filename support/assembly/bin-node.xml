@@ -15,7 +15,7 @@
     <fileSet>
       <directory>../support/config</directory>
       <includes>
-        <include>monad-api.xml.example</include>
+        <include>monad-node.xml.example</include>
       </includes>
       <outputDirectory>config</outputDirectory>
     </fileSet>
@@ -23,9 +23,13 @@
       <directory>../support/bin</directory>
       <outputDirectory>bin</outputDirectory>
       <includes>
-        <include>monad-api</include>
+        <include>monad-node</include>
       </includes>
       <fileMode>755</fileMode>
+    </fileSet>
+    <fileSet>
+      <directory>../support/dll</directory>
+      <outputDirectory>dll</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>../support/doc</directory>

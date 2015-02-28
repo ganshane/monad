@@ -97,7 +97,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>monad-sync-${project.version}-${BUILD_NUMBER}</finalName>
+              <finalName>monad-sync-${project.version}</finalName>
               <descriptors>
                 <descriptor>support/assembly/bin-sync.xml</descriptor>
               </descriptors>
