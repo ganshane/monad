@@ -3,12 +3,11 @@
 package monad.core.services
 
 import com.codahale.metrics._
-import monad.support.services.ServiceLifecycle
 
 /**
  * metrics service
  */
-trait MetricsService extends ServiceLifecycle {
+trait MetricsService {
   def unregister(name: String)
 
   def register[T <: Metric](name: String, metric: T): T

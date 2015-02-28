@@ -2,12 +2,10 @@
 // site: http://www.ganshane.com
 package monad.cloud.services
 
-import monad.support.services.ServiceLifecycle
-
 
 /**
  * cloud server interface
  * @author jcai
  */
-trait CloudServer extends ServiceLifecycle {
+trait CloudServer {
 }

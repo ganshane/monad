@@ -5,7 +5,6 @@ package monad.cloud.app
 import monad.cloud.MonadCloudModule
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
-import monad.jni.services.gen.CMonadJNI
 import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import org.slf4j.LoggerFactory
 
@@ -27,7 +26,6 @@ object MonadCloudApp
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting cloud server ....")
     val classes = Array[Class[_]](
-      Class.forName("monad.core.ServiceLifecycleModule"),
       Class.forName("monad.cloud.LocalCloudModule"),
       Class.forName("monad.cloud.MonadCloudModule")
     )

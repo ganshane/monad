@@ -3,13 +3,12 @@
 package monad.api.services
 
 import com.google.gson.JsonObject
-import monad.support.services.ServiceLifecycle
 
 /**
  * memcache的客户端接口类
  * @author jcai
  */
-trait MemcachedClient extends ServiceLifecycle {
+trait MemcachedClient {
   /**
    * 设置cache
    * @param key 缓存的key

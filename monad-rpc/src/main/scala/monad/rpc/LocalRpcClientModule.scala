@@ -2,11 +2,11 @@
 // site: http://www.ganshane.com
 package monad.rpc
 
-import com.google.protobuf.ExtensionRegistry
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.internal.NettyRpcClientImpl
 import monad.rpc.model.RpcServerLocation
 import monad.rpc.services._
+import org.apache.tapestry5.ioc.ServiceBinder
 import org.apache.tapestry5.ioc.annotations.ServiceId
 import org.apache.tapestry5.ioc.services.PipelineBuilder
 import org.jboss.netty.channel.Channel
@@ -33,9 +33,8 @@ object LocalRpcClientModule {
     }
   }
 
-  @ServiceId("NettyRpcClient")
-  def buildNettyRpcClient(handler: RpcClientMessageHandler, registry: ExtensionRegistry, rpcServerFinder: RpcServerFinder): RpcClient = {
-    new NettyRpcClientImpl(handler, registry, rpcServerFinder)
+  def bind(binder: ServiceBinder): Unit = {
+    binder.bind(classOf[RpcClient], classOf[NettyRpcClientImpl]).withId("RpcClient")
   }
 
   @ServiceId("RpcClientMessageHandler")

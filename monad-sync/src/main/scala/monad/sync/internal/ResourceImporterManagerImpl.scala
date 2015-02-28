@@ -4,6 +4,7 @@ package monad.sync.internal
 
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.PostConstruct
 
 import com.google.protobuf.ByteString
 import com.lmax.disruptor.dsl.Disruptor
@@ -15,12 +16,12 @@ import monad.face.model.ResourceDefinition
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
 import monad.jni.services.gen.NoSQLOptions
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.{LoggerSupport, MonadUtils, ServiceLifecycle}
+import monad.support.services.{LoggerSupport, MonadUtils}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.ObjectLocator
-import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
+import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 
 /**
  * 资源的导入
@@ -34,8 +35,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
                                   syncConfig: SyncConfigSupport)
   extends ResourceImporterManager
   with AbstractResourceDefinitionLoaderListener[ResourceImporter]
-  with LoggerSupport
-  with ServiceLifecycle {
+  with LoggerSupport {
   private val EVENT_FACTORY = new EventFactory[DataEvent] {
     def newInstance() = new DataEvent()
   }
@@ -46,7 +46,8 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
   /**
    * 启动对象实例
    */
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     dbReader = Executors.newFixedThreadPool(syncConfig.sync.db_thread_num + 1, new ThreadFactory {
       private val seq = new AtomicInteger(0)
 
@@ -71,6 +72,9 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
       nosqlOptions.setLog_keeped_num(syncConfig.sync.binlogLength)
     }
 
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
   }
 
   /**

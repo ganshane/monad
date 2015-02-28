@@ -26,7 +26,6 @@ object MonadApiApp
     logger.info("Starting api server ....")
     val classes = List[Class[_]](
       Class.forName("monad.core.LocalMonadCoreModule"),
-      Class.forName("monad.core.ServiceLifecycleModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcClientModule"),
       //Class.forName("monad.core.ProtobufProcessorModule"),

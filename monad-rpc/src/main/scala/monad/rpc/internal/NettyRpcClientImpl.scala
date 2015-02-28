@@ -6,7 +6,6 @@ import java.net.InetSocketAddress
 import java.util.concurrent._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReferenceArray}
 import java.util.concurrent.locks.ReentrantLock
-import javax.annotation.PostConstruct
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
@@ -14,6 +13,7 @@ import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, ServiceWaitingInitSupport}
+import org.apache.tapestry5.ioc.annotations.PostInjection
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
@@ -22,9 +22,9 @@ import org.jboss.netty.channel.socket.nio.{NioClientSocketChannelFactory, NioWor
 /**
  * implements rpc client using netty framework
  */
-class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
-                         val registry: ExtensionRegistry,
-                         val rpcServerFinder: RpcServerFinder)
+class NettyRpcClientImpl(handler: RpcClientMessageHandler,
+                         registry: ExtensionRegistry,
+                         rpcServerFinder: RpcServerFinder)
   extends RpcClient
   with NettyProtobufPipelineSupport
   with ProtobufCommandHelper
@@ -60,16 +60,6 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     }
   }
 
-  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
-    var channelGroup = channels.get(serverLocation)
-
-    if (channelGroup == null) {
-      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
-      channelGroup = channels.get(serverLocation)
-    }
-    channelGroup.writeMessage(message)
-  }
-
   def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand] = {
     val serverLocationOpt = rpcServerFinder.find(serverPath)
     val future = AsyncTaskMonitor.createBlockTask()
@@ -94,6 +84,16 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     }
 
     future
+  }
+
+  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
+    var channelGroup = channels.get(serverLocation)
+
+    if (channelGroup == null) {
+      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
+      channelGroup = channels.get(serverLocation)
+    }
+    channelGroup.writeMessage(message)
   }
 
   override def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture] = {
@@ -134,7 +134,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   /**
    * 启动服务
    */
-  @PostConstruct
+  @PostInjection
   def start(shutdownHub: RegistryShutdownHub): Unit = {
     throwExceptionIfServiceInitialized()
 

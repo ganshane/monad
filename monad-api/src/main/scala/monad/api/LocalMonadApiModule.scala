@@ -10,14 +10,11 @@ package monad.api
 import com.google.protobuf.ExtensionRegistry
 import monad.api.internal._
 import monad.api.services._
-import monad.core.services.ServiceLifecycleHub
-import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
 import monad.face.services.{ResourceDefinitionLoaderListener, RpcSearcherFacade}
 import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto}
 import monad.rpc.services.ProtobufExtensionRegistryConfiger
-import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, RequestFilter, RequestHandler}
@@ -63,11 +60,6 @@ object LocalMonadApiModule {
   @Contribute(classOf[RequestHandler])
   def provideResourceRequest(configuration: OrderedConfiguration[RequestFilter]) {
     configuration.addInstance("resourceRequest", classOf[ResourceRequestFilter])
-  }
-
-  @Contribute(classOf[ServiceLifecycleHub])
-  def provideMemcached(configuration: OrderedConfiguration[ServiceLifecycle], memcache: MemcachedClient) {
-    configuration.add("MemcachedClient", memcache, "after:" + MonadFaceConstants.LIFE_RESOURCES)
   }
 
   @Contribute(classOf[ComponentEventResultProcessor[_]])

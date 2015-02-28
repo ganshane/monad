@@ -4,12 +4,15 @@ package monad.cloud.internal
 
 import java.io.File
 import java.util.Properties
+import javax.annotation.PostConstruct
 
 import monad.cloud.config.MonadCloudConfig
 import monad.cloud.services.CloudServer
 import monad.core.MonadCoreConstants
 import monad.support.services.{LoggerSupport, ZookeeperTemplate}
 import org.apache.commons.io.FileUtils
+import org.apache.tapestry5.ioc.annotations.EagerLoad
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.server._
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.quorum.{QuorumPeer, QuorumPeerConfig}
@@ -20,13 +23,15 @@ import scala.collection.JavaConversions._
  * 集群服务器
  * @author jcai
  */
+@EagerLoad
 class CloudServerImpl(clusterConfig: MonadCloudConfig)
   extends CloudServer
   with LoggerSupport {
 
   private var server: Stopper = null
 
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     val config = readConfig(clusterConfig)
     // Start and schedule the the purge task
     val purgeMgr = new DatadirCleanupManager(config
@@ -56,6 +61,11 @@ class CloudServerImpl(clusterConfig: MonadCloudConfig)
         */
       }
     setupMonadDirectory()
+
+
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
   }
 
   private def startStandardServer(config: ServerConfig) = new Stopper {

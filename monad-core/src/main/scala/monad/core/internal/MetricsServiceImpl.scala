@@ -3,6 +3,7 @@
 package monad.core.internal
 
 import java.util.concurrent.TimeUnit
+import javax.annotation.PostConstruct
 
 import com.codahale.metrics._
 import monad.core.services.MetricsService
@@ -65,16 +66,12 @@ class MetricsServiceImpl(periodicExecutor: PeriodicExecutor)
     }
   }
 
-  /**
-   * 服务关闭
-   */
-  override def shutdown(): Unit = {
-  }
 
   /**
    * 启动服务
    */
-  override def start(): Unit = {
+  @PostConstruct
+  def start(): Unit = {
     /*
     val jolokiaConfig = new JvmAgentConfig("")
     val jolokia = new JolokiaServer(jolokiaConfig,false)

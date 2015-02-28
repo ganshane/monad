@@ -4,10 +4,7 @@ package monad.cloud
 
 import monad.cloud.internal.CloudServerImpl
 import monad.cloud.services.CloudServer
-import monad.core.services.ServiceLifecycleHub
-import monad.support.services.ServiceLifecycle
-import org.apache.tapestry5.ioc.annotations.Contribute
-import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
+import org.apache.tapestry5.ioc.ServiceBinder
 
 /**
  * local cloud module
@@ -16,11 +13,5 @@ import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
 object LocalCloudModule {
   def bind(binder: ServiceBinder) {
     binder.bind(classOf[CloudServer], classOf[CloudServerImpl]).withId("CloudServer")
-  }
-
-  @Contribute(classOf[ServiceLifecycleHub])
-  def provideObjectLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
-                             cloudServer: CloudServer) {
-    configuration.add("cloud", cloudServer, "before:*")
   }
 }

@@ -4,6 +4,7 @@ package monad.node.app
 
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
+import monad.jni.services.JniLoader
 import monad.node.MonadNodeModule
 import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import org.slf4j.LoggerFactory
@@ -21,6 +22,8 @@ object MonadNodeApp
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadNodeModule.buildMonadNodeConfig(serverHome)
     configLogger(config.logFile, "NODE")
+    //预先加载JNI文件
+    JniLoader.loadJniLibrary(serverHome, config.logFile)
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting node server ....")
@@ -29,7 +32,6 @@ object MonadNodeApp
       Class.forName("monad.face.ResourceModule"),
       Class.forName("monad.face.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
-      Class.forName("monad.core.ServiceLifecycleModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcClientModule"),
       Class.forName("monad.rpc.LocalRpcServerModule"),

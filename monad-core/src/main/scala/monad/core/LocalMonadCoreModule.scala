@@ -7,7 +7,6 @@ import monad.core.internal._
 import monad.core.services._
 import monad.rpc.internal.RpcServerFinderWithZk
 import monad.rpc.services.RpcServerFinder
-import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Match}
 import org.apache.tapestry5.ioc.services.{FactoryDefaults, ServiceOverride, SymbolProvider}
@@ -41,29 +40,6 @@ object LocalMonadCoreModule {
     new LocalSimpleStore(config.localStoreDir)
   }
 
-  /*
-  def buildZookeeperTemplate(config: ZkClientConfigSupport,periodExecutor:PeriodicExecutor): ZookeeperTemplate = {
-    val rootZk = new ZookeeperTemplate(config.zk.address)
-    rootZk.start()
-
-    rootZk.createPersistPath(config.zk.root + MonadCoreConstants.MACHINES)
-    rootZk.createPersistPath(config.zk.root + MonadCoreConstants.HEARTBEATS)
-    rootZk.createPersistPath(config.zk.root + MonadCoreConstants.ERRORS)
-
-    rootZk.shutdown()
-    val zk = new ZookeeperTemplate(config.zk.address, Some(config.zk.root), config.zk.timeoutInMills)
-    zk.startCheckFailed(periodExecutor)
-
-    zk
-  }
-  */
-
-  @Contribute(classOf[ServiceLifecycleHub])
-  def provideZk(configuration: OrderedConfiguration[ServiceLifecycle],
-                @Local heartbeat: MachineHeartbeat,
-                @Local metricsService: MetricsService) {
-    configuration.add("metrics", metricsService, "before:*")
-  }
 
   @Contribute(classOf[SymbolProvider])
   @FactoryDefaults

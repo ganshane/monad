@@ -6,7 +6,6 @@ import java.util.concurrent.Future
 
 import monad.face.services.ResourceDefinitionLoaderListener
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.ServiceLifecycle
 import monad.sync.internal.ResourceImporter
 
 
@@ -15,7 +14,7 @@ import monad.sync.internal.ResourceImporter
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-20
  */
-trait ResourceImporterManager extends ResourceDefinitionLoaderListener with ServiceLifecycle {
+trait ResourceImporterManager extends ResourceDefinitionLoaderListener {
   def fetchSyncData(request: SyncRequest): SyncResponse
 
   def importData(resourceName: String,

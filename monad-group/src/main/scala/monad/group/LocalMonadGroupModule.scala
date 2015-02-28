@@ -2,13 +2,10 @@
 // site: http://www.ganshane.com
 package monad.group
 
-import monad.core.services.ServiceLifecycleHub
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.group.internal.local.LocalGroupServiceApiImpl
 import monad.group.internal.{MonadGroupManager, MonadGroupUpNotifier}
-import monad.support.services.ServiceLifecycle
-import org.apache.tapestry5.ioc.annotations.Contribute
-import org.apache.tapestry5.ioc.{Configuration, OrderedConfiguration, ServiceBinder}
+import org.apache.tapestry5.ioc.{Configuration, ServiceBinder}
 import org.apache.tapestry5.services.LibraryMapping
 import org.slf4j.LoggerFactory
 
@@ -30,11 +27,4 @@ object LocalMonadGroupModule {
     configuration.add(new LibraryMapping("group", "monad.group"))
   }
 
-  @Contribute(classOf[ServiceLifecycleHub])
-  def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
-                              monadGroupUpNotifier: MonadGroupUpNotifier,
-                              groupZookeeperTemplate: GroupZookeeperTemplate) {
-    //configuration.add(MonadFaceConstants.LIFE_GROUP_NOTIFIER, monadGroupUpNotifier, "after:" + MonadFaceConstants.LIFE_CLOUD)
-    //configuration.add(MonadFaceConstants.LIFE_GROUP_ZOOKEEPER, groupZookeeperTemplate, "after:" + MonadFaceConstants.LIFE_GROUP_NOTIFIER)
-  }
 }

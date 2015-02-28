@@ -3,12 +3,9 @@
 package monad.sync
 
 import com.google.protobuf.ExtensionRegistry
-import monad.core.services.ServiceLifecycleHub
-import monad.face.MonadFaceConstants
 import monad.face.services.ResourceDefinitionLoaderListener
 import monad.protocol.internal.InternalSyncProto
 import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
-import monad.support.services.ServiceLifecycle
 import monad.sync.internal.{ResourceImporterManagerImpl, SyncMessageFilter, SyncRpcServerListener}
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.annotations.Contribute
@@ -28,15 +25,6 @@ object LocalMonadSyncModule {
                                                configuration: OrderedConfiguration[ResourceDefinitionLoaderListener],
                                                resourceImporterManager: ResourceImporterManager) {
     configuration.add("importer", resourceImporterManager, "after:node")
-  }
-
-  @Contribute(classOf[ServiceLifecycleHub])
-  def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
-                              importerManager: ResourceImporterManager) {
-    configuration.add(MonadFaceConstants.LIFE_IMPORTER, importerManager,
-      "after:" + MonadFaceConstants.LIFE_INDEXER,
-      "after:" + MonadFaceConstants.LIFE_GROUP_ZOOKEEPER
-    )
   }
 
   @Contribute(classOf[RpcServerMessageHandler])

@@ -4,6 +4,7 @@ package monad.node.internal
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
+import javax.annotation.PostConstruct
 
 import com.google.gson.JsonObject
 import com.lmax.disruptor.EventFactory
@@ -20,6 +21,7 @@ import monad.rpc.services.RpcClient
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.lucene.store.RateLimiter
 import org.apache.lucene.store.RateLimiter.SimpleRateLimiter
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 
 /**
@@ -60,7 +62,8 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   /**
    * 启动对象实例
    */
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     //lock memory
     if (System.getProperty("mlockall", "false") == "true")
       MemoryLocker.lockMemory()
@@ -72,6 +75,20 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     TimeOutCollector.start()
 
     startSynchronizer(MonadFaceConstants.MACHINE_SYNC, periodicExecutor, rpcClient)
+
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
+  }
+
+  /**
+   * 关闭对象
+   */
+  def shutdown() {
+    logger.info("closing resource index manager ....")
+    shutdownSynchronizer()
+    TimeOutCollector.shutdown()
+    disruptor.shutdown(2, TimeUnit.SECONDS)
   }
 
   override def getPartitionId: Short = {
@@ -81,7 +98,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   override def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport] = {
     directGetObject(resourceName).nosqlOpt()
   }
-
 
   override def afterFinishSync(): Unit = {
     getResourceList.foreach { r =>
@@ -100,16 +116,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
 
   override def getResourceList: Array[String] = {
     objects.keySet().toArray(new Array[String](objects.size()))
-  }
-
-  /**
-   * 关闭对象
-   */
-  def shutdown() {
-    logger.info("closing resource index manager ....")
-    shutdownSynchronizer()
-    TimeOutCollector.shutdown()
-    disruptor.shutdown(2, TimeUnit.SECONDS)
   }
 
   def getDisruptor = disruptor
