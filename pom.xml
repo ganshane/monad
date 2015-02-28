@@ -9,7 +9,7 @@
   <groupId>com.ganshane.monad</groupId>
   <artifactId>monad-project</artifactId>
   <packaging>pom</packaging>
-  <version>dev-SNAPSHOT</version>
+  <version>5.0.1</version>
   <name>Monad Data Process Engine</name>
   <modules>
     <module>monad-api</module>
