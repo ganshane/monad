@@ -54,6 +54,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
       def newThread(p1: Runnable) = {
         val t = new Thread(p1)
         t.setName("sync-%s".format(seq.incrementAndGet()))
+        t.setDaemon(true)
 
         t
       }

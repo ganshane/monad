@@ -32,6 +32,20 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
   with NettyProtobufPipelineSupport
   with ServerChannelManagerSupport
   with LoggerSupport {
+  //一个主IO，2个worker
+  val ioThread = rpcBindSupport.rpc.ioThread
+  val workerThread = rpcBindSupport.rpc.workerThread
+  val executor = Executors.newFixedThreadPool(ioThread + workerThread, new ThreadFactory {
+    private val seq = new AtomicInteger(0)
+
+    override def newThread(r: Runnable): Thread = {
+      val thread = new Thread(r)
+      thread.setName("rpc-server-%s".format(seq.incrementAndGet()))
+      thread.setDaemon(true)
+
+      thread
+    }
+  })
   private val channels = new DefaultChannelGroup("rpc-server")
   private var channelFactory: NioServerSocketChannelFactory = _
   private var bootstrap: ServerBootstrap = _
@@ -41,20 +55,6 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
    */
   @PostConstruct
   def start(hub: RegistryShutdownHub) {
-    //一个主IO，2个worker
-    val ioThread = rpcBindSupport.rpc.ioThread
-    val workerThread = rpcBindSupport.rpc.workerThread
-    val executor = Executors.newFixedThreadPool(ioThread + workerThread, new ThreadFactory {
-      private val seq = new AtomicInteger(0)
-
-      override def newThread(r: Runnable): Thread = {
-        val thread = new Thread(r)
-        thread.setName("rpc-server-%s".format(seq.incrementAndGet()))
-        thread.setDaemon(true)
-
-        thread
-      }
-    })
 
     channelFactory = new NioServerSocketChannelFactory(executor, executor, workerThread)
     bootstrap = new ServerBootstrap(channelFactory)
@@ -87,6 +87,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
       channel
     } catch {
       case e: Throwable =>
+        shutdown()
         throw MonadException.wrap(e)
     }
   }
@@ -98,6 +99,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     closeAllChannels()
     channels.close().awaitUninterruptibly()
     channelFactory.releaseExternalResources()
+    MonadUtils.shutdownExecutor(executor, "rpc server executor service")
     listener.afterStop()
   }
 
