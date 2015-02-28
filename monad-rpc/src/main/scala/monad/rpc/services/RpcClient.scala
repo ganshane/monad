@@ -7,14 +7,13 @@ import java.util.concurrent.Future
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
-import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations.UsesOrderedConfiguration
 import org.jboss.netty.channel.{Channel, ChannelFuture}
 
 /**
  * rpc client
  */
-trait RpcClient extends ServiceLifecycle {
+trait RpcClient {
 
   /**
    * send message to remote server

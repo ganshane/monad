@@ -20,7 +20,7 @@ import monad.rpc.services.RpcClient
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.lucene.store.RateLimiter
 import org.apache.lucene.store.RateLimiter.SimpleRateLimiter
-import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
+import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 
 /**
  * 实现资源索引管理
@@ -51,7 +51,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
       t
     }
   })
-  private var job: PeriodicJob = _
   private var rateLimiter: Option[RateLimiter] = None
 
   if (indexConfig.index.maxBytesPerSec > 0) {

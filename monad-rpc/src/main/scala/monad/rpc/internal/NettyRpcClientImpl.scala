@@ -6,6 +6,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReferenceArray}
 import java.util.concurrent.locks.ReentrantLock
+import javax.annotation.PostConstruct
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
@@ -13,6 +14,7 @@ import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, ServiceWaitingInitSupport}
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.{NioClientSocketChannelFactory, NioWorkerPool}
@@ -28,7 +30,6 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   with ProtobufCommandHelper
   with ServiceWaitingInitSupport
   with LoggerSupport {
-  private val taskIdSeq = new AtomicLong(0)
   private val executor = Executors.newFixedThreadPool(6, new ThreadFactory {
     private val seq = new AtomicInteger(0)
 
@@ -49,7 +50,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
 
   override def writeMessage(serverPath: String, message: BaseCommand): Option[ChannelFuture] = {
     val serverLocationOpt = rpcServerFinder.find(serverPath)
-    val taskId = taskIdSeq.incrementAndGet()
+    val taskId = AsyncTaskMonitor.produceTaskId
     val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
     serverLocationOpt match {
       case Some(serverLocation) =>
@@ -59,11 +60,20 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     }
   }
 
+  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
+    var channelGroup = channels.get(serverLocation)
+
+    if (channelGroup == null) {
+      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
+      channelGroup = channels.get(serverLocation)
+    }
+    channelGroup.writeMessage(message)
+  }
+
   def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand] = {
     val serverLocationOpt = rpcServerFinder.find(serverPath)
-    val taskId = taskIdSeq.incrementAndGet()
-    val future = MultiTaskHandler.createBlockTask(taskId)
-    val messageWithTaskId = wrap(taskId, extension, value)
+    val future = AsyncTaskMonitor.createBlockTask()
+    val messageWithTaskId = wrap(future.taskId, extension, value)
     serverLocationOpt match {
       case Some(serverLocation) =>
         val channelFutureOpt = writeMessage(serverLocation, messageWithTaskId)
@@ -91,7 +101,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   }
 
   override def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture] = {
-    val taskId = taskIdSeq.incrementAndGet()
+    val taskId = AsyncTaskMonitor.produceTaskId
     val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
     Some(channel.write(messageWithTaskId))
   }
@@ -99,12 +109,10 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
   def writeMessageToMultiServer[T, R](serverPathPrefix: String, rpcMerger: RpcClientMerger[R],
                                       extension: GeneratedExtension[BaseCommand, T], value: T) = {
     val servers = rpcServerFinder.findMulti(serverPathPrefix)
-    val taskId = taskIdSeq.incrementAndGet()
-    val future = MultiTaskHandler.createMergerTask(taskId, servers.length, rpcMerger)
-    val message = wrap(extension, value)
-    val messageWithTaskId = message.toBuilder.setTaskId(taskId).build()
+    val future = AsyncTaskMonitor.createMergerTask(servers.length, rpcMerger)
+    val message = wrap(future.taskId, extension, value)
     servers.foreach { s =>
-      val channelFutureOpt = writeMessage(s, messageWithTaskId)
+      val channelFutureOpt = writeMessage(s, message)
       channelFutureOpt match {
         case Some(f) =>
           //当在客户端写入失败，则应该减少计数器,TODO 处理服务器端错误或者Channel关闭
@@ -123,20 +131,11 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     future
   }
 
-  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
-    var channelGroup = channels.get(serverLocation)
-
-    if (channelGroup == null) {
-      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
-      channelGroup = channels.get(serverLocation)
-    }
-    channelGroup.writeMessage(message)
-  }
-
   /**
    * 启动服务
    */
-  override def start(): Unit = {
+  @PostConstruct
+  def start(shutdownHub: RegistryShutdownHub): Unit = {
     throwExceptionIfServiceInitialized()
 
     channelFactory = new NioClientSocketChannelFactory(executor, 1, new NioWorkerPool(executor, 5))
@@ -158,12 +157,18 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     })
 
     serviceInitialized()
+
+    shutdownHub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = {
+        shutdown()
+      }
+    })
   }
 
   /**
    * 服务关闭
    */
-  override def shutdown(): Unit = {
+  def shutdown(): Unit = {
     closeClientChannels()
     channelFactory.releaseExternalResources()
     executor.shutdown()
@@ -181,7 +186,7 @@ class NettyRpcClientImpl(val handler: RpcClientMessageHandler,
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
       val command = e.getMessage.asInstanceOf[BaseCommand]
       //针对多个任务异步执行需要merger的支持
-      val task = MultiTaskHandler.findTask(command.getTaskId)
+      val task = AsyncTaskMonitor.findTask(command.getTaskId)
       if (task != null) {
         try {
           task.handle(command, e.getChannel)

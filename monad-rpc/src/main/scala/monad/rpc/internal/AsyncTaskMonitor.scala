@@ -2,6 +2,7 @@
 // site: http://www.ganshane.com
 package monad.rpc.internal
 
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, CountDownLatch, Future, TimeUnit}
 
 import monad.protocol.internal.CommandProto.BaseCommand
@@ -13,13 +14,20 @@ import org.jboss.netty.channel.Channel
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-26
  */
-object MultiTaskHandler {
+object AsyncTaskMonitor {
   private val tasks = new ConcurrentHashMap[Long, InternalRequestMerger[_]]()
+  private val taskIdSeq = new AtomicLong(0)
 
+  /**
+   * 发现任务
+   */
   def findTask(taskId: Long) = tasks.get(taskId)
 
-  def createBlockTask(taskId: Long) = {
-    createMergerTask(taskId, 1, new RpcClientMerger[BaseCommand] {
+  /**
+   * 创建一个阻塞任务的Future对象
+   */
+  def createBlockTask() = {
+    createMergerTask(1, new RpcClientMerger[BaseCommand] {
       private var command: BaseCommand = _
 
       /**
@@ -39,7 +47,8 @@ object MultiTaskHandler {
     })
   }
 
-  def createMergerTask[T](taskId: Long, serverSize: Int, rpcMerger: RpcClientMerger[T]) = {
+  def createMergerTask[T](serverSize: Int, rpcMerger: RpcClientMerger[T]) = {
+    val taskId = produceTaskId
     val future = new InternalRequestMerger[T](taskId, rpcMerger)
     tasks.put(taskId, future)
     future.startRequest(taskId, serverSize)
@@ -47,7 +56,12 @@ object MultiTaskHandler {
     future
   }
 
-  private[internal] class InternalRequestMerger[T](taskId: Long, rpcMerger: RpcClientMerger[T]) extends Future[T] {
+  /**
+   * 产生一个任务ID
+   */
+  def produceTaskId = taskIdSeq.incrementAndGet()
+
+  private[internal] class InternalRequestMerger[T](val taskId: Long, rpcMerger: RpcClientMerger[T]) extends Future[T] {
     private var cancelled = false
     private var countDownLatch: CountDownLatch = _
 
