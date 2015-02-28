@@ -5,6 +5,7 @@ package monad.rpc.internal
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
+import javax.annotation.PostConstruct
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
@@ -12,6 +13,8 @@ import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.config.RpcBindSupport
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
+import org.apache.tapestry5.ioc.annotations.EagerLoad
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.group.DefaultChannelGroup
@@ -20,6 +23,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 /**
  * rpc server based on netty
  */
+@EagerLoad
 class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
                          messageHandler: RpcServerMessageHandler,
                          listener: RpcServerListener,
@@ -35,7 +39,8 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
   /**
    * 启动对象实例
    */
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     //一个主IO，2个worker
     val ioThread = rpcBindSupport.rpc.ioThread
     val workerThread = rpcBindSupport.rpc.workerThread
@@ -67,6 +72,10 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     })
     openOnce()
     listener.afterStart()
+
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
   }
 
   private def openOnce(): Channel = {

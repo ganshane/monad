@@ -7,11 +7,13 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.locks.LockSupport
 
 import org.apache.commons.io.FileUtils
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.data.Stat
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.{ServerCnxnFactory, ServerConfig, ZooKeeperServer}
 import org.junit._
+import org.mockito.Mockito
 import org.slf4j.LoggerFactory
 
 
@@ -27,7 +29,7 @@ class ZookeeperTemplateTest {
   @Test
   def test_fail_create_path() {
     val zookeeper = new ZookeeperTemplate("localhost:2888")
-    zookeeper.start()
+    start(zookeeper)
 
     zookeeper.testCreateFailedEphemeral("/c")
 
@@ -43,7 +45,7 @@ class ZookeeperTemplateTest {
   @Test
   def test_session_timeout() {
     val zookeeper = new ZookeeperTemplate("localhost:2888", sessionTimeout = 2000)
-    zookeeper.start()
+    start(zookeeper)
 
     zookeeper.createPersistPath("/c", Some("asdf".getBytes("UTF-8")))
     zookeeper.createEphemeralPath("/ca", Some("asdf".getBytes("UTF-8")))
@@ -62,7 +64,7 @@ class ZookeeperTemplateTest {
   @Test
   def test_watch_children() {
     val zookeeper = new ZookeeperTemplate("localhost:2888")
-    zookeeper.start()
+    start(zookeeper)
 
     val assignLatch = new CountDownLatch(1)
     @volatile
@@ -116,7 +118,7 @@ class ZookeeperTemplateTest {
   @Test
   def test_watch() {
     val zookeeper = new ZookeeperTemplate("localhost:2888")
-    zookeeper.start()
+    start(zookeeper)
 
     zookeeper.createPersistPath("/c", Some("asdf".getBytes("UTF-8")))
     var a = 0
@@ -165,10 +167,14 @@ class ZookeeperTemplateTest {
     zookeeper.shutdown()
   }
 
+  private def start(zk: ZookeeperTemplate): Unit = {
+    zk.start(Mockito.mock(classOf[RegistryShutdownHub]))
+  }
+
   @Test
   def test_create_path() {
     val zookeeper = new ZookeeperTemplate("localhost:2888")
-    zookeeper.start()
+    start(zookeeper)
     Assert.assertTrue(zookeeper.getData("/x").isEmpty)
 
     Assert.assertTrue(zookeeper.stat("/a/b/c/d").isEmpty)
@@ -202,7 +208,8 @@ class ZookeeperTemplateTest {
   @Test
   def test_stat() {
     val zookeeper = new ZookeeperTemplate("localhost:2888")
-    zookeeper.start()
+    start(zookeeper)
+
     val stat = new Stat
     stat.setVersion(-1)
     var data = zookeeper.getData("/r-1", Some(stat))
@@ -229,12 +236,12 @@ class ZookeeperTemplateTest {
   @Test
   def test_children() {
     val root = new ZookeeperTemplate("127.0.0.1:2888")
-    root.start()
+    start(root)
 
     root.createPersistPath("/x")
     root.shutdown()
     val zookeeper = new ZookeeperTemplate("127.0.0.1:2888", Some("/x"))
-    zookeeper.start()
+    start(zookeeper)
 
     zookeeper.createPersistPath("/d/a")
     zookeeper.createPersistPath("/d/b")

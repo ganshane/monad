@@ -3,18 +3,22 @@
 package monad.core.internal
 
 import java.util.UUID
+import javax.annotation.PostConstruct
 
 import monad.core.MonadCoreConstants
 import monad.core.config.HeartbeatConfigSupport
 import monad.core.services.{CronScheduleWithStartModel, MachineHeartbeat, StartAtOnce}
 import monad.rpc.config.RpcBindSupport
 import monad.support.services.{MonadUtils, ZookeeperTemplate}
+import org.apache.tapestry5.ioc.annotations.EagerLoad
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.apache.tapestry5.json.JSONObject
 
 /**
  * machine heartbeat
  */
+@EagerLoad
 class MachineHeartbeatImpl(heartbeatConfigSupport: HeartbeatConfigSupport,
                            zk: ZookeeperTemplate,
                            store: LocalSimpleStore,
@@ -45,16 +49,10 @@ class MachineHeartbeatImpl(heartbeatConfigSupport: HeartbeatConfigSupport,
   }
 
   /**
-   * 服务关闭
-   */
-  override def shutdown(): Unit = {
-    jobOpt.foreach(_.cancel())
-  }
-
-  /**
    * 启动服务
    */
-  override def start(): Unit = {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub): Unit = {
     /*
     //测试十次，每次100毫秒，看是否存在
     val r = 0 until 10 forall {case i=>
@@ -82,6 +80,17 @@ class MachineHeartbeatImpl(heartbeatConfigSupport: HeartbeatConfigSupport,
       }
     )
     jobOpt = Some(job)
+
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
+  }
+
+  /**
+   * 服务关闭
+   */
+  def shutdown(): Unit = {
+    jobOpt.foreach(_.cancel())
   }
 
   private def update() {

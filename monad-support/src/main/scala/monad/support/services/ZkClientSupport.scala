@@ -3,16 +3,18 @@
 package monad.support.services
 
 import java.util.concurrent.locks.ReentrantLock
+import javax.annotation.PostConstruct
 
 import org.apache.curator.framework.state.{ConnectionState, ConnectionStateListener}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.RetryNTimes
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.{IntervalSchedule, PeriodicExecutor}
 
 /**
  * zookeeper的客户端
  */
-trait ZkClientSupport extends ServiceLifecycle with ServiceWaitingInitSupport {
+trait ZkClientSupport extends ServiceWaitingInitSupport {
   this: ZookeeperTemplate =>
 
   private final val lock = new ReentrantLock()
@@ -33,7 +35,8 @@ trait ZkClientSupport extends ServiceLifecycle with ServiceWaitingInitSupport {
    * 启动对象实例
    */
 
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     throwExceptionIfServiceInitialized()
 
     val builder = CuratorFrameworkFactory.builder()
@@ -68,6 +71,12 @@ trait ZkClientSupport extends ServiceLifecycle with ServiceWaitingInitSupport {
     client = Some(tmpClient)
 
     serviceInitialized()
+
+    if (hub != null) {
+      hub.addRegistryShutdownListener(new Runnable {
+        override def run(): Unit = shutdown()
+      })
+    }
   }
 
   private def doStateChanged(state: ConnectionState) {
@@ -85,6 +94,14 @@ trait ZkClientSupport extends ServiceLifecycle with ServiceWaitingInitSupport {
 
       //connectedFun.apply(this)
     }
+  }
+
+  /**
+   * 关闭对象
+   */
+  def shutdown() {
+    debug("closing zk client....")
+    client.foreach(_.close)
   }
 
   /**
@@ -109,14 +126,6 @@ trait ZkClientSupport extends ServiceLifecycle with ServiceWaitingInitSupport {
     retryFailedEphemeralNodes()
     retryFailedWatchNodeData()
     retryFailedChildrenWatcher()
-  }
-
-  /**
-   * 关闭对象
-   */
-  def shutdown() {
-    debug("closing zk client....")
-    client.foreach(_.close)
   }
 
   sealed class WatchMode

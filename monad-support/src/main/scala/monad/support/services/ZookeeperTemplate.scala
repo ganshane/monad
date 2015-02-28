@@ -14,9 +14,8 @@ import org.apache.zookeeper.{CreateMode, WatchedEvent, Watcher, ZooKeeper}
 class ZookeeperTemplate(val address: String,
                         val basePath: Option[String] = None,
                         val sessionTimeout: Int = 6000)
-  extends ServiceLifecycle
+  extends ZkClientSupport
   with LoggerSupport
-  with ZkClientSupport
   with ZkDeletePathSupport
   with ZkPathCreatorSupport
   with ZkNodeDataSupport

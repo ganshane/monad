@@ -3,7 +3,6 @@
 package monad.face.services
 
 import monad.face.model.ResourceDefinition
-import monad.support.services.ServiceLifecycle
 
 /**
  * 加载所有资源定义
@@ -11,7 +10,7 @@ import monad.support.services.ServiceLifecycle
  * @see ResourceDefinition
  * @see ResourceDefinitionLoaderListener
  */
-trait ResourceDefinitionLoader extends ServiceLifecycle{
+trait ResourceDefinitionLoader {
     /**
      * 得到所有的资源定义
      * @return 资源定义集合

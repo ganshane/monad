@@ -5,9 +5,9 @@ package monad.rpc
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.internal.NettyRpcServerImpl
 import monad.rpc.services._
-import org.apache.tapestry5.ioc.annotations.{Local, ServiceId}
-import org.apache.tapestry5.ioc.services.{ChainBuilder, PipelineBuilder, RegistryShutdownHub}
-import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
+import org.apache.tapestry5.ioc.ServiceBinder
+import org.apache.tapestry5.ioc.annotations.ServiceId
+import org.apache.tapestry5.ioc.services.{ChainBuilder, PipelineBuilder}
 import org.slf4j.Logger
 
 /**
@@ -21,17 +21,6 @@ object LocalRpcServerModule {
 
   def buildRpcServerListener(chainBuilder: ChainBuilder, configuration: java.util.List[RpcServerListener]): RpcServerListener = {
     chainBuilder.build(classOf[RpcServerListener], configuration)
-  }
-
-  def contributeRegistryStartup(configuration: OrderedConfiguration[Runnable],
-                                @Local rpcServer: RpcServer,
-                                registryShutdownHub: RegistryShutdownHub) {
-    rpcServer.start()
-    registryShutdownHub.addRegistryWillShutdownListener(new Runnable {
-      def run() {
-        rpcServer.shutdown()
-      }
-    })
   }
 
   @ServiceId("RpcServerMessageHandler")

@@ -2,13 +2,11 @@
 // site: http://www.ganshane.com
 package monad.face
 
-import monad.core.services.ServiceLifecycleHub
 import monad.face.internal.remote.RemoteGroupServiceApiImpl
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.support.internal.HttpRestClientImpl
-import monad.support.services.{HttpRestClient, ServiceLifecycle}
-import org.apache.tapestry5.ioc.annotations.Contribute
-import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
+import monad.support.services.HttpRestClient
+import org.apache.tapestry5.ioc.ServiceBinder
 
 /**
  *
@@ -21,6 +19,7 @@ object RemoteGroupModule {
     binder.bind(classOf[GroupServerApi], classOf[RemoteGroupServiceApiImpl]).withId("GroupServerApi")
   }
 
+  /*
   @Contribute(classOf[ServiceLifecycleHub])
   def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
                               groupZookeeperTemplate: GroupZookeeperTemplate) {
@@ -29,4 +28,5 @@ object RemoteGroupModule {
       "after:" + MonadFaceConstants.LIFE_CLOUD
     )
   }
+  */
 }

@@ -15,7 +15,7 @@ import monad.face.model.ResourceDefinition
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
 import monad.jni.services.gen.NoSQLOptions
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.ServiceLifecycle
+import monad.support.services.{MonadUtils, ServiceLifecycle}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.ObjectLocator
@@ -76,9 +76,9 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
    * 关闭对象
    */
   def shutdown() {
-    dbReader.shutdownNow()
     disruptor.shutdown()
-    dbReader.awaitTermination(4, TimeUnit.SECONDS)
+
+    MonadUtils.shutdownExecutor(dbReader, "resource importer manager")
   }
 
 

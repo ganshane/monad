@@ -8,7 +8,7 @@ import monad.face.services.{ResourceDefinitionLoader, ResourceDefinitionLoaderLi
 import monad.support.services.ServiceLifecycle
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Marker}
 import org.apache.tapestry5.ioc.services.ChainBuilder
-import org.apache.tapestry5.ioc.{OrderedConfiguration, ScopeConstants, ServiceBinder}
+import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
 import org.apache.tapestry5.services.Core
 
 /**
@@ -23,7 +23,7 @@ object ResourceModule {
   @Contribute(classOf[ServiceLifecycleHub])
   def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
                               @Local resourceLoader: ResourceDefinitionLoader) {
-    configuration.add(MonadFaceConstants.LIFE_RESOURCES, resourceLoader, "after:*")
+    //configuration.add(MonadFaceConstants.LIFE_RESOURCES, resourceLoader, "after:*")
   }
 
   @Marker(Array(classOf[Core]))

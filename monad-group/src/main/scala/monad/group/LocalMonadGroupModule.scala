@@ -3,8 +3,7 @@
 package monad.group
 
 import monad.core.services.ServiceLifecycleHub
-import monad.face.MonadFaceConstants
-import monad.face.services.{GroupZookeeperTemplate, GroupServerApi}
+import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.group.internal.local.LocalGroupServiceApiImpl
 import monad.group.internal.{MonadGroupManager, MonadGroupUpNotifier}
 import monad.support.services.ServiceLifecycle
@@ -35,7 +34,7 @@ object LocalMonadGroupModule {
   def provideServiceLifecycle(configuration: OrderedConfiguration[ServiceLifecycle],
                               monadGroupUpNotifier: MonadGroupUpNotifier,
                               groupZookeeperTemplate: GroupZookeeperTemplate) {
-    configuration.add(MonadFaceConstants.LIFE_GROUP_NOTIFIER, monadGroupUpNotifier, "after:" + MonadFaceConstants.LIFE_CLOUD)
-    configuration.add(MonadFaceConstants.LIFE_GROUP_ZOOKEEPER, groupZookeeperTemplate, "after:" + MonadFaceConstants.LIFE_GROUP_NOTIFIER)
+    //configuration.add(MonadFaceConstants.LIFE_GROUP_NOTIFIER, monadGroupUpNotifier, "after:" + MonadFaceConstants.LIFE_CLOUD)
+    //configuration.add(MonadFaceConstants.LIFE_GROUP_ZOOKEEPER, groupZookeeperTemplate, "after:" + MonadFaceConstants.LIFE_GROUP_NOTIFIER)
   }
 }

@@ -2,23 +2,24 @@
 // site: http://www.ganshane.com
 package monad.group.internal
 
+import javax.annotation.PostConstruct
+
 import com.google.gson.Gson
 import monad.face.CloudPathConstants
-import monad.face.config.{GroupConfigSupport, CloudServerSupport}
+import monad.face.config.{CloudServerSupport, GroupConfigSupport}
 import monad.face.model.GroupConfig
 import monad.support.MonadSupportConstants
-import monad.support.services.{ServiceLifecycle, ServiceUtils, ZookeeperTemplate}
+import monad.support.services.{ServiceUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.Invokable
-import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
+import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.slf4j.LoggerFactory
 
 /**
  * Cluster的管理类，主要针对Cluster的服务操作
  * @author jcai
  */
-class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicExecutor, parallelExecutor: ParallelExecutor)
-  extends ServiceLifecycle {
+class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicExecutor, parallelExecutor: ParallelExecutor) {
   private val logger = LoggerFactory getLogger getClass
   //create base directory
   private var rootZk: ZookeeperTemplate = null
@@ -26,21 +27,23 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
   /**
    * 启动对象实例
    */
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     if (parallelExecutor == null) {
-      internalStart()
+      internalStart(hub)
     } else {
       parallelExecutor.invoke(new Invokable[Unit] {
         def invoke() {
-          internalStart()
+          internalStart(hub)
         }
       })
     }
+
   }
 
-  private def internalStart() {
+  private def internalStart(hub: RegistryShutdownHub) {
     rootZk = new ZookeeperTemplate(config.asInstanceOf[CloudServerSupport].cloudServer)
-    rootZk.start()
+    rootZk.start(hub)
     rootZk.startCheckFailed(periodExecutor)
     ServiceUtils.runInNoThrow {
       initLive(rootZk)
@@ -75,12 +78,6 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
     rootZk.createPersistPath(groupNodesPath)
   }
 
-  /**
-   * 关闭对象
-   */
-  def shutdown() {
-    if (rootZk != null) rootZk.shutdown()
-  }
 
   def getLiveGroups = {
     rootZk.getChildren(CloudPathConstants.LIVE_PATH).foldLeft(List[GroupConfig]()) { (list, path) =>

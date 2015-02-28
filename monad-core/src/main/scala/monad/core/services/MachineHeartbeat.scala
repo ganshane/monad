@@ -2,12 +2,10 @@
 // site: http://www.ganshane.com
 package monad.core.services
 
-import monad.support.services.ServiceLifecycle
-
 /**
  * machine heart beat
  */
-trait MachineHeartbeat extends ServiceLifecycle {
+trait MachineHeartbeat {
   /**
    * 得到机器的ID
    * @return 机器ID信息

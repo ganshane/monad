@@ -60,12 +60,9 @@ object LocalMonadCoreModule {
 
   @Contribute(classOf[ServiceLifecycleHub])
   def provideZk(configuration: OrderedConfiguration[ServiceLifecycle],
-                //           @Local zk: ZookeeperTemplate,
                 @Local heartbeat: MachineHeartbeat,
                 @Local metricsService: MetricsService) {
     configuration.add("metrics", metricsService, "before:*")
-    //configuration.add("zk", zk, "after:metrics")
-    configuration.add("heartbeat", heartbeat, "after:*")
   }
 
   @Contribute(classOf[SymbolProvider])

@@ -4,13 +4,12 @@ package monad.rpc.services
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.protocol.internal.CommandProto.BaseCommand
-import monad.support.services.ServiceLifecycle
 import org.jboss.netty.channel.ChannelFuture
 
 /**
  * rpc server
  */
-trait RpcServer extends ServiceLifecycle {
+trait RpcServer {
 }
 
 trait RpcServerListener {

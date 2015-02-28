@@ -2,9 +2,12 @@
 // site: http://www.ganshane.com
 package monad.face.services
 
+import javax.annotation.PostConstruct
+
 import com.google.gson.JsonObject
 import monad.face.{CloudPathConstants, MonadFaceConstants}
 import monad.support.services.ZookeeperTemplate
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.data.Stat
@@ -16,20 +19,21 @@ import org.apache.zookeeper.data.Stat
 class GroupZookeeperTemplate(groupApi: GroupServerApi, periodExecutor: PeriodicExecutor)
   extends ZookeeperTemplate(groupApi.GetCloudAddress, Some(CloudPathConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)) {
 
+  /**
+   * 启动对象实例
+   */
+  @PostConstruct
+  override def start(hub: RegistryShutdownHub): Unit = {
+    super.start(hub)
+    setupGroupDirectoryInZk()
+    startCheckFailed(periodExecutor)
+  }
+
   def setupGroupDirectoryInZk() = {
     createPersistPath(CloudPathConstants.RESOURCES_PATH)
     createPersistPath(CloudPathConstants.NODE_PATH_FORMAT)
     createPersistPath(CloudPathConstants.DYNAMIC_PATH)
     createPersistPath(CloudPathConstants.RELATION_PATH)
-  }
-
-  /**
-   * 启动对象实例
-   */
-  override def start() {
-    super.start()
-    setupGroupDirectoryInZk()
-    startCheckFailed(periodExecutor)
   }
 
   def getNodeInstance: Seq[String] = {

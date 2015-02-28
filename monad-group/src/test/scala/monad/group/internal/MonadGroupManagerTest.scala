@@ -5,10 +5,11 @@ package monad.group.internal
 import java.io.File
 
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
-import monad.face.services.{GroupZookeeperTemplate, GroupServerApi}
+import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.group.config.MonadGroupConfig
 import monad.support.services.XmlLoader
 import org.apache.commons.io.FileUtils
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.{ServerCnxnFactory, ServerConfig, ZooKeeperServer}
 import org.junit.{After, Assert, Before, Test}
@@ -51,7 +52,7 @@ class MonadGroupManagerTest {
   def test_saveOrUpdateResource() {
     Thread.sleep(1000)
     val config = new MonadGroupConfig
-    config.zk.address= "127.0.0.1:2888"
+    config.zk.address = "127.0.0.1:2888"
     config.group.id = "cd"
     config.group.cnName = "中文名称"
     val clusterManager = new MonadGroupUpNotifier(config, null, null)
@@ -59,7 +60,7 @@ class MonadGroupManagerTest {
     Mockito.when(groupApi.GetCloudAddress).thenReturn(config.zk.address)
     Mockito.when(groupApi.GetSelfGroupConfig).thenReturn(config.group)
     val zk = new GroupZookeeperTemplate(groupApi, null)
-    zk.start
+    zk.start(Mockito.mock(classOf[RegistryShutdownHub]))
 
     val manager = new MonadGroupManager(config, zk)
     val resource = new ResourceDefinition

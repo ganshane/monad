@@ -4,16 +4,18 @@ package monad.face.internal
 
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, Executors}
+import javax.annotation.PostConstruct
 
-import com.lmax.disruptor.{EventTranslator, EventFactory}
 import com.lmax.disruptor.dsl.Disruptor
+import com.lmax.disruptor.{EventFactory, EventTranslator}
 import monad.face.CloudPathConstants
 import monad.face.model.ResourceEvent.ResourceEventType
 import monad.face.model.{ResourceDefinition, ResourceEvent}
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
 import monad.support.MonadSupportConstants
 import monad.support.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
-import org.apache.tapestry5.ioc.services.ParallelExecutor
+import org.apache.tapestry5.ioc.annotations.EagerLoad
+import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.apache.tapestry5.services.Core
 import org.slf4j.LoggerFactory
 
@@ -23,6 +25,7 @@ import scala.collection.JavaConversions._
  * 针对资源的监控
  * @author jcai
  */
+@EagerLoad
 class ResourcesWatcher(zk: GroupZookeeperTemplate,
                        @Core listener: ResourceDefinitionLoaderListener,
                        parallelExecutor: ParallelExecutor) extends ResourceDefinitionLoader {
@@ -42,7 +45,8 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
   /**
    * 启动对象实例
    */
-  def start() {
+  @PostConstruct
+  def start(hub: RegistryShutdownHub) {
     disruptor.handleEventsWith(new ResourceEventHandler(listener, zk))
     disruptor.start()
     zk.watchChildren(CloudPathConstants.RESOURCES_PATH,
@@ -59,6 +63,10 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
           }
         }
       })
+
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
   }
 
   def resync(rd: ResourceDefinition, version: Int) {
