@@ -2,8 +2,8 @@
 // site: http://www.ganshane.com
 package monad.rpc.internal
 
+import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{ConcurrentHashMap, CountDownLatch, Future, TimeUnit}
 
 import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.services.RpcClientMerger
@@ -100,8 +100,11 @@ object AsyncTaskMonitor {
 
     override def get(timeout: Long, unit: TimeUnit): T = {
       //TODO 增加超时设置
-      countDownLatch.await(timeout, unit)
-      rpcMerger.get
+      if (countDownLatch.await(timeout, unit)) {
+        rpcMerger.get
+      } else {
+        throw new TimeoutException("rpc timeout " + unit.toMillis(timeout) + " mills")
+      }
     }
 
     def countDown(): Unit = {
