@@ -31,7 +31,7 @@ compile_mingw() {
   mkdir build-$ARCH
   cd build-$ARCH
   LDFLAGS="-L/${LIB_DIR}/${ARCH}" CXXFLAGS="-I${LIB_DIR}/mingw"   \
-    cmake -DCMAKE_TOOLCHAIN_FILE=${LIB_DIR}/../../support/docker/compile-mingw/Toolchain-cross-mingw32-linux.cmake \
+    cmake -DCMAKE_TOOLCHAIN_FILE=${LIB_DIR}/../support/docker/compile-mingw/Toolchain-cross-mingw32-linux.cmake \
     -DHOST=$HOST  -DCMAKE_BUILD_TYPE=Release -DARCH=$ARCH \
     -DSWIG_DIR=/usr/share/swig2.0 \
     -DJAVA_AWT_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjawt.so \
