@@ -33,7 +33,7 @@ object MonadCloudApp
     val port = config.port
 
     printTextWithNative("cloud@" + port,
-      "META-INF/maven/monad/monad-cloud/version.properties",
+      "META-INF/maven/com.ganshane.monad/monad-cloud/version.properties",
       0, logger)
     logger.info("Cluster server started ")
     join()

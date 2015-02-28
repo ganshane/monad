@@ -50,10 +50,10 @@
         <include>LICENSE*.txt</include>
       </includes>
     </fileSet>
+    <!--
     <fileSet>
       <directory>target/dependencies</directory>
       <outputDirectory>lib</outputDirectory>
-      <!--
       <includes>
           <include>commons-io*</include>
           <include>commons-codec*</include>
@@ -70,7 +70,13 @@
           <include>tapestry-ioc-*</include>
           <include>tapestry5-annotations-*</include>
       </includes>
-      -->
     </fileSet>
+  -->
   </fileSets>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <useProjectAttachments>true</useProjectAttachments>
+    </dependencySet>
+  </dependencySets>
 </assembly>

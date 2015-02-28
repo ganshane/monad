@@ -1,10 +1,10 @@
-<nirvana_cloud id="3">
+<monad_cloud id="3">
 <!-- 
-   Copyright 2012,2014 Jun Tsai. All rights reserved.
+   Copyright 2012,2014,2015 the original author or authors. All rights reserved.
    site: http://www.ganshane.com
 -->
 
-    <log_file>${server.home}/log/nirvana.cloud.log</log_file>
+    <log_file>${server.home}/log/monad.cloud.log</log_file>
     <cloud_id>3</cloud_id>
     <data_dir>${server.home}/data/cloud</data_dir>
     <port>3333</port>
@@ -17,4 +17,4 @@
         <server id="3">10.1.7.112:3888:3999</server>
     </servers>
     -->
-</nirvana_cloud>
+</monad_cloud>
