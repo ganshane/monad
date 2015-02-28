@@ -17,7 +17,7 @@ os:
 - osx
 before_install:
 - openssl aes-256-cbc -K $encrypted_c48dc063462f_key -iv $encrypted_c48dc063462f_iv
-  -in support/gpg/gpg.sec.enc -out support/gpg/gpg.sec -d
+  -in support/gpg/gpg.sec.enc -out support/gpg/secring.gpg -d
 env:
   global:
   - secure: ZTeUG/IrDeYoe3b5ZfC+6XolUK0MA/SnDsxsQVgXbfRy5f7qTh9CQaaKjDTFUA47aXD8TmnLB8RhHPLTGTY6dju1pqE3oDxb7iF+ysRsU+QAnIJb5K5luHmD67ZbeQSQlFQjlKQBqr84B53Nl1onQ0v1XL3l0DPg2DZVJP19vms=
