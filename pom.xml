@@ -10,7 +10,8 @@
   <artifactId>monad-project</artifactId>
   <packaging>pom</packaging>
   <version>dev-SNAPSHOT</version>
-  <name>Monad Data Process Engine</name>
+  <name>Monad Project</name>
+  <description>monad是一个基于分布式数据查询系统</description>
   <modules>
     <module>monad-api</module>
     <module>monad-cloud</module>
@@ -26,6 +27,7 @@
     <module>monad-sync</module>
   </modules>
   <scm>
+    <url>https://github.com/ganshane/monad</url>
     <connection>scm:git:https://github.com/ganshane/monad.git</connection>
     <developerConnection>scm:git:git@github.com:ganshane/monad.git</developerConnection>
     <tag>HEAD</tag>
@@ -600,6 +602,34 @@
       </properties>
     </profile>
   </profiles>
+  <url>https://github.com/ganshane/monad</url>
+  <inceptionYear>2015</inceptionYear>
+  <organization>
+    <name>Ganshane Developer Team</name>
+    <url>https://github.com/ganshane</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/ganshane/monad/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>travis</system>
+    <url>https://travis-ci.org/ganshane/monad</url>
+  </ciManagement>
+  <developers>
+    <developer>
+      <name>Jun Tsai</name>
+      <email>jcai AT ganshane Dot com</email>
+      <id>jcai</id>
+    </developer>
+  </developers>
   <distributionManagement>
     <snapshotRepository>
       <id>sonatype-snapshots</id>
