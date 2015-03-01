@@ -5,12 +5,15 @@ package monad.face
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
+import monad.support.services.MonadUtils
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.internal.services.ParallelExecutorImpl
+import org.apache.tapestry5.ioc.internal.services.cron.PeriodicExecutorImpl
 import org.apache.tapestry5.ioc.services._
+import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.util.TimeInterval
-import org.apache.tapestry5.ioc.{IOCSymbols, Invokable, MappedConfiguration}
-import org.slf4j.LoggerFactory
+import org.apache.tapestry5.ioc.{IOCSymbols, MappedConfiguration}
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
  * thread pool module
@@ -19,14 +22,21 @@ import org.slf4j.LoggerFactory
 object ThreadPoolModule {
   @Contribute(classOf[ServiceOverride])
   def provideParallelExecutor(configuration: MappedConfiguration[Class[_], Object],
+                              @Local periodicExecutor: PeriodicExecutor,
                               @Local parallelExecutor: ParallelExecutor) {
-
+    configuration.add(classOf[PeriodicExecutor], periodicExecutor)
     configuration.add(classOf[ParallelExecutor], parallelExecutor)
   }
 
-  def buildParallelExecutor(executorService: ExecutorService,
-                            thunkCreator: ThunkCreator): ParallelExecutor = {
-    new ParallelExecutorImpl(executorService, thunkCreator, new PerthreadManager {
+  @ServiceId("MonadPeriodicExecutor")
+  def buildPeriodicExecutor(@Local parallelExecutor: ParallelExecutor, logger: Logger) = {
+    new PeriodicExecutorImpl(parallelExecutor, logger)
+
+  }
+
+  def buildParallelExecutor(@Local executorService: ExecutorService,
+                            thunkCreator: ThunkCreator, threadManager: PerthreadManager): ParallelExecutor = {
+    new ParallelExecutorImpl(executorService, thunkCreator, threadManager) /* new PerthreadManager {
       def cleanup() {}
 
       def run(runnable: Runnable) {
@@ -45,6 +55,7 @@ object ThreadPoolModule {
         throw new UnsupportedOperationException
       }
     })
+    */
   }
 
   def buildExecutorService(@Symbol(IOCSymbols.THREAD_POOL_CORE_SIZE)
@@ -88,7 +99,7 @@ object ThreadPoolModule {
 
     shutdownHub.addRegistryShutdownListener(new Runnable() {
       def run() {
-        executorService.shutdown()
+        MonadUtils.shutdownExecutor(executorService, "global executor")
       }
     })
 

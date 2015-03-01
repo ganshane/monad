@@ -5,7 +5,7 @@
 -->
 
 <monad_sync>
-  <log_file>${server.home}/log/nirvana.matcher.sync.log</log_file>
+  <log_file>${server.home}/log/monad.sync.log</log_file>
   <local_store_dir>${server.home}/config/local.sync</local_store_dir>
   <rpc>
     <bind>127.0.0.1:5559</bind>
