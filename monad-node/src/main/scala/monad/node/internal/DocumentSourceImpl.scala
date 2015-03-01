@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 import monad.face.MonadFaceConstants
 import monad.face.model.IndexEvent
 import monad.face.model.ResourceDefinition.ResourceProperty
+import monad.face.services.ResourceDefinitionConversions._
 import monad.face.services.{DocumentCreator, DocumentSource}
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException

@@ -14,6 +14,7 @@ import monad.face.config.SyncConfigSupport
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
+import monad.face.services.ResourceDefinitionConversions._
 import monad.support.services.{LoggerSupport, MonadException, ServiceLifecycle, ServiceUtils}
 import monad.sync.internal.JdbcDatabase._
 import monad.sync.services.ResourceImporterManager
@@ -64,6 +65,25 @@ class ResourceImporter(val rd: ResourceDefinition,
    */
   override def incrementColumn: ResourceProperty = findIncrementColumn()
 
+  private def findIncrementColumn(): ResourceProperty = {
+    val isFull = rd.sync.policy == SyncPolicy.Full
+    if (isFull) {
+      modifyKeyColumn = new ResourceProperty
+      modifyKeyColumn.columnType = ColumnType.Long
+    } else {
+      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
+        if (modifyKeyColumn != null) {
+          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
+        }
+        modifyKeyColumn = col
+        modifyKeyColumnIndex = index
+      }
+      if (modifyKeyColumn == null)
+        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
+    }
+    modifyKeyColumn
+  }
+
   /**
    * 得到资源配置定义
    * @return 资源配置定义
@@ -88,25 +108,6 @@ class ResourceImporter(val rd: ResourceDefinition,
     //检查列
     modifyDefaultColumnTypeAsString()
 
-  }
-
-  private def findIncrementColumn(): ResourceProperty = {
-    val isFull = rd.sync.policy == SyncPolicy.Full
-    if (isFull) {
-      modifyKeyColumn = new ResourceProperty
-      modifyKeyColumn.columnType = ColumnType.Long
-    } else {
-      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
-        if (modifyKeyColumn != null) {
-          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
-        }
-        modifyKeyColumn = col
-        modifyKeyColumnIndex = index
-      }
-      if (modifyKeyColumn == null)
-        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
-    }
-    modifyKeyColumn
   }
 
   private def modifyDefaultColumnTypeAsString() {

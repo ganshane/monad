@@ -17,6 +17,7 @@ import monad.api.services.{DBObjectExtractor, MemcachedClient, ObjectIdCreator}
 import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.model.ResourceDefinition
+import monad.face.services.ResourceDefinitionConversions._
 import monad.face.services.{DataTypeUtils, RpcSearcherFacade}
 import monad.support.MonadSupportConstants
 import monad.support.services.SymbolExpander

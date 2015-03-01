@@ -123,6 +123,7 @@ object JettyServerCreator {
     threadPool.setMinThreads(webServerConfig.minConnCount)
     threadPool.setMaxThreads(webServerConfig.maxConnCount)
     threadPool.setMaxIdleTimeMs(TimeUnit.MINUTES.toMillis(webServerConfig.keepAliveTimeInMinutes).asInstanceOf[Int])
+    threadPool.setDaemon(true)
 
     server.setThreadPool(threadPool)
 
