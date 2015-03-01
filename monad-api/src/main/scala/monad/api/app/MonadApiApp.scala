@@ -31,7 +31,7 @@ object MonadApiApp
       //Class.forName("monad.core.ProtobufProcessorModule"),
       Class.forName("monad.face.LocalMonadAssetModule"),
       Class.forName("monad.face.ResourceModule"),
-      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.api.LocalMonadApiModule"),
       Class.forName("monad.api.MonadApiModule")

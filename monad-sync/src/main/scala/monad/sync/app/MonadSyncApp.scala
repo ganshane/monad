@@ -31,7 +31,7 @@ object MonadSyncApp
       Class.forName("monad.core.LocalMonadCoreModule"),
       Class.forName("monad.face.ResourceModule"),
       Class.forName("monad.face.RemoteGroupModule"),
-      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcServerModule"),
       Class.forName("monad.sync.LocalMonadSyncModule"),

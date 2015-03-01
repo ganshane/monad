@@ -1,6 +1,6 @@
 // Copyright 2013,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.face
+package monad.core
 
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger

@@ -30,7 +30,7 @@ object MonadNodeApp
     val classes = List[Class[_]](
       Class.forName("monad.core.LocalMonadCoreModule"),
       Class.forName("monad.face.ResourceModule"),
-      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcClientModule"),
