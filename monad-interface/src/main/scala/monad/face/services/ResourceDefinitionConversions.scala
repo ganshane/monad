@@ -4,7 +4,8 @@ import java.sql.ResultSet
 
 import com.google.gson.JsonObject
 import monad.face.model.ResourceDefinition.ResourceProperty
-import monad.face.model.{ColumnType, MonadColumnType}
+import monad.face.model.types._
+import monad.face.model.{ColumnType, IndexType, MonadColumnType}
 import monad.support.services.MonadException
 import org.apache.lucene.document.Field
 
@@ -14,6 +15,31 @@ import org.apache.lucene.document.Field
  * @since 2015-03-01
  */
 trait ResourceDefinitionConversions {
+  implicit def indexTypeWrapper(it: IndexType) = new {
+    def indexType() = it match {
+      case IndexType.Text =>
+        Field.Index.ANALYZED
+      case IndexType.Keyword =>
+        Field.Index.NOT_ANALYZED
+      case IndexType.UnIndexed =>
+        Field.Index.NO
+    }
+  }
+
+  implicit def wrapColumnType(ct: ColumnType) = new {
+    def getColumnType: MonadColumnType[_] = ct match {
+      case ColumnType.String =>
+        StringColumnType
+      case ColumnType.Clob =>
+        ClobColumnType
+      case ColumnType.Date =>
+        DateColumnType
+      case ColumnType.Int =>
+        IntColumnType
+      case ColumnType.Long =>
+        LongColumnType
+    }
+  }
   implicit def resourcePropertyOps(rp: ResourceProperty) = new {
     def createIndexField(value: Any): Field = {
       rp.columnType.getColumnType.asInstanceOf[MonadColumnType[Any]].createIndexField(value, rp)

@@ -18,6 +18,8 @@ import org.apache.tapestry5.ioc.internal.util.InternalUtils
  * @author jcai
  * @version 0.1
  */
+object DateColumnType extends DateColumnType
+
 class DateColumnType extends MonadColumnType[Long] {
   private final val DEFAULT_DATE_FORMAT = "yyyyMMddHHmmss"
 
