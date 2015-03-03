@@ -63,26 +63,7 @@ class ResourceImporter(val rd: ResourceDefinition,
    * 增量字段定义
    * @return 增量字段定义
    */
-  override def incrementColumn: ResourceProperty = findIncrementColumn()
-
-  private def findIncrementColumn(): ResourceProperty = {
-    val isFull = rd.sync.policy == SyncPolicy.Full
-    if (isFull) {
-      modifyKeyColumn = new ResourceProperty
-      modifyKeyColumn.columnType = ColumnType.Long
-    } else {
-      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
-        if (modifyKeyColumn != null) {
-          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
-        }
-        modifyKeyColumn = col
-        modifyKeyColumnIndex = index
-      }
-      if (modifyKeyColumn == null)
-        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
-    }
-    modifyKeyColumn
-  }
+  override def incrementColumn: ResourceProperty = modifyKeyColumn
 
   /**
    * 得到资源配置定义
@@ -108,6 +89,25 @@ class ResourceImporter(val rd: ResourceDefinition,
     //检查列
     modifyDefaultColumnTypeAsString()
 
+  }
+
+  private def findIncrementColumn(): ResourceProperty = {
+    val isFull = rd.sync.policy == SyncPolicy.Full
+    if (isFull) {
+      modifyKeyColumn = new ResourceProperty
+      modifyKeyColumn.columnType = ColumnType.Long
+    } else {
+      for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
+        if (modifyKeyColumn != null) {
+          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
+        }
+        modifyKeyColumn = col
+        modifyKeyColumnIndex = index
+      }
+      if (modifyKeyColumn == null)
+        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
+    }
+    modifyKeyColumn
   }
 
   private def modifyDefaultColumnTypeAsString() {
@@ -196,8 +196,11 @@ class ResourceImporter(val rd: ResourceDefinition,
       buildConnection
       importData()
     } catch {
+      case e: MonadException =>
+        error("[{}] {}", rd.name, e.getMessage)
       case e: Throwable =>
-        logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
+        error("[" + rd.name + "] " + e.getMessage, e)
+      //logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
     }
 
     closeJdbc(conn)

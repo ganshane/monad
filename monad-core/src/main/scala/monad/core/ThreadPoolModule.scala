@@ -8,12 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import monad.support.services.MonadUtils
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.internal.services.ParallelExecutorImpl
-import org.apache.tapestry5.ioc.internal.services.cron.PeriodicExecutorImpl
 import org.apache.tapestry5.ioc.services._
-import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.util.TimeInterval
 import org.apache.tapestry5.ioc.{IOCSymbols, MappedConfiguration}
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 
 /**
  * thread pool module
@@ -22,17 +20,18 @@ import org.slf4j.{Logger, LoggerFactory}
 object ThreadPoolModule {
   @Contribute(classOf[ServiceOverride])
   def provideParallelExecutor(configuration: MappedConfiguration[Class[_], Object],
-                              @Local periodicExecutor: PeriodicExecutor,
                               @Local parallelExecutor: ParallelExecutor) {
-    configuration.add(classOf[PeriodicExecutor], periodicExecutor)
+    //configuration.add(classOf[PeriodicExecutor], periodicExecutor)
     configuration.add(classOf[ParallelExecutor], parallelExecutor)
   }
 
+  /*
   @ServiceId("MonadPeriodicExecutor")
   def buildPeriodicExecutor(@Local parallelExecutor: ParallelExecutor, logger: Logger) = {
-    new PeriodicExecutorImpl(parallelExecutor, logger)
+    val pe = new PeriodicExecutorImpl(parallelExecutor, logger)
 
   }
+  */
 
   def buildParallelExecutor(@Local executorService: ExecutorService,
                             thunkCreator: ThunkCreator, threadManager: PerthreadManager): ParallelExecutor = {
@@ -71,11 +70,22 @@ object ThreadPoolModule {
                            shutdownHub: RegistryShutdownHub
                             ): ExecutorService = {
 
+    val logger = LoggerFactory getLogger getClass
     val threadFactory = new ThreadFactory {
       private val seq = new AtomicInteger()
 
+      //当有错误的时候，输出异常消息
+      private def wrapRunnable(r: Runnable) = new Runnable {
+        override def run(): Unit = try {
+          r.run()
+        } catch {
+          case e: Throwable =>
+            logger.error(e.getMessage, e)
+        }
+      }
+
       def newThread(p1: Runnable) = {
-        val thread = new Thread(p1)
+        val thread = new Thread(wrapRunnable(p1))
         thread.setName("monad-background-%d".format(seq.incrementAndGet()))
         //设置优先级，让抽取和索引线程滞后处理
         thread.setPriority((Thread.NORM_PRIORITY - Thread.MIN_PRIORITY) / 2)
@@ -85,7 +95,6 @@ object ThreadPoolModule {
     }
     //val executorService = Executors.newFixedThreadPool(coreSize,threadFactory)
     val workQueue = new OverflowingSynchronousQueue[Runnable](queueSize)
-    val logger = LoggerFactory getLogger getClass
     val executorService = new ThreadPoolExecutor(coreSize, maxSize, keepAliveMillis,
       TimeUnit.MILLISECONDS, workQueue, threadFactory, new RejectedExecutionHandler {
         def rejectedExecution(p1: Runnable, p2: ThreadPoolExecutor) {

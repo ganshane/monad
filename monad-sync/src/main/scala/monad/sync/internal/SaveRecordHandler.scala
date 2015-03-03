@@ -35,6 +35,11 @@ class SaveRecordHandler(manager: ResourceImporterManager) extends EventHandler[D
     val row = event.row
     val timestamp = event.timestamp
 
+    if (row == null) {
+      //TODO 写入资源信息到zk中
+      return
+    }
+
     val json = new JsonObject
     var primaryKey: String = null
     var objectId: Array[Byte] = null
