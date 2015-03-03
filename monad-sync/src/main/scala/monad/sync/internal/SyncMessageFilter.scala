@@ -2,8 +2,9 @@
 // site: http://www.ganshane.com
 package monad.sync.internal
 
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.sync.services.ResourceImporterManager
 

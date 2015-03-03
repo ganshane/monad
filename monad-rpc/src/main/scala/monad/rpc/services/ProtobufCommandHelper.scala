@@ -3,7 +3,8 @@
 package monad.rpc.services
 
 import com.google.protobuf.GeneratedMessage
-import monad.protocol.internal.CommandProto.BaseCommand
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 
 /**
  * protocol command helper trait

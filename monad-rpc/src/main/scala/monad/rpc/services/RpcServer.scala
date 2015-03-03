@@ -3,7 +3,8 @@
 package monad.rpc.services
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
-import monad.protocol.internal.CommandProto.BaseCommand
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import org.jboss.netty.channel.ChannelFuture
 
 /**

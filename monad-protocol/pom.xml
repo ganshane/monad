@@ -4,7 +4,7 @@
    site: http://www.ganshane.com
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>com.ganshane.monad</groupId>
@@ -19,6 +19,10 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-rpc</artifactId>
     </dependency>
   </dependencies>
   <build>
@@ -45,6 +49,7 @@
                 <exec executable="protoc">
                   <arg value="--java_out=target/generated-sources"/>
                   <arg value="-I${project.basedir}/src/main/proto"/>
+                  <arg value="-I${project.basedir}/../monad-rpc/src/main/proto"/>
                   <arg line="${proto.files}"/>
                 </exec>
               </tasks>

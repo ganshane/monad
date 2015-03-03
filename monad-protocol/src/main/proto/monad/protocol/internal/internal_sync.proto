@@ -1,9 +1,9 @@
 /**
  * 此文件主要定义了内部同步所需的接口，
  */
-package monad.proto;
+package monad.protocol.internal;
 
-import "command.proto";
+import "monad/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,7 +12,7 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalSyncProto";
 /* 向Sync服务器发送同步请求 */
 message SyncRequest {
-  extend BaseCommand {
+  extend monad.rpc.protocol.BaseCommand {
     required SyncRequest cmd = 101;
   }
   //资源名称
@@ -26,7 +26,7 @@ message SyncRequest {
 }
 /* 响应同步请求，发送同步数据 */
 message SyncResponse {
-  extend BaseCommand {
+  extend monad.rpc.protocol.BaseCommand {
     required SyncResponse cmd = 102;
   }
   message ResponseData {

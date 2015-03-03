@@ -1,9 +1,9 @@
 /**
  * 查询最大文档数的接口
  */
-package monad.proto;
+package monad.protocol.internal;
 
-import "command.proto";
+import "monad/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,16 +12,16 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalFindDocProto";
 /* 向Sync服务器发送同步请求 */
 message InternalFindDocRequest {
-  extend BaseCommand {
-    required InternalFindDocRequest cmd = 107;
+  extend monad.rpc.protocol.BaseCommand {
+    required monad.protocol.internal.InternalFindDocRequest cmd = 107;
   }
   required string resource_name = 1;
   required int32 id = 2;
 }
 /* 响应同步请求，发送同步数据 */
 message InternalFindDocResponse {
-  extend BaseCommand {
-    required InternalFindDocResponse cmd = 108;
+  extend monad.rpc.protocol.BaseCommand {
+    required monad.protocol.internal.InternalFindDocResponse cmd = 108;
   }
   required string resource_name = 1;
   optional bytes json = 2;

@@ -24,7 +24,7 @@
     <!-- rpc -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>monad-rpc</artifactId>
+      <artifactId>monad-protocol</artifactId>
       <scope>provided</scope>
     </dependency>
     <!-- jolokia -->

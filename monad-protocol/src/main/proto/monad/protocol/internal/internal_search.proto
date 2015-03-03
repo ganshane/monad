@@ -1,9 +1,9 @@
 /**
  * 查询最大文档数的接口
  */
-package monad.proto;
+package monad.protocol.internal;
 
-import "command.proto";
+import "monad/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,7 +12,7 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalSearchProto";
 /* 向Sync服务器发送同步请求 */
 message InternalSearchRequest {
-  extend BaseCommand {
+  extend monad.rpc.protocol.BaseCommand {
     required InternalSearchRequest cmd = 105;
   }
   required string resource_name = 1;
@@ -22,7 +22,7 @@ message InternalSearchRequest {
 }
 /* 响应同步请求，发送同步数据 */
 message InternalSearchResponse {
-  extend BaseCommand {
+  extend monad.rpc.protocol.BaseCommand {
     required InternalSearchResponse cmd = 106;
   }
   message DocScore {

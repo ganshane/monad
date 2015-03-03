@@ -5,7 +5,8 @@ package monad.rpc.internal
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
-import monad.protocol.internal.CommandProto.BaseCommand
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.RpcClientMerger
 import org.jboss.netty.channel.Channel
 

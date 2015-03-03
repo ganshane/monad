@@ -9,8 +9,9 @@ import javax.annotation.PostConstruct
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.config.RpcBindSupport
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
 import org.apache.tapestry5.ioc.annotations.EagerLoad

@@ -9,8 +9,9 @@ import java.util.concurrent.locks.ReentrantLock
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, ServiceWaitingInitSupport}
 import org.apache.tapestry5.ioc.annotations.PostInjection

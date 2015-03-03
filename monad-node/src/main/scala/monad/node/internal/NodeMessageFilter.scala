@@ -4,10 +4,11 @@ package monad.node.internal
 
 import com.google.protobuf.ByteString
 import monad.face.services.RpcSearcherFacade
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
 import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.support.services.CodingHelper
 
