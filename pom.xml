@@ -524,12 +524,38 @@
       </properties>
     </profile>
     <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.oracle</groupId>
+          <artifactId>ojdbc14</artifactId>
+          <version>10.2.0.3</version>
+        </dependency>
+      </dependencies>
+      <properties>
+        <resource-conf>src/main/conf/development</resource-conf>
+        <jdk-rt-path>${java.home}/lib/rt.jar</jdk-rt-path>
+      </properties>
+    </profile>
+    <profile>
       <id>mac</id>
       <activation>
         <os>
           <family>mac</family>
         </os>
       </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.oracle</groupId>
+          <artifactId>ojdbc14</artifactId>
+          <version>10.2.0.3</version>
+        </dependency>
+      </dependencies>
       <properties>
         <resource-conf>src/main/conf/development</resource-conf>
         <jdk-rt-path>${java.home}/bundle/Classes/classes.jar</jdk-rt-path>
