@@ -12,7 +12,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler
  * global log4j configuration
  */
 trait GlobalLoggerConfigurationSupport {
-  protected def configLogger(logFile: String, prefix: String) {
+  protected def configLogger(logFile: String, prefix: String, loggerPrefix: Option[Array[String]] = None) {
     //convert jcl to slf4j
     val rootLogger = LogManager.getLogManager.getLogger("")
     val handlers = rootLogger.getHandlers
@@ -35,9 +35,7 @@ trait GlobalLoggerConfigurationSupport {
       properties.put("log4j.appender.R.File", logFile)
       properties.put("log4j.appender.R.MaxFileSize", "10000KB")
       properties.put("log4j.appender.R.MaxBackupIndex", "10")
-      properties.put("log4j.category.monad", "info")
-      properties.put("log4j.category.ganshane", "info")
-      properties.put("log4j.category.egf", "info")
+      loggerPrefix foreach { x => x.foreach(properties.put(_, "info"))}
       properties.put("log4j.category.org.apache.zookeeper", "warn")
       properties.put("log4j.category.com.netflix", "warn")
 
