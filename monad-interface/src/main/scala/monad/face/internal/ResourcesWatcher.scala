@@ -86,7 +86,32 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
     resources.keySet().foreach(listener.onResourceUnloaded)
     resources.clear()
     hasClosed = true
-    disruptor.shutdown(2, TimeUnit.SECONDS)
+    try {
+      disruptor.shutdown(2, TimeUnit.SECONDS)
+    } catch {
+      case e: Throwable =>
+        disruptor.halt()
+    }
+  }
+
+  def resync(rd: ResourceDefinition, version: Int) {
+    removeResource(rd.name)
+    pushEvent(rd, ResourceEvent.Start(version))
+  }
+
+  def removeResource(key: String) = {
+    val obj = resources.remove(key)
+    if (obj != null) {
+      pushEvent(obj, ResourceEvent.Remove)
+    }
+    obj
+  }
+
+  def getResourceDefinitions = resources.values().iterator()
+
+  def getResourceDefinition(name: String) = {
+    val v = resources.get(name)
+    if (v == null) None else Some(v)
   }
 
   private def watch(key: String, path: String) {
@@ -117,19 +142,6 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
       })
   }
 
-  def resync(rd: ResourceDefinition, version: Int) {
-    removeResource(rd.name)
-    pushEvent(rd, ResourceEvent.Start(version))
-  }
-
-  def removeResource(key: String) = {
-    val obj = resources.remove(key)
-    if (obj != null) {
-      pushEvent(obj, ResourceEvent.Remove)
-    }
-    obj
-  }
-
   private def pushEvent(resource: ResourceDefinition, resourceEventType: ResourceEventType) {
     disruptor.publishEvent(new EventTranslator[ResourceEvent] {
       def translateTo(event: ResourceEvent, sequence: Long) {
@@ -137,12 +149,5 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
         event.eventType = resourceEventType
       }
     })
-  }
-
-  def getResourceDefinitions = resources.values().iterator()
-
-  def getResourceDefinition(name: String) = {
-    val v = resources.get(name)
-    if (v == null) None else Some(v)
   }
 }

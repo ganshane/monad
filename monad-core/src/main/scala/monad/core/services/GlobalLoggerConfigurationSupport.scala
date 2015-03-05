@@ -12,7 +12,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler
  * global log4j configuration
  */
 trait GlobalLoggerConfigurationSupport {
-  protected def configLogger(logFile: String, prefix: String, loggerPrefix: Option[Array[String]] = None) {
+  protected def configLogger(logFile: String, prefix: String, loggerPrefix: String*) {
     //convert jcl to slf4j
     val rootLogger = LogManager.getLogManager.getLogger("")
     val handlers = rootLogger.getHandlers
