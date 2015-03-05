@@ -1,5 +1,5 @@
 /**
- * 查询最大文档数的接口
+ * 查询(搜索)请求接口
  */
 package monad.protocol.internal;
 
@@ -10,7 +10,7 @@ option optimize_for = SPEED;
 option java_package = "monad.protocol.internal";
 
 option java_outer_classname = "InternalSearchProto";
-/* 向Sync服务器发送同步请求 */
+/* 向分布式环境发送查询请求 */
 message InternalSearchRequest {
   extend monad.rpc.protocol.BaseCommand {
     required InternalSearchRequest cmd = 105;
@@ -20,19 +20,27 @@ message InternalSearchRequest {
   optional string sort = 3;
   required int32 top_n = 4 [default = 1000];
 }
-/* 响应同步请求，发送同步数据 */
+/* 返回查询结果 */
 message InternalSearchResponse {
   extend monad.rpc.protocol.BaseCommand {
     required InternalSearchResponse cmd = 106;
   }
   message DocScore {
+    //文档的id
     required int32 id = 1;
+    //得分
     required float score = 2;
   }
+  //该结果的分区id
   required int32 partition_id = 1;
+  //资源名称
   required string resource_name = 2;
+  //命中的总数目
   required int32 total = 3;
+  //库中总的文档数
   required int32 maxdoc = 4;
+  //最大得分
   required float max_score = 5;
+  //查询的结果集
   repeated DocScore results = 6;
 }
