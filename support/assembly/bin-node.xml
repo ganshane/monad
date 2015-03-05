@@ -28,10 +28,6 @@
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
-      <directory>../support/dll</directory>
-      <outputDirectory>dll</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>../support/doc</directory>
       <outputDirectory>doc</outputDirectory>
       <includes>
