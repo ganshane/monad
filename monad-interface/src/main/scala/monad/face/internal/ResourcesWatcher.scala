@@ -86,7 +86,12 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
     resources.keySet().foreach(listener.onResourceUnloaded)
     resources.clear()
     hasClosed = true
-    disruptor.shutdown(2, TimeUnit.SECONDS)
+    try {
+      disruptor.shutdown(2, TimeUnit.SECONDS)
+    } catch {
+      case e: Throwable =>
+        disruptor.halt()
+    }
   }
 
   private def watch(key: String, path: String) {

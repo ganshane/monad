@@ -2,18 +2,18 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import collection.JavaConversions._
-import collection.mutable.Buffer
-import org.apache.tapestry5.services.javascript.{StylesheetLink, JavaScriptStack}
+import java.io.{ByteArrayInputStream, InputStream}
+
 import monad.extjs.MonadExtjsConstants
 import monad.extjs.services.ExtDirectApiResolver
-import org.apache.tapestry5.ioc.internal.util.AbstractResource
-import java.lang.String
-import org.apache.tapestry5.services.{PageRenderLinkSource, AssetSource}
-import java.io.{ByteArrayInputStream, InputStream, BufferedInputStream}
-import org.apache.tapestry5.{SymbolConstants, Asset}
 import org.apache.tapestry5.ioc.annotations.Symbol
-import collection.mutable
+import org.apache.tapestry5.ioc.internal.util.AbstractResource
+import org.apache.tapestry5.services.javascript.{JavaScriptStack, StylesheetLink}
+import org.apache.tapestry5.services.{AssetSource, PageRenderLinkSource}
+import org.apache.tapestry5.{Asset, SymbolConstants}
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
  *
@@ -40,19 +40,21 @@ class ExtJavaScriptStack(@Symbol(SymbolConstants.PRODUCTION_MODE) proudctionMode
     }
     private val extjs =
         if (proudctionMode)
-            assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/ext-all.js")
+          assetSource.getExpandedAsset("${" + MonadExtjsConstants.EXT_JS_PATH + "}/build/ext-all.js")
         else
-            assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/ext-all-debug.js")
+          assetSource.getExpandedAsset("${" + MonadExtjsConstants.EXT_JS_PATH + "}/build/ext-all-debug.js")
     private val libraries = bufferAsJavaList(mutable.Buffer(
         //assetSource.getExpandedAsset("${tapestry.underscore}"),
         extjs,
-        assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/locale/ext-lang-zh_CN.js"),
+      //assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/locale/ext-lang-zh_CN.js"), //extjs 4
+      assetSource.getExpandedAsset("${" + MonadExtjsConstants.EXT_JS_PATH + "}/build/packages/ext-locale/build/ext-locale-zh_CN.js"), //extjs 5
         api
         //assetSource.getClasspathAsset("extjs/ext-all.js"),
         //assetSource.getClasspathAsset("extjs/locale/ext-lang-zh_CN.js")
     ))
     private val stylesheets = bufferAsJavaList(mutable.Buffer(
-        new StylesheetLink(assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/resources/css/ext-all-gray.css"))))
+      //new StylesheetLink(assetSource.getExpandedAsset("${"+MonadExtjsConstants.EXT_JS_PATH+"}/resources/css/ext-all-gray.css")))) //extjs 4
+      new StylesheetLink(assetSource.getExpandedAsset("${" + MonadExtjsConstants.EXT_JS_PATH + "}/build/packages/ext-theme-gray/build/resources/ext-theme-gray-all.css")))) //extjs 5
 
     def getStacks = Nil
 

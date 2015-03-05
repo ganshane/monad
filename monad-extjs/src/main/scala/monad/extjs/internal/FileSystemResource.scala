@@ -2,10 +2,10 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import org.apache.tapestry5.ioc.internal.util.AbstractResource
-import java.lang.String
-import java.io.File
+import java.io.{File, FileNotFoundException}
 import java.net.URL
+
+import org.apache.tapestry5.ioc.internal.util.AbstractResource
 
 /**
  * file system resource
@@ -20,11 +20,16 @@ class FileSystemResource(path:String) extends AbstractResource(path){
     private var urlResolved:Boolean = false
     def newResource(path: String) = new FileSystemResource('/'+path)
 
-    def toURL = if (urlResolved) url else {
-        urlResolved = true
-        url = new File(path).toURI.toURL
-        url
-    }
+  def toURL = if (urlResolved) url
+  else {
+    urlResolved = true
+    val file = new File(path)
+    if (!file.exists())
+      throw new FileNotFoundException(path)
+
+    url = file.toURI.toURL
+    url
+  }
     override def hashCode():Int=
     {
         227 ^ path.hashCode()

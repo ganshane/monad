@@ -23,7 +23,7 @@ object MonadGroupApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadGroupModule.buildMonadGroupConfig(serverHome)
-    configLogger(config.logFile, "GROUP")
+    configLogger(config.logFile, "GROUP", "monad", "ganshane")
     System.setProperty(MonadExtjsConstants.EXT_JS_DIR, config.extjsDir)
 
     val logger = LoggerFactory getLogger getClass
