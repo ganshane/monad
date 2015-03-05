@@ -43,12 +43,13 @@ compile_mingw() {
     -DJAVA_INCLUDE_PATH2=/usr/lib/jvm/java-7-openjdk-amd64/include/linux \
     -DJAVA_JVM_LIBRARY=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libjava.so  ..
   make
-  cp src/libmonad4j.dll ${ROOT_DIR}/support/dll/monad4j-${ARCH}.dll
+  mkdir -p ${ROOT_DIR}/monad-jni/src/main/resources/META-INF/native/${JNI_DIR}
+  cp src/libmonad4j.dll ${ROOT_DIR}/monad-jni/src/main/resources/META-INF/native/${JNI_DIR}/monad4j.dll
 }
 #win64  dll
-HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-  compile_mingw
+HOST=x86_64-w64-mingw32 ARCH=w64 JNI_DIR=windows64 CROSSPREFIX=x86_64-w64-mingw32-  compile_mingw
 #win32  dll
-HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32- compile_mingw
+HOST=i686-w64-mingw32 ARCH=w32 JNI_DIR=windows32 CROSSPREFIX=i686-w64-mingw32- compile_mingw
 
 #compile linux version
 sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
@@ -60,7 +61,8 @@ make
 
 #compile jni files
 cp src/javaapi/*.java ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen/
-cp src/libmonad4j.so ${ROOT_DIR}/support/dll
+mkdir -p ${ROOT_DIR}/monad-jni/src/main/resources/META-INF/native/linux64
+cp src/libmonad4j.so ${ROOT_DIR}/monad-jni/src/main/resources/META-INF/native/linux64/
 
 #install protoc
 mkdir -p $ROOT_DIR/target
