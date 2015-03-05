@@ -21,7 +21,7 @@ object MonadCloudApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadCloudModule.buildMonadCloudConfig(serverHome)
-    configLogger(config.logFile, "CLOUD")
+    configLogger(config.logFile, "CLOUD", "monad", "ganshane")
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting cloud server ....")

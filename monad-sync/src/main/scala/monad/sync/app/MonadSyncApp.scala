@@ -21,7 +21,7 @@ object MonadSyncApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadSyncModule.buildMonadSyncConfig(serverHome)
-    configLogger(config.logFile, "SYNC")
+    configLogger(config.logFile, "SYNC", "monad", "ganshane")
     //预先加载JNI文件
     JniLoader.loadJniLibrary(serverHome, config.logFile)
 

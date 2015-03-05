@@ -21,7 +21,7 @@ object MonadNodeApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadNodeModule.buildMonadNodeConfig(serverHome)
-    configLogger(config.logFile, "NODE")
+    configLogger(config.logFile, "NODE", "monad", "ganshane")
     //预先加载JNI文件
     JniLoader.loadJniLibrary(serverHome, config.logFile)
 
