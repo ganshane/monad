@@ -51,7 +51,7 @@ abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfig)
 
   }
 
-  def destryoNoSQL(rd: ResourceDefinition): Unit = {
+  def destryNoSQL(rd: ResourceDefinition): Unit = {
     val originPath = new File(config.path + "/" + rd.name)
     val tmpPath = new File(config.path + "/" + rd.name + "." + System.currentTimeMillis())
     FileUtils.moveDirectory(originPath, tmpPath)
