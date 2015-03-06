@@ -4,6 +4,7 @@ package monad.sync.app
 
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
+import monad.face.MonadFaceConstants
 import monad.jni.services.JniLoader
 import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import monad.sync.MonadSyncModule
@@ -38,9 +39,9 @@ object MonadSyncApp
       Class.forName("monad.sync.MonadSyncModule")
     )
     startUpContainer(classes: _*)
-    printTextWithNative("sync@" + config.rpc.bind,
-      "META-INF/maven/com.ganshane.monad/monad-sync/version.properties",
-      0, logger)
+
+    val version = readVersionNumber("META-INF/maven/com.ganshane.monad/monad-sync/version.properties")
+    printTextWithNative(logger, MonadFaceConstants.MONAD_TEXT_LOGO, "sync@" + config.rpc.bind, version)
     logger.info("sync server started")
 
     join()

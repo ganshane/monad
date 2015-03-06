@@ -5,6 +5,7 @@ package monad.group.app
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
 import monad.extjs.MonadExtjsConstants
+import monad.face.MonadFaceConstants
 import monad.group.MonadGroupModule
 import monad.support.services.{JettyServerSupport, SystemEnvDetectorSupport}
 import org.slf4j.LoggerFactory
@@ -35,9 +36,9 @@ object MonadGroupApp
       Class.forName("monad.extjs.MonadExtjsModule")
     )
     startServer(config.web, "monad.group", classes: _*)
-    printTextWithNative("group@ " + config.web.bind,
-      "META-INF/maven/com.ganshane.monad/monad-group/version.properties",
-      0, logger)
+
+    val version = readVersionNumber("META-INF/maven/com.ganshane.monad/monad-group/version.properties")
+    printTextWithNative(logger, MonadFaceConstants.MONAD_TEXT_LOGO, "group@" + config.web.bind, version)
     logger.info("group server started")
 
     join()
