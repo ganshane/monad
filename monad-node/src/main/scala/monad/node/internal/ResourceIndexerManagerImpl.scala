@@ -11,7 +11,6 @@ import com.lmax.disruptor.EventFactory
 import com.lmax.disruptor.dsl.Disruptor
 import monad.core.services.LogExceptionHandler
 import monad.face.MonadFaceConstants
-import monad.face.annotation.Rpc
 import monad.face.config.IndexConfigSupport
 import monad.face.model._
 import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
@@ -159,7 +158,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     directGetObject(resourceName).getResourceSearcher.facetSearch(q, field, upper, lower)
   }
 
-  @Rpc(mode = "all", merge = "collectMaxDoc")
   def maxDoc(resourceName: String) = {
     directGetObject(resourceName).getResourceSearcher.maxDoc
   }
