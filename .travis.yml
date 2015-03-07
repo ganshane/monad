@@ -3,8 +3,8 @@ compiler: gcc
 branches: all
 script: sh support/scripts/travis.sh
 before_install:
-- openssl aes-256-cbc -K $encrypted_c48dc063462f_key -iv $encrypted_c48dc063462f_iv
-  -in support/gpg/gpg.sec.enc -out support/gpg/secring.gpg -d
+  - openssl aes-256-cbc -K $encrypted_c48dc063462f_key -iv $encrypted_c48dc063462f_iv -in support/gpg/gpg.sec.enc -out support/gpg/secring.gpg -d
+  - export VERSION=`cat pom.xml|grep -e '<version>\(.*\)</version>'|head -n 1|sed  's/^.*<version>\(.*\)<\/version>/\1/g'`
 env:
   global:
   - secure: ZTeUG/IrDeYoe3b5ZfC+6XolUK0MA/SnDsxsQVgXbfRy5f7qTh9CQaaKjDTFUA47aXD8TmnLB8RhHPLTGTY6dju1pqE3oDxb7iF+ysRsU+QAnIJb5K5luHmD67ZbeQSQlFQjlKQBqr84B53Nl1onQ0v1XL3l0DPg2DZVJP19vms=
@@ -13,11 +13,11 @@ env:
   - secure: CK1d4YV7gfj6UlTa3TEuLZOrXvlfDg/qK5drnKHdQPCbHy4eLgG8HmbpT9j5cPX0hQ6N5gyYGAzxe2YQm0FpF/SVEI9RT4CNHegBPOLqBpIvtsoJf71kZQo89iWNDWnCDbYE0085VoFk7VFSjl578bkOsjL3UjSqQZMuc8RT/+s=
 deploy:
   file:
-    - monad-api/target/monad-api-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
-    - monad-cloud/target/monad-cloud-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
-    - monad-group/target/monad-group-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
-    - monad-node/target/monad-node-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
-    - monad-sync/target/monad-sync-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+    - monad-api/target/monad-api-${VERSION}-bin.tar.gz
+    - monad-cloud/target/monad-cloud-${VERSION}-bin.tar.gz
+    - monad-group/target/monad-group-${VERSION}-bin.tar.gz
+    - monad-node/target/monad-node-${VERSION}-bin.tar.gz
+    - monad-sync/target/monad-sync-${VERSION}-bin.tar.gz
   skip_cleanup: true
   on:
     tags: true
