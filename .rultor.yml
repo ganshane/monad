@@ -1,8 +1,11 @@
 env:
   MAVEN_OPTS: "-XX:MaxPermSize=256m -Xmx1g"
-install:
+deploy:
+  script:
+    - mvn -v
 release:
-  script: |-
-    mvn versions:set "-DnewVersion=${tag}"
-    git commit -am "release ${tag}"
+  script:
+    - git checkout develop
+    - mvn versions:set "-DnewVersion=${tag}"
+    - git commit -am "release ${tag}"
 
