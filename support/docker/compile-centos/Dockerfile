@@ -32,10 +32,10 @@ RUN export CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc && \
 RUN mkdir /tmp/maven && cd /tmp/maven && \
     wget http://mirrors.cnnic.cn/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
 RUN mkdir -p /tmp/maven && cd /tmp/maven && \
-    tar xfvz apache-maven-3.2.3-bin.tar.gz && \
-    mv apache-maven-3.2.3 /opt/ && \
-    ln -s /opt/apache-maven-3.2.3/bin/* /usr/local/bin/ && \
-    echo "export M3_HOME=/opt/apache-maven-3.2.3" > /etc/profile.d/maven.sh && \
+    tar xfvz apache-maven-3.2.5-bin.tar.gz && \
+    mv apache-maven-3.2.5 /opt/ && \
+    ln -s /opt/apache-maven-3.2.5/bin/* /usr/local/bin/ && \
+    echo "export M3_HOME=/opt/apache-maven-3.2.5" > /etc/profile.d/maven.sh && \
     echo "export M3=$M3_HOME/bin" >> /etc/profile.d/maven.sh && \
     echo "export PATH=$M3:$PATH" >> /etc/profile.d/maven.sh && \
     sh /etc/profile.d/maven.sh && \
