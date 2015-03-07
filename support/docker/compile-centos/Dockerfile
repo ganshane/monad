@@ -30,7 +30,7 @@ RUN export CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc && \
 
 #Install maven
 RUN mkdir /tmp/maven && cd /tmp/maven && \
-    wget http://mirrors.cnnic.cn/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
+    wget http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
 RUN mkdir -p /tmp/maven && cd /tmp/maven && \
     tar xfvz apache-maven-3.2.5-bin.tar.gz && \
     mv apache-maven-3.2.5 /opt/ && \
