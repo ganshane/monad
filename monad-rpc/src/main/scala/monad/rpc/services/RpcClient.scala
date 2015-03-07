@@ -5,8 +5,9 @@ package monad.rpc.services
 import java.util.concurrent.Future
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.model.RpcServerLocation
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import org.apache.tapestry5.ioc.annotations.UsesOrderedConfiguration
 import org.jboss.netty.channel.{Channel, ChannelFuture}
 
@@ -26,6 +27,7 @@ trait RpcClient {
   def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
 
   def writeMessageWithChannel(channel: Channel, message: BaseCommand): Option[ChannelFuture]
+
   def writeMessage[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture]
 
   def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand]

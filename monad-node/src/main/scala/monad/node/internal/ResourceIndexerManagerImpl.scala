@@ -11,7 +11,6 @@ import com.lmax.disruptor.EventFactory
 import com.lmax.disruptor.dsl.Disruptor
 import monad.core.services.LogExceptionHandler
 import monad.face.MonadFaceConstants
-import monad.face.annotation.Rpc
 import monad.face.config.IndexConfigSupport
 import monad.face.model._
 import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
@@ -42,13 +41,22 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   }
   private val buffer = 1 << 5
   //采用单线程进行索引操作
-  private val disruptor = new Disruptor[IndexEvent](EVENT_FACTORY, buffer, Executors.newFixedThreadPool(1))
+  private val disruptor = new Disruptor[IndexEvent](EVENT_FACTORY, buffer, Executors.newFixedThreadPool(1, new ThreadFactory {
+    override def newThread(r: Runnable): Thread = {
+      val t = new Thread(r)
+      t.setName("index-0")
+      t.setDaemon(true)
+
+      t
+    }
+  }))
   private val searchExecutor = Executors.newFixedThreadPool(indexConfig.index.queryThread, new ThreadFactory {
     private val seq = new AtomicInteger(0)
 
     def newThread(p1: Runnable) = {
       val t = new Thread(p1)
       t.setName("search-%s".format(seq.incrementAndGet()))
+      t.setDaemon(true)
 
       t
     }
@@ -150,7 +158,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     directGetObject(resourceName).getResourceSearcher.facetSearch(q, field, upper, lower)
   }
 
-  @Rpc(mode = "all", merge = "collectMaxDoc")
   def maxDoc(resourceName: String) = {
     directGetObject(resourceName).getResourceSearcher.maxDoc
   }

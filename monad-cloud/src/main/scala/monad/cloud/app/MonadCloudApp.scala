@@ -17,11 +17,19 @@ object MonadCloudApp
   with GlobalLoggerConfigurationSupport
   with SystemEnvDetectorSupport
   with BootstrapTextSupport {
+  //http://bigtext.org/?font=smslant&text=CLOUD
+  final val CLOUD_TEXT_LOGO = "@|green " + """
+                                             |  _______   ____  __  _____
+                                             | / ___/ /  / __ \/ / / / _ \
+                                             |/ /__/ /__/ /_/ / /_/ / // /
+                                             |\___/____/\____/\____/____/|@ @|red %s|@ (v @|yellow %s|@)
+                                           """.stripMargin
+
   def main(args: Array[String]) {
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadCloudModule.buildMonadCloudConfig(serverHome)
-    configLogger(config.logFile, "CLOUD")
+    configLogger(config.logFile, "CLOUD", "monad", "ganshane")
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting cloud server ....")
@@ -32,9 +40,13 @@ object MonadCloudApp
     startUpContainer(classes: _*)
     val port = config.port
 
+    /*
     printTextWithNative("cloud@" + port,
       "META-INF/maven/com.ganshane.monad/monad-cloud/version.properties",
       0, logger)
+    */
+    val version = readVersionNumber("META-INF/maven/com.ganshane.monad/monad-cloud/version.properties")
+    printTextWithNative(logger, CLOUD_TEXT_LOGO, "cloud@" + port, version)
     logger.info("Cluster server started ")
     join()
   }

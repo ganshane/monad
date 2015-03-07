@@ -8,6 +8,7 @@ import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model.{AnalyzerCreator, ColumnType, ResourceDefinition}
 import monad.face.services.DataTypeUtils
+import monad.face.services.ResourceDefinitionConversions._
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper

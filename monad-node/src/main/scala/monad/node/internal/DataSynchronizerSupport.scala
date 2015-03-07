@@ -8,9 +8,10 @@ import monad.core.services.{CronScheduleWithStartModel, StartAtDelay}
 import monad.jni.services.JNIErrorCode
 import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
 import monad.node.services.MonadNodeExceptionCode
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalSyncProto
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}

@@ -6,7 +6,8 @@ import java.net.SocketAddress
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.core.services.{MetricsService, RpcMetricsAdvice}
-import monad.protocol.internal.CommandProto.BaseCommand
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcClient, RpcClientMessageHandler, RpcServerMessageHandler}
 import monad.support.services.LoggerSupport
 import org.apache.tapestry5.ioc.MethodAdviceReceiver

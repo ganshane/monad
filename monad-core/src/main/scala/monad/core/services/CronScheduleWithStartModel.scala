@@ -23,7 +23,7 @@ class CronScheduleWithStartModel(cronExpression: String, startModel: SchedulerSt
       case StartAtDelay =>
         super.firstExecution()
       case StartAtOnce =>
-        0L
+        System.currentTimeMillis()
     }
   }
 }

@@ -4,6 +4,7 @@ package monad.node.app
 
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
+import monad.face.MonadFaceConstants
 import monad.jni.services.JniLoader
 import monad.node.MonadNodeModule
 import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
@@ -21,7 +22,7 @@ object MonadNodeApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadNodeModule.buildMonadNodeConfig(serverHome)
-    configLogger(config.logFile, "NODE")
+    configLogger(config.logFile, "NODE", "monad", "ganshane")
     //预先加载JNI文件
     JniLoader.loadJniLibrary(serverHome, config.logFile)
 
@@ -30,7 +31,7 @@ object MonadNodeApp
     val classes = List[Class[_]](
       Class.forName("monad.core.LocalMonadCoreModule"),
       Class.forName("monad.face.ResourceModule"),
-      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.rpc.LocalRpcModule"),
       Class.forName("monad.rpc.LocalRpcClientModule"),
@@ -39,9 +40,9 @@ object MonadNodeApp
       Class.forName("monad.node.MonadNodeModule")
     )
     startUpContainer(classes: _*)
-    printTextWithNative("node",
-      "META-INF/maven/com.ganshane.monad/monad-node/version.properties",
-      0, logger)
+
+    val version = readVersionNumber("META-INF/maven/com.ganshane.monad/monad-node/version.properties")
+    printTextWithNative(logger, MonadFaceConstants.MONAD_TEXT_LOGO, "node@" + config.rpc.bind, version)
     logger.info("monad server started")
 
     join()

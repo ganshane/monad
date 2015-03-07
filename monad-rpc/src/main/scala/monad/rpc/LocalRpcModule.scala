@@ -3,7 +3,7 @@
 package monad.rpc
 
 import com.google.protobuf.ExtensionRegistry
-import monad.protocol.internal.CommandProto
+import monad.rpc.protocol.CommandProto
 import monad.rpc.services.ProtobufExtensionRegistryConfiger
 import org.apache.tapestry5.ioc.Configuration
 import org.apache.tapestry5.ioc.annotations.{Contribute, EagerLoad}

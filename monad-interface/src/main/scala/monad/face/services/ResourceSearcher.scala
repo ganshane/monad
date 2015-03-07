@@ -4,7 +4,6 @@ package monad.face.services
 
 import java.util.concurrent.ExecutorService
 
-import monad.face.annotation.Rpc
 import monad.face.model.{IdShardResult, ResourceDefinition, ShardResult}
 import monad.support.services.ServiceLifecycle
 import org.apache.lucene.index.IndexWriter
@@ -17,13 +16,9 @@ trait ResourceSearcherSupport {
     /**
      * search index with index name and keyword
      */
-    @Rpc(mode="all",merge="collectSearch")
     def collectSearch(q:String,sort:String,topN:Int):ShardResult
-    @Rpc(mode="all",merge="collectSearch")
     def facetSearch(q:String,field:String,upper:Int, lower:Int):ShardResult
-    @Rpc(mode="all",merge="collectSearch")
     def collectSearch2(q:String,sort:String,topN:Int):ShardResult
-    @Rpc(mode="all",merge="collectMaxDoc")
     def maxDoc:Int
     def searchObjectId(q:String):IdShardResult
 }

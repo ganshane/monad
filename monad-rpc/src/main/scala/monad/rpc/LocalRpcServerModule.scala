@@ -2,8 +2,9 @@
 // site: http://www.ganshane.com
 package monad.rpc
 
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.rpc.internal.NettyRpcServerImpl
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import org.apache.tapestry5.ioc.ServiceBinder
 import org.apache.tapestry5.ioc.annotations.ServiceId

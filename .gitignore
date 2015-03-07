@@ -27,3 +27,4 @@ support/config/local*
 support/log
 monad-jni/src/main/java/monad/jni/services/gen
 support/gpg/gpg.sec
+monad-jni/src/main/resources/META-INF/native

@@ -1,15 +1,16 @@
 // Copyright 2013,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.face
+package monad.core
 
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
+import monad.support.services.MonadUtils
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.internal.services.ParallelExecutorImpl
 import org.apache.tapestry5.ioc.services._
 import org.apache.tapestry5.ioc.util.TimeInterval
-import org.apache.tapestry5.ioc.{IOCSymbols, Invokable, MappedConfiguration}
+import org.apache.tapestry5.ioc.{IOCSymbols, MappedConfiguration}
 import org.slf4j.LoggerFactory
 
 /**
@@ -20,13 +21,21 @@ object ThreadPoolModule {
   @Contribute(classOf[ServiceOverride])
   def provideParallelExecutor(configuration: MappedConfiguration[Class[_], Object],
                               @Local parallelExecutor: ParallelExecutor) {
-
+    //configuration.add(classOf[PeriodicExecutor], periodicExecutor)
     configuration.add(classOf[ParallelExecutor], parallelExecutor)
   }
 
-  def buildParallelExecutor(executorService: ExecutorService,
-                            thunkCreator: ThunkCreator): ParallelExecutor = {
-    new ParallelExecutorImpl(executorService, thunkCreator, new PerthreadManager {
+  /*
+  @ServiceId("MonadPeriodicExecutor")
+  def buildPeriodicExecutor(@Local parallelExecutor: ParallelExecutor, logger: Logger) = {
+    val pe = new PeriodicExecutorImpl(parallelExecutor, logger)
+
+  }
+  */
+
+  def buildParallelExecutor(@Local executorService: ExecutorService,
+                            thunkCreator: ThunkCreator, threadManager: PerthreadManager): ParallelExecutor = {
+    new ParallelExecutorImpl(executorService, thunkCreator, threadManager) /* new PerthreadManager {
       def cleanup() {}
 
       def run(runnable: Runnable) {
@@ -45,6 +54,7 @@ object ThreadPoolModule {
         throw new UnsupportedOperationException
       }
     })
+    */
   }
 
   def buildExecutorService(@Symbol(IOCSymbols.THREAD_POOL_CORE_SIZE)
@@ -60,11 +70,22 @@ object ThreadPoolModule {
                            shutdownHub: RegistryShutdownHub
                             ): ExecutorService = {
 
+    val logger = LoggerFactory getLogger getClass
     val threadFactory = new ThreadFactory {
       private val seq = new AtomicInteger()
 
+      //当有错误的时候，输出异常消息
+      private def wrapRunnable(r: Runnable) = new Runnable {
+        override def run(): Unit = try {
+          r.run()
+        } catch {
+          case e: Throwable =>
+            logger.error(e.getMessage, e)
+        }
+      }
+
       def newThread(p1: Runnable) = {
-        val thread = new Thread(p1)
+        val thread = new Thread(wrapRunnable(p1))
         thread.setName("monad-background-%d".format(seq.incrementAndGet()))
         //设置优先级，让抽取和索引线程滞后处理
         thread.setPriority((Thread.NORM_PRIORITY - Thread.MIN_PRIORITY) / 2)
@@ -74,7 +95,6 @@ object ThreadPoolModule {
     }
     //val executorService = Executors.newFixedThreadPool(coreSize,threadFactory)
     val workQueue = new OverflowingSynchronousQueue[Runnable](queueSize)
-    val logger = LoggerFactory getLogger getClass
     val executorService = new ThreadPoolExecutor(coreSize, maxSize, keepAliveMillis,
       TimeUnit.MILLISECONDS, workQueue, threadFactory, new RejectedExecutionHandler {
         def rejectedExecution(p1: Runnable, p2: ThreadPoolExecutor) {
@@ -88,7 +108,7 @@ object ThreadPoolModule {
 
     shutdownHub.addRegistryShutdownListener(new Runnable() {
       def run() {
-        executorService.shutdown()
+        MonadUtils.shutdownExecutor(executorService, "global executor")
       }
     })
 

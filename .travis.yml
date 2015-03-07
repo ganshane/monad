@@ -1,20 +1,7 @@
-language:
-- cpp
-matrix:
-  fast_finish: true
-  include:
-  - compiler: win64
-    env: HOST=x86_64-w64-mingw32 ARCH=w64 CROSSPREFIX=x86_64-w64-mingw32-
-  - compiler: ' win32'
-    env: HOST=i686-w64-mingw32 ARCH=w32 CROSSPREFIX=i686-w64-mingw32-
-  - compiler: clang
-  - compiler: gcc
-branches:
-- all
+language: cpp
+compiler: gcc
+branches: all
 script: sh support/scripts/travis.sh
-os:
-- linux
-- osx
 before_install:
 - openssl aes-256-cbc -K $encrypted_c48dc063462f_key -iv $encrypted_c48dc063462f_iv
   -in support/gpg/gpg.sec.enc -out support/gpg/secring.gpg -d
@@ -24,3 +11,19 @@ env:
   - secure: ZzushL0D6Zx2/LB5NRdK1a0Zjaz/sV1hjxxNGCDd6bJsCS+l923pqJ8X5qGV4VQjfQiggrvNHPcFLpMAUMqMILwFWPRfTGgX9pEm2b2Iq/giWhw8hPozEhW7ykoZdDerEFhQBySn+ViDUzmETAtK/MdodoVU6Z1bwftLiMkpxj0=
   - secure: DKCxvMNTN8Pw99Zd33ivh6ug0O6upSJQdeFxJi5FiMiVQVB6FBAN/2xCODm0EkecU4exodxhZE8E/tLs/cqcLqkt5z89y3Tby1jXBBdQqqPbSTvKbyS/Vwmz8JGdkJC6oFbwP5XzjwKL4X8gG1sJjrUfxX3AzXlGXMIhAlBdmE0=
   - secure: CK1d4YV7gfj6UlTa3TEuLZOrXvlfDg/qK5drnKHdQPCbHy4eLgG8HmbpT9j5cPX0hQ6N5gyYGAzxe2YQm0FpF/SVEI9RT4CNHegBPOLqBpIvtsoJf71kZQo89iWNDWnCDbYE0085VoFk7VFSjl578bkOsjL3UjSqQZMuc8RT/+s=
+deploy:
+  file:
+    - target/monad/monad-api/target/monad-api-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+    - target/monad/monad-cloud/target/monad-cloud-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+    - target/monad/monad-group/target/monad-group-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+    - target/monad/monad-node/target/monad-node-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+    - target/monad/monad-sync/target/monad-sync-${VERSION}-${BUILD_NUMBER}-bin.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+  provider: releases
+  api_key:
+    secure: XXEnYEhwoS6iGr8ZHzuq+PgdwkxxSycpeHUMQGT0NOThPNSqh/3ko+u/1E659OfZZuRC8+kOum8h44f3+yegZ7jl/eOywmQ5GnhGNFE41R7+2TYEPI3/Shnd8pLa0mpVMRzdqnh+KkY1tuZcmjo69rmTsd6Epicxf3F1LYcJW9A=
+  on:
+    repo: ganshane/monad

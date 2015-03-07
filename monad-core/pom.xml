@@ -24,7 +24,7 @@
     <!-- rpc -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>monad-rpc</artifactId>
+      <artifactId>monad-protocol</artifactId>
       <scope>provided</scope>
     </dependency>
     <!-- jolokia -->
@@ -77,6 +77,11 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+    <!-- jansi -->
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -6,9 +6,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 
 import monad.face.model.{ShardResult, ShardResultCollect}
-import monad.protocol.internal.CommandProto.BaseCommand
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryResponse
 import monad.protocol.internal.InternalSearchProto.InternalSearchResponse
+import monad.rpc.protocol.CommandProto
+import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{CodingHelper, LoggerSupport}
 import org.jboss.netty.channel.Channel

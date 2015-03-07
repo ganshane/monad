@@ -51,7 +51,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
   def start() {
     logger.info("[{}] start node,version:{}", rd.name, version)
-    startNoSQLInstance()
+    startNoSQLInstance(rd)
     init()
   }
 
@@ -190,14 +190,11 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
   def removeIndex() {
     logger.info("[{}] remove index ....", rd.name)
-    var tmpPath = new File(indexConfigSupport.index.path + "/" + rd.name + ".tmp")
+    val tmpPath = new File(indexConfigSupport.index.path + "/" + rd.name + "." + System.currentTimeMillis())
     FileUtils.moveDirectory(indexPath, tmpPath)
     FileUtils.deleteQuietly(tmpPath)
     //删除NoSQL数据
-    val originPath = new File(indexConfigSupport.noSql.path + "/" + rd.name)
-    tmpPath = new File(indexConfigSupport.noSql.path + "/" + rd.name + ".tmp")
-    FileUtils.moveDirectory(originPath, tmpPath)
-    FileUtils.deleteQuietly(tmpPath)
+    destryNoSQL(rd)
   }
 
   def index(): Unit = {
@@ -250,13 +247,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.addDocument(doc)
   }
 
-  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.updateDocument(createIdTerm(id), doc)
-    }
-  }
-
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
       logger.warn("[" + rd.name + "] indexer version({}) != data version({})", version, dataVersion)
@@ -269,10 +259,11 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     indexWriter
   }
 
-  private def createIdTerm(id: Int) = {
-    val bb = new BytesRefBuilder
-    NumericUtils.intToPrefixCoded(id, 0, bb)
-    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
+  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      indexWriter.updateDocument(createIdTerm(id), doc)
+    }
   }
 
   def deleteDocument(id: Int, dataVersion: Int) {
@@ -281,6 +272,12 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.deleteDocuments(createIdTerm(id))
       //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
     }
+  }
+
+  private def createIdTerm(id: Int) = {
+    val bb = new BytesRefBuilder
+    NumericUtils.intToPrefixCoded(id, 0, bb)
+    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {

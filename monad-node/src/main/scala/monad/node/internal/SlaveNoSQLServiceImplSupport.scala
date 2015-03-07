@@ -2,10 +2,14 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
+import java.io.File
+
 import monad.core.config.NoSqlConfig
+import monad.face.model.ResourceDefinition
 import monad.jni.services.gen.{NoSQLOptions, SlaveNoSQLSupport}
 import monad.node.services.SlaveNoSQLService
 import monad.support.services.LoggerSupport
+import org.apache.commons.io.FileUtils
 
 /**
  * processor nosql instance
@@ -32,7 +36,7 @@ abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfig)
   /**
    * 启动服务
    */
-  def startNoSQLInstance(): Unit = {
+  def startNoSQLInstance(rd: ResourceDefinition): Unit = {
     info("start processor nosql instance")
     val noSQLOptions = new NoSQLOptions()
     noSQLOptions.setMax_open_files(config.maxOpenFiles)
@@ -42,8 +46,15 @@ abstract class SlaveNoSQLServiceImplSupport(val config: NoSqlConfig)
     noSQLOptions.setMax_mmap_size(config.maxMmapSize)
     noSQLOptions.setLog_keeped_num(1000)
     noSQLOptions.setWrite_buffer_mb(config.writeBuffer)
-    slaveNoSQLOpt = Some(createNoSQLInstance(config.path, noSQLOptions))
+    slaveNoSQLOpt = Some(createNoSQLInstance(config.path + "/" + rd.name, noSQLOptions))
     noSQLOptions.delete()
 
+  }
+
+  def destryNoSQL(rd: ResourceDefinition): Unit = {
+    val originPath = new File(config.path + "/" + rd.name)
+    val tmpPath = new File(config.path + "/" + rd.name + "." + System.currentTimeMillis())
+    FileUtils.moveDirectory(originPath, tmpPath)
+    FileUtils.deleteQuietly(tmpPath)
   }
 }

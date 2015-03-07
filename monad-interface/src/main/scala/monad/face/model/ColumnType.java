@@ -2,24 +2,24 @@
 // site: http://www.ganshane.com
 package monad.face.model;
 
-import monad.face.model.types.*;
-
 /**
  * 定义列的类型
+ *
  * @author jcai
  * @version 0.1
  */
 public enum ColumnType {
     //当做字符串处理
-    String(new StringColumnType()),
+    String,//(new StringColumnType()),
     //Long 类型字段
-    Long(new LongColumnType()),
-    Int(new IntColumnType()),
+    Long,//(new LongColumnType()),
+    Int,//(new IntColumnType()),
     //日期类型，包含了字符串类型的日期
-    Date(new DateColumnType()),
+    Date,//(new DateColumnType()),
     //clob
-    Clob(new ClobColumnType());
+    Clob;//(new ClobColumnType());
 
+    /*
     private MonadColumnType<?> monadColumnType;
 
     ColumnType(MonadColumnType<?> monadColumnType) {
@@ -28,4 +28,5 @@ public enum ColumnType {
     public MonadColumnType<?> getColumnType(){
         return this.monadColumnType;
     }
+    */
 }

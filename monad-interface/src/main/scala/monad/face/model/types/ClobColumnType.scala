@@ -7,6 +7,7 @@
 package monad.face.model.types
 
 import java.sql.ResultSet
+
 import monad.face.model.ResourceDefinition.ResourceProperty
 
 /**
@@ -14,9 +15,11 @@ import monad.face.model.ResourceDefinition.ResourceProperty
  * @author jcai
  */
 
-class ClobColumnType extends StringColumnType{
-    override def readValueFromJdbc(rs: ResultSet, index: Int, cd: ResourceProperty) = {
-        val clob = rs.getClob(index)
-        if(clob != null) Some(clob.getSubString(1, clob.length.intValue())) else None
-    }
+object ClobColumnType extends ClobColumnType
+
+class ClobColumnType extends StringColumnType {
+  override def readValueFromJdbc(rs: ResultSet, index: Int, cd: ResourceProperty) = {
+    val clob = rs.getClob(index)
+    if (clob != null) Some(clob.getSubString(1, clob.length.intValue())) else None
+  }
 }

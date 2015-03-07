@@ -14,6 +14,7 @@ import monad.face.config.SyncConfigSupport
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
+import monad.face.services.ResourceDefinitionConversions._
 import monad.support.services.{LoggerSupport, MonadException, ServiceLifecycle, ServiceUtils}
 import monad.sync.internal.JdbcDatabase._
 import monad.sync.services.ResourceImporterManager
@@ -62,7 +63,7 @@ class ResourceImporter(val rd: ResourceDefinition,
    * 增量字段定义
    * @return 增量字段定义
    */
-  override def incrementColumn: ResourceProperty = findIncrementColumn()
+  override def incrementColumn: ResourceProperty = modifyKeyColumn
 
   /**
    * 得到资源配置定义
@@ -195,8 +196,11 @@ class ResourceImporter(val rd: ResourceDefinition,
       buildConnection
       importData()
     } catch {
+      case e: MonadException =>
+        error("[{}] {}", rd.name, e.getMessage)
       case e: Throwable =>
-        logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
+        error("[" + rd.name + "] " + e.getMessage, e)
+      //logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
     }
 
     closeJdbc(conn)

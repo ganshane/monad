@@ -3,21 +3,19 @@
 package monad.face.model;
 
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
-
 /**
  * 索引的类型
+ *
  * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
  * @version $Revision$
  * @since 0.1
  */
 public enum IndexType {
-    Keyword(Field.Store.NO, Field.Index.NOT_ANALYZED),
-    Text(Field.Store.NO, Field.Index.ANALYZED),
-    UnIndexed(Field.Store.NO, Field.Index.NO);
+    Keyword,//(Field.Store.NO, Field.Index.NOT_ANALYZED),
+    Text,//(Field.Store.NO, Field.Index.ANALYZED),
+    UnIndexed;//(Field.Store.NO, Field.Index.NO);
 
+    /*
     //存储类型
     private Store storeType;
     //索引类型
@@ -33,4 +31,5 @@ public enum IndexType {
     public Field.Index indexType(){
         return this.indexType;
     }
+    */
 }

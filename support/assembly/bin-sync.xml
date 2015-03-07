@@ -20,10 +20,6 @@
       <outputDirectory>config</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>../support/dll</directory>
-      <outputDirectory>dll</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>../support/bin</directory>
       <outputDirectory>bin</outputDirectory>
       <includes>

@@ -5,6 +5,7 @@ package monad.storage.api.app
 import monad.api.MonadApiModule
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
+import monad.face.MonadFaceConstants
 import monad.support.services.{JettyServerSupport, SystemEnvDetectorSupport}
 import org.slf4j.LoggerFactory
 
@@ -20,7 +21,7 @@ object MonadApiApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadApiModule.buildMonadApiConfig(serverHome)
-    configLogger(config.logFile, "API")
+    configLogger(config.logFile, "API", "monad", "ganshane")
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting api server ....")
@@ -31,15 +32,16 @@ object MonadApiApp
       //Class.forName("monad.core.ProtobufProcessorModule"),
       Class.forName("monad.face.LocalMonadAssetModule"),
       Class.forName("monad.face.ResourceModule"),
-      Class.forName("monad.face.ThreadPoolModule"),
+      Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.api.LocalMonadApiModule"),
       Class.forName("monad.api.MonadApiModule")
     )
     startServer(config.web, "monad.api", classes: _*)
-    printTextWithNative("api@" + config.web.bind,
-      "META-INF/maven/com.ganshane.monad/monad-api/version.properties",
-      0, logger)
+
+    val version = readVersionNumber("META-INF/maven/com.ganshane.monad/monad-api/version.properties")
+    printTextWithNative(logger, MonadFaceConstants.MONAD_TEXT_LOGO, "api@" + config.web.bind, version)
+
     logger.info("api server started")
 
     join()

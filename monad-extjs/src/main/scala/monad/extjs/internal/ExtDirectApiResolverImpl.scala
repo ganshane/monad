@@ -2,12 +2,13 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import org.apache.tapestry5.services.ComponentClassResolver
-import collection.JavaConversions._
+import com.google.gson.{JsonArray, JsonObject}
 import monad.extjs.annotations.ExtDirectMethod
-import com.google.gson.{JsonObject, JsonArray}
 import monad.extjs.services.ExtDirectApiResolver
+import org.apache.tapestry5.services.ComponentClassResolver
 import org.apache.tapestry5.services.assets.AssetPathConstructor
+
+import scala.collection.JavaConversions._
 
 /**
  * 得到所有的Extjs的API
@@ -40,12 +41,12 @@ class ExtDirectApiResolverImpl(componentClassResolver:ComponentClassResolver,
     val appPath=assetPathConstructor.constructAssetPath("extjs_static","icons")
     val uxPath=assetPathConstructor.constructAssetPath("extjs_static","examples/ux")
     val sDotGifPath = assetPathConstructor.constructAssetPath("extjs_static","resources/themes/images/default/tree/s.gif")
+  val json = new JsonObject
     //Ext.onReady(function(){
     var jsContent:String =
         """var ICON_DIR='"""+appPath+"""';
 Ext.ns("Ext.app");
 Ext.app.REMOTING_API="""
-    val json = new JsonObject
     json.addProperty("url","/api/router")
     json.addProperty("type","remoting")
     json.addProperty("namespace","direct")
@@ -55,7 +56,7 @@ Ext.app.REMOTING_API="""
     jsContent += json.toString
     jsContent += """;Ext.require(['Ext.direct.Manager']);
 Ext.Loader.setConfig({enabled: true,disableCaching:false});
-Ext.Ajax.defaultHeaders = {"X-Extjs-Request":"1.3"};
+Ext.Ajax.setDefaultHeaders({"X-Extjs-Request":"1.3"});
 if(Ext.isIE6 || Ext.isIE7) Ext.BLANK_IMAGE_URL='%s';
 var uxPath='%s';
 Ext.Loader.setPath('Ext.ux',uxPath);

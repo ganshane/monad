@@ -5,7 +5,7 @@
 -->
 
   <log_file>${server.home}/log/monad.node.log</log_file>
-  <local_store_dir>${server.home}/config/local.sync</local_store_dir>
+  <local_store_dir>${server.home}/config/local.node</local_store_dir>
   <partition_id>1</partition_id>
   <rpc>
     <bind>127.0.0.1:5558</bind>

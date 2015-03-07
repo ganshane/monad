@@ -5,6 +5,7 @@ package monad.core.services
 import java.io.{BufferedInputStream, IOException}
 import java.util.Properties
 
+import org.fusesource.jansi.Ansi
 import org.slf4j.Logger
 
 /**
@@ -46,36 +47,6 @@ trait BootstrapTextSupport {
 
   }
 
-  protected[monad] def printTextWithNative(text: String,
-                                             versionPath: String,
-                                             nativeVersion: Int,
-                                             logger: Logger) {
-    val version = readVersionNumber(versionPath)
-    var str = """
-   _  _________ _   _____   _  _____
-  / |/ /  _/ _ \ | / / _ | / |/ / _ | module : %s
- /    // // , _/ |/ / __ |/    / __ | version: %s
-/_/|_/___/_/|_||___/_/ |_/_/|_/_/ |_| native : %s
-
-              """
-    try {
-      val className = "org.fusesource.jansi.Ansi"
-      val clazz = Thread.currentThread().getContextClassLoader.loadClass(className)
-      //ansi()
-      val obj = clazz.getMethod("ansi").invoke(null)
-      //ansi().render
-      str = clazz.
-        getMethod("render", classOf[String]).
-        invoke(obj, "@|green " + str.
-        format("|@ @|red " + text + "|@ @|green ", "|@ @|yellow " + version + "|@ @|green ", "|@ @|cyan " + nativeVersion + "|@")).toString
-    } catch {
-      case e: Throwable =>
-        logger.debug(e.getMessage, e)
-        str = str.format(text, version, nativeVersion)
-    }
-    logger.info(str)
-  }
-
   def readVersionNumber(resourcePath: String): String = {
     var result = "UNKNOWN"
 
@@ -108,5 +79,40 @@ trait BootstrapTextSupport {
     }
 
     result
+  }
+
+  protected[monad] def printTextWithNative(logger: Logger,
+                                           logo: String,
+                                           values: Any*) {
+    /*
+    //val version = readVersionNumber(versionPath)
+    var str = """
+   _  _________ _   _____   _  _____
+  / |/ /  _/ _ \ | / / _ | / |/ / _ | module : %s
+ /    // // , _/ |/ / __ |/    / __ | version: %s
+/_/|_/___/_/|_||___/_/ |_/_/|_/_/ |_| native : %s
+
+              """
+     */
+    var str = logo
+    try {
+      //AnsiConsole.systemInstall();
+
+      str = Ansi.ansi().eraseScreen().render(logo, values.map(_.asInstanceOf[Object]): _ *).toString
+      /*
+      val className = "org.fusesource.jansi.Ansi"
+      val clazz = Thread.currentThread().getContextClassLoader.loadClass(className)
+      //ansi()
+      val obj = clazz.getMethod("ansi").invoke(null)
+      //ansi().render
+      str = clazz.
+        getMethod("render", classOf[String]).
+        invoke(obj, "@|green " + str.
+        format("|@ @|red " + text + "|@ @|green ", "|@ @|yellow " + version + "|@ @|green ", "|@ @|cyan " + nativeVersion + "|@")).toString
+      */
+      logger.info(str)
+    } finally {
+      //AnsiConsole.systemUninstall()
+    }
   }
 }
