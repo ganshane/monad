@@ -12,8 +12,8 @@ package monad.face.model;
  */
 public enum AnalyzerType {
     Standard(0),
-    MMSeg(1),
-    Smart(2);
+    MMSeg(0),
+    Smart(0);
 
     public int constructorLen;
 

@@ -36,9 +36,11 @@ class OpenBitSetResultProcessor(response: Response) extends ComponentEventResult
 
       os = new DeflaterOutputStream(response.getOutputStream("application/octet-stream"))
       val value = openBitSetWithNodes.bitSet
+      //TODO 编译错误
       //删除尾部的0，缩短长度
-      value.trimTrailingZeros()
-      val len = value.getNumWords
+      //value.trimTrailingZeros()
+      val len = 0 //value.getNumWords
+
       val bits = value.getBits
 
       for (i <- 0 until len) {

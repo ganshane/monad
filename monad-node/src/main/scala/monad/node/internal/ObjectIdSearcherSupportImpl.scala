@@ -7,9 +7,9 @@ import javax.naming.SizeLimitExceededException
 import monad.face.config.IndexConfigSupport
 import monad.face.model.IdShardResult
 import monad.node.internal.support.SearcherManagerSupport
-import org.apache.lucene.index.{AtomicReaderContext, SegmentReader}
-import org.apache.lucene.search.{Collector, Scorer}
-import org.apache.lucene.util.OpenBitSet
+import org.apache.lucene.index.{LeafReaderContext, SegmentReader}
+import org.apache.lucene.search.{Scorer, SimpleCollector}
+import org.apache.lucene.util.LongBitSet
 import org.slf4j.LoggerFactory
 
 /**
@@ -59,30 +59,28 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
       return null
   }
 
-  private class IdSearchCollector(s: InternalIndexSearcher) extends Collector {
-    private var context: AtomicReaderContext = _
-    private[internal] val result = new OpenBitSet(102400)
+  private class IdSearchCollector(s: InternalIndexSearcher) extends SimpleCollector {
+    private var context: LeafReaderContext = _
+    //TODO 优化采用 FIXEDBITSET
+    private[internal] val result = new LongBitSet(102400)
 
-    def setScorer(scorer: Scorer) {}
+
+    override def doSetNextReader(context: LeafReaderContext): Unit = {
+      this.context = context;
+    }
+
+
+    override def setScorer(scorer: Scorer): Unit = super.setScorer(scorer)
 
     def collect(doc: Int) {
       val idSeq = readObjectId(doc)
       if (idSeq <= 0) return
       //logger.debug("doc:{} idseq:{}",doc,idSeq)
-
       result.set(idSeq)
-    }
-
-
-    def setNextReader(context: AtomicReaderContext) {
-      this.context = context
     }
 
     private def readObjectId(doc: Int): Int = {
       s.analyticObjectId(this.context.reader().asInstanceOf[SegmentReader], doc)
     }
-
-    def acceptsDocsOutOfOrder() = true
   }
-
 }

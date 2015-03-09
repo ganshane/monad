@@ -38,10 +38,13 @@ class IdShardResultCollectResultProcessor(response: Response) extends ComponentE
       val idStarts = new Array[Int](collect.results.length)
       val regions = new Array[Int](collect.results.length)
       for ((shardResult, index) <- collect.results.view.zipWithIndex) {
+        //TODO 编译错误
         //删除尾部的0，缩短长度
+        /*
         shardResult.data.trimTrailingZeros()
-
         idStarts(index) = shardResult.data.getNumWords
+        */
+
         regions(index) = shardResult.region.toInt
       }
       response.setHeader(MonadApiConstants.HEADER_REGIONS, regions.mkString(","))
@@ -52,7 +55,8 @@ class IdShardResultCollectResultProcessor(response: Response) extends ComponentE
       val byteBuffer = ByteBuffer.allocate(8)
       for ((shardResult, index) <- collect.results.view.zipWithIndex) {
         val value = shardResult.data
-        val len = value.getNumWords
+        //TODO 编译错误
+        val len = 0 //value.getNumWords
         val bits = value.getBits
         for (i <- 0 until len) {
           //System.out.println("write long "+bits(i))

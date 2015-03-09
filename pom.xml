@@ -676,7 +676,7 @@
     <scala-release-version>2.11.2</scala-release-version>
     <metrics-release-version>3.1.0</metrics-release-version>
     <hawtio-release-version>1.4.19</hawtio-release-version>
-    <lucene-release-version>4.10.2</lucene-release-version>
+    <lucene-release-version>5.0.0</lucene-release-version>
     <proguard-release-version>5.1</proguard-release-version>
     <lichen-release-version>0.5.10.1</lichen-release-version>
   </properties>

@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import monad.face.MonadFaceConstants
 import monad.face.services.DataTypeUtils
-import org.apache.lucene.index.AtomicReader.CoreClosedListener
+import org.apache.lucene.index.LeafReader.CoreClosedListener
 import org.apache.lucene.index.SegmentReader
 import org.apache.lucene.util.Bits
 import org.slf4j.LoggerFactory
