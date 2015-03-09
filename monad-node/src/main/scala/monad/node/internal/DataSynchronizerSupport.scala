@@ -3,6 +3,7 @@
 package monad.node.internal
 
 import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 
 import monad.core.services.{CronScheduleWithStartModel, StartAtDelay}
 import monad.jni.services.JNIErrorCode
@@ -51,10 +52,8 @@ trait DataSynchronizerSupport
     }
   }
   private var syncJob: Option[PeriodicJob] = None
-  @volatile
-  private var processTime: Long = 0
-  @volatile //判断数据同步后的操作
-  private var afterDoing = false
+  private val processTime: AtomicLong = new AtomicLong(System.currentTimeMillis())
+  private val afterDoing = new AtomicBoolean(false)
   private var resourceIndex = 0
   private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
@@ -74,9 +73,9 @@ trait DataSynchronizerSupport
     this.rpcClient = rpcClient
     val job = periodicExecutor.addJob(new CronScheduleWithStartModel("0/5 * * * * ? *", StartAtDelay), "sync-database-for-node", new Runnable {
       override def run(): Unit = {
-        val timeDiff = System.currentTimeMillis() - processTime
+        val timeDiff = System.currentTimeMillis() - processTime.get()
         resourceIndex = 0
-        if (timeDiff > thirtySeconds && !afterDoing) {
+        if (timeDiff > thirtySeconds && !afterDoing.get()) {
           warn("no response data from meta server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
@@ -108,7 +107,7 @@ trait DataSynchronizerSupport
   }
 
   def sendSyncRequest(channelOpt: Option[Channel]) = {
-    processTime = System.currentTimeMillis()
+    processTime.set(System.currentTimeMillis())
     val message = wrap(SyncRequest.cmd, constructSyncRequest)
     val futureOpt = channelOpt match {
       case Some(channel) =>
@@ -117,12 +116,7 @@ trait DataSynchronizerSupport
         rpcClient.writeMessage(masterMachinePath, message)
     }
 
-    futureOpt match {
-      case Some(future) =>
-        addListenerToFuture(future)
-      case None =>
-      //do nothing
-    }
+    futureOpt.foreach(addListenerToFuture)
 
     futureOpt
   }
@@ -176,13 +170,13 @@ trait DataSynchronizerSupport
 
   private def finishRequest(): Unit = {
     try {
-      afterDoing = true
+      afterDoing.set(true)
       afterFinishSync()
     } catch {
       case e: Throwable =>
         error(e.getMessage, e)
     } finally {
-      afterDoing = false
+      afterDoing.set(false)
       semaphore.release()
     }
   }
