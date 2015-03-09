@@ -73,6 +73,7 @@ object MonadFaceConstants {
   final val MACHINE_NODES = MonadCoreConstants.MACHINES + "/nodes"
   final val MACHINE_NODE_FORMAT = MACHINE_NODES + "/s-%s"
 
+  //http://bigtext.org/?font=smslant&text=MONAD
   final val MONAD_TEXT_LOGO = "@|green " + """
    __  _______  _  _____   ___
   /  |/  / __ \/ |/ / _ | / _ \
