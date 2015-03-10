@@ -13,6 +13,8 @@ import org.apache.tapestry5.ioc.util.TimeInterval
 import org.apache.tapestry5.ioc.{IOCSymbols, MappedConfiguration}
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * thread pool module
  * @author jcai
@@ -79,7 +81,7 @@ object ThreadPoolModule {
         override def run(): Unit = try {
           r.run()
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             logger.error(e.getMessage, e)
         }
       }

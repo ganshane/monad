@@ -17,6 +17,7 @@ import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * 远程组服务API的实现类
@@ -31,17 +32,12 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
     executeApiRequest[GroupConfig](ApiConstants.GROUP_GetSelfGroupConfig)
   }
 
-  def GetOtherGroups: List[GroupConfig] = {
-    val typeToken = new TypeToken[JList[GroupConfig]]() {}
-    executeApiRequest[JList[GroupConfig]](ApiConstants.GROUP_GetOtherGroups, rawType = Some(typeToken.getType)).toList
-  }
-
   private def executeApiRequest[T](api: String, params: Option[Map[String, String]] = None, rawType: Option[Type] = None)(implicit m: Manifest[T]): T = {
     var jsonStr: String = null
     try {
       jsonStr = httpRestClient.get(groupApi + "/" + api, params)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         throw new MonadException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
     }
     val jsonReader = new JsonReader(new StringReader(jsonStr))
@@ -60,6 +56,11 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
     throw new MonadException("fail to get self group config " + json.get(ApiConstants.MSG),
       MonadFaceExceptionCode.FAIL_GET_SELF_GROUP_CONFIG
     )
+  }
+
+  def GetOtherGroups: List[GroupConfig] = {
+    val typeToken = new TypeToken[JList[GroupConfig]]() {}
+    executeApiRequest[JList[GroupConfig]](ApiConstants.GROUP_GetOtherGroups, rawType = Some(typeToken.getType)).toList
   }
 
   //get all resources

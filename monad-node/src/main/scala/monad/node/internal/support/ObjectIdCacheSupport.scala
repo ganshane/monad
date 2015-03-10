@@ -13,6 +13,8 @@ import org.apache.lucene.index.SegmentReader
 import org.apache.lucene.util.Bits
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 private[monad] object GlobalObjectIdCache {
   final val FULL_LENGTH = 8
   //全局缓存对象
@@ -45,7 +47,7 @@ private[monad] object GlobalObjectIdCache {
       .getMethod("cleaner")
     UNMAP_SUPPORTED = true
   } catch {
-    case e: Throwable =>
+    case NonFatal(e) =>
   }
 }
 

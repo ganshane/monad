@@ -23,6 +23,8 @@ import org.apache.tapestry5.ioc.ObjectLocator
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 
+import scala.util.control.NonFatal
+
 /**
  * 资源的导入
  * @author jcai
@@ -86,7 +88,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
     try {
       disruptor.shutdown(2, TimeUnit.SECONDS)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         disruptor.halt()
     }
     MonadUtils.shutdownExecutor(dbReader, "resource importer manager")

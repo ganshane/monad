@@ -28,9 +28,9 @@ trait LoggerSupport {
     }
   }
 
-  protected def error(message: String, throwable: Throwable): Unit = {
+  protected def error(message: String, e: Throwable): Unit = {
     if (logger.isErrorEnabled) {
-      logger.error(message, throwable)
+      logger.error(message, e)
     }
   }
 

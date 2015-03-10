@@ -10,6 +10,7 @@ import org.apache.zookeeper.WatchedEvent
 import org.apache.zookeeper.Watcher.Event.EventType
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * zk children support
@@ -88,7 +89,7 @@ trait ZkChildrenSupport {
           watcher.handleDataChanged(getChildren(path))
         }
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         failedChildrenWatcher.add(path)
         error("fail to watch childre,will retry " + e.getMessage)
     }
@@ -107,6 +108,19 @@ trait ZkChildrenSupport {
     }
   }
 
+  private def internalWatchChildren(path: String, curatorWatcher: CuratorWatcher): Seq[String] = {
+    try {
+      failedChildrenWatcher.remove(path)
+      val data = zkClient.getChildren.usingWatcher(curatorWatcher).forPath(path)
+      data.toSeq
+    } catch {
+      case NonFatal(e) =>
+        warn("fail to watch node data,will retry,msg:{}", e.getMessage)
+        failedChildrenWatcher.add(path)
+        null
+    }
+  }
+
   protected def retryFailedChildrenWatcher() {
     info("retry to watch children")
     val it = failedChildrenWatcher.iterator()
@@ -119,19 +133,6 @@ trait ZkChildrenSupport {
         watcherList.watchers.foreach(x => runInNotExceptionThrown {
           x.handleDataChanged(data)
         })
-    }
-  }
-
-  private def internalWatchChildren(path: String, curatorWatcher: CuratorWatcher): Seq[String] = {
-    try {
-      failedChildrenWatcher.remove(path)
-      val data = zkClient.getChildren.usingWatcher(curatorWatcher).forPath(path)
-      data.toSeq
-    } catch {
-      case e: Throwable =>
-        warn("fail to watch node data,will retry,msg:{}", e.getMessage)
-        failedChildrenWatcher.add(path)
-        null
     }
   }
 

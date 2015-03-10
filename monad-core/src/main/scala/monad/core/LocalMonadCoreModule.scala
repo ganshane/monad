@@ -13,6 +13,8 @@ import org.apache.tapestry5.ioc.services.{FactoryDefaults, ServiceOverride, Symb
 import org.apache.tapestry5.plastic.MethodInvocation
 import org.slf4j.Logger
 
+import scala.util.control.NonFatal
+
 /**
  * local monad core module
  */
@@ -63,7 +65,7 @@ object LocalMonadCoreModule {
               try {
                 runnable.run()
               } catch {
-                case e: Throwable =>
+                case NonFatal(e) =>
                   logger.error(e.getMessage, e)
               }
             }

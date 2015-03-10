@@ -8,6 +8,7 @@ import monad.support.MonadSupportConstants
 import org.apache.zookeeper.CreateMode
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * ephemeral path support
@@ -81,6 +82,11 @@ trait ZkEphemeralPathSupport {
     }
   }
 
+  protected def recreateEphemeralNodes() {
+    //针对临时节点的再次创建
+    ephemeralNodes.foreach(node => createEphemeralPath(node.path, node.data, node.createMode, isPermanent = true))
+  }
+
   private def createEphemeralPath(path: String,
                                   data: Option[Array[Byte]],
                                   mode: CreateMode,
@@ -95,7 +101,7 @@ trait ZkEphemeralPathSupport {
     try {
       delete(path)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         warn("fail to delete path when create ephemeral path for " + path)
     }
     val node = new Node(path, data, mode)
@@ -106,15 +112,10 @@ trait ZkEphemeralPathSupport {
         ephemeralNodes.add(node)
       }
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         warn(e.getMessage + ",will retry")
         failedEphemeralNodes.add(node)
     }
-  }
-
-  protected def recreateEphemeralNodes() {
-    //针对临时节点的再次创建
-    ephemeralNodes.foreach(node => createEphemeralPath(node.path, node.data, node.createMode, isPermanent = true))
   }
 
   private[monad] def testCreateFailedEphemeral(path: String) {

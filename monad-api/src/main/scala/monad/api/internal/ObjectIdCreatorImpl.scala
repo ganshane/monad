@@ -10,6 +10,8 @@ import monad.api.services.{MonadApiExceptionCode, ObjectIdCreator}
 import monad.support.services.MonadException
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * NoSQL全局的对象id创建器
  * @author jcai
@@ -81,7 +83,7 @@ class ObjectIdCreatorImpl extends ObjectIdCreator {
         processId = java.lang.management.ManagementFactory.getRuntimeMXBean.getName.hashCode()
       }
       catch {
-        case e: Throwable =>
+        case NonFatal(e) =>
       }
 
       val loader = getClass.getClassLoader

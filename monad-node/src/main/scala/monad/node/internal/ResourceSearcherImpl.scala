@@ -18,6 +18,8 @@ import org.apache.lucene.util.LongBitSet
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 
 /**
  * 搜索的实现类
@@ -48,7 +50,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
         try {
           warm(searcher)
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             logger.warn("Fail to warm index", e)
         }
         searcher
@@ -131,17 +133,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     }
   }
 
-  protected def parseQuery(q: String) = {
-    val parser = createParser()
-    try {
-      parser.parse(q)
-    } catch {
-      case e: Throwable =>
-        logger.error(e.toString)
-        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
-    }
-  }
-
   def maxDoc: Int = doInSearcher(_.getIndexReader.numDocs())
 
   def collectSearch2(query: String, sort: String, topN: Int) = {
@@ -188,6 +179,17 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.maxDoc = searcher.getIndexReader.maxDoc()
 
       shardResult
+    }
+  }
+
+  protected def parseQuery(q: String) = {
+    val parser = createParser()
+    try {
+      parser.parse(q)
+    } catch {
+      case NonFatal(e) =>
+        logger.error(e.toString)
+        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
   }
 

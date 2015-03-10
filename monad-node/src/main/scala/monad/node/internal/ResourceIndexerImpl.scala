@@ -26,6 +26,7 @@ import org.apache.lucene.util.{BytesRefBuilder, NumericUtils}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 
 import scala.annotation.tailrec
+import scala.util.control.NonFatal
 
 /**
  * 实现数据索引功能
@@ -141,7 +142,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       resourceSearcher.start()
       maybeOutputRegionInfo(0)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         shutdown()
         throw e
     }
@@ -166,21 +167,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private def rollback() {
     if (indexWriter != null)
       indexWriter.rollback()
-  }
-
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    /*
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
-    */
   }
 
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
@@ -289,6 +275,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     resourceSearcher.maybeRefresh()
     val i = indexWriter.maxDoc()
     logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+  }
+
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    /*
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
+    */
   }
 
   private def writeLastLog(seq: Long) {

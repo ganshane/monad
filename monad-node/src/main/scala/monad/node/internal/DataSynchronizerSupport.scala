@@ -11,7 +11,6 @@ import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
 import monad.node.services.MonadNodeExceptionCode
 import monad.protocol.internal.InternalSyncProto
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException}
@@ -19,6 +18,7 @@ import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.jboss.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 
 import scala.annotation.tailrec
+import scala.util.control.NonFatal
 
 /**
  * spout data synchronizer
@@ -51,9 +51,9 @@ trait DataSynchronizerSupport
       semaphore.release()
     }
   }
-  private var syncJob: Option[PeriodicJob] = None
   private val processTime: AtomicLong = new AtomicLong(System.currentTimeMillis())
   private val afterDoing = new AtomicBoolean(false)
+  private var syncJob: Option[PeriodicJob] = None
   private var resourceIndex = 0
   private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
@@ -95,7 +95,7 @@ trait DataSynchronizerSupport
               }
             }
           } catch {
-            case e: Throwable => //发生异常则释放lock
+            case NonFatal(e) => //发生异常则释放lock
               error(e.getMessage, e)
               finishRequest()
           }
@@ -173,7 +173,7 @@ trait DataSynchronizerSupport
       afterDoing.set(true)
       afterFinishSync()
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         error(e.getMessage, e)
     } finally {
       afterDoing.set(false)

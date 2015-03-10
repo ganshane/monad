@@ -14,6 +14,7 @@ import monad.support.MonadSupportConstants
 import org.w3c.dom.ls.{LSInput, LSResourceResolver}
 
 import scala.io.Source
+import scala.util.control.NonFatal
 
 /**
  * 使用Jaxb方式解析XML配置文件
@@ -71,7 +72,7 @@ object XmlLoader {
       }
       unmarshaller.unmarshal(reader).asInstanceOf[T]
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         throw MonadException.wrap(e, MonadSupportErrorCode.FAIL_PARSE_XML)
     } finally {
       close(is)
@@ -94,7 +95,7 @@ object XmlLoader {
     try {
       io.close()
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
     }
   }
 

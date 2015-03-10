@@ -11,6 +11,8 @@ import monad.support.services.{LoggerSupport, RunInNoExceptionThrown}
 import org.apache.tapestry5.ioc.services.cron.{CronSchedule, PeriodicExecutor}
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * implements metrics service
  */
@@ -100,7 +102,7 @@ class MetricsServiceImpl(periodicExecutor: PeriodicExecutor)
         try {
           reporter.report()
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             error("fail to report metrics", e)
         }
       }

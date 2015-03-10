@@ -12,6 +12,7 @@ import org.apache.zookeeper.Watcher.Event.EventType
 import org.apache.zookeeper.data.Stat
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * zookeeper node data support
@@ -162,20 +163,6 @@ trait ZkNodeDataSupport {
     }
   }
 
-  private def internalWatchNodeData(path: String,
-                                    curatorWatcher: CuratorWatcher): Option[Array[Byte]] = {
-    try {
-      failedNodeDataWatcher.remove(path)
-      val data = zkClient.getData.usingWatcher(curatorWatcher).forPath(path)
-      if (data == null || data.length == 0) None else Some(data)
-    } catch {
-      case e: Throwable =>
-        warn("fail to watch node data,will retry,msg:{}", e.getMessage)
-        failedNodeDataWatcher.add(path)
-        None
-    }
-  }
-
   protected def rewatchNodeData() {
     //针对节点数据的观察器
     nodeDataWatcher.foreach {
@@ -186,6 +173,20 @@ trait ZkNodeDataSupport {
           v.watchers.foreach(x => runInNotExceptionThrown {
             x.handleDataChanged(data)
           })
+    }
+  }
+
+  private def internalWatchNodeData(path: String,
+                                    curatorWatcher: CuratorWatcher): Option[Array[Byte]] = {
+    try {
+      failedNodeDataWatcher.remove(path)
+      val data = zkClient.getData.usingWatcher(curatorWatcher).forPath(path)
+      if (data == null || data.length == 0) None else Some(data)
+    } catch {
+      case NonFatal(e) =>
+        warn("fail to watch node data,will retry,msg:{}", e.getMessage)
+        failedNodeDataWatcher.add(path)
+        None
     }
   }
 

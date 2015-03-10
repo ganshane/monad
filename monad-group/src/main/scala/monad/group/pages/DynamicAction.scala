@@ -14,6 +14,8 @@ import monad.support.services.{MonadException, XmlLoader}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * dynamic action
  * @author jcai
@@ -36,7 +38,7 @@ class DynamicAction {
       val dynamic = XmlLoader.parseXML[DynamicResourceDefinition](xml)
       monadGroupManager.saveOrUpdateDynamic(dynamic, Some(xml))
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         throw MonadException.wrap(e)
     }
     new ExtStreamResponse

@@ -14,6 +14,8 @@ import org.apache.tapestry5.services.Request
 import org.apache.tapestry5.util.TextStreamResponse
 import org.slf4j.Logger
 
+import scala.util.control.NonFatal
+
 /**
  * base api class
  * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
@@ -43,7 +45,7 @@ abstract class BaseApi {
         new MonadException("Fail to get result,result is null", MonadApiExceptionCode.FAIL_GET_RESULT)
     } catch {
       //catch any exception
-      case e: Throwable =>
+      case NonFatal(e) =>
         json = new JsonObject
         json.addProperty(MonadApiConstants.JSON_KEY_SUCCESS, false)
         json.addProperty(MonadApiConstants.STATUS, MonadApiConstants.ERROR_STATUS)

@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.rpc.config.RpcBindSupport
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
@@ -20,6 +19,8 @@ import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.group.DefaultChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+
+import scala.util.control.NonFatal
 
 /**
  * rpc server based on netty
@@ -87,7 +88,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
       channels.add(channel)
       channel
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         shutdown()
         throw MonadException.wrap(e)
     }

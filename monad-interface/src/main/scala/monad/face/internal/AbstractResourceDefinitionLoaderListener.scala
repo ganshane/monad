@@ -10,6 +10,8 @@ import monad.face.services.{MonadFaceExceptionCode, ResourceDefinitionLoaderList
 import monad.support.services.{MonadException, ServiceLifecycle, ServiceUtils}
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * 抽象的资源定义加载监听器
  * @author jcai
@@ -43,7 +45,7 @@ trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
       } catch {
         case e: MonadException =>
           logger.error(e.toString)
-        case e: Throwable =>
+        case NonFatal(e) =>
           logger.error("Fail to start object " + obj, e)
       } finally {
         locker.unlock()

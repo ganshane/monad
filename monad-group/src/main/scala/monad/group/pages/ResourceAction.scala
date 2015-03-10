@@ -12,6 +12,8 @@ import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * resource action
  * @author jcai
@@ -70,7 +72,7 @@ class ResourceAction {
       }
       monadGroupManager.saveOrUpdateResource(rd, Some(xml))
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         throw MonadException.wrap(e)
     }
     new ExtStreamResponse

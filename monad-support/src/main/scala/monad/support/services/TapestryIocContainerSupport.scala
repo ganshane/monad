@@ -7,6 +7,8 @@ import java.util.concurrent.CountDownLatch
 import org.apache.tapestry5.ioc.{Registry, RegistryBuilder}
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * tapestry container startup
  */
@@ -44,7 +46,7 @@ trait TapestryIocContainerSupport {
           isClosed = true
           logger.info("server closed")
         } catch {
-          case e: Throwable => logger.warn("fail to stop registry", e)
+          case NonFatal(e) => logger.warn("fail to stop registry", e)
         }
       }
     }

@@ -8,6 +8,8 @@ import java.util
 
 import org.slf4j.Logger
 
+import scala.util.control.NonFatal
+
 /**
  * detect system information
  */
@@ -56,7 +58,7 @@ trait SystemEnvDetectorSupport {
       val arguments = runtimemxBean.getInputArguments.toArray.mkString(" ")
       logger.info("args={}", arguments)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
     }
   }
 

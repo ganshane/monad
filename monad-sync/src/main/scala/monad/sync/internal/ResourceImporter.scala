@@ -23,6 +23,7 @@ import org.apache.tapestry5.ioc.services.ParallelExecutor
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * 针对资源的导入
@@ -198,7 +199,7 @@ class ResourceImporter(val rd: ResourceDefinition,
     } catch {
       case e: MonadException =>
         error("[{}] {}", rd.name, e.getMessage)
-      case e: Throwable =>
+      case NonFatal(e) =>
         error("[" + rd.name + "] " + e.getMessage, e)
       //logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)
     }
@@ -328,7 +329,7 @@ class ResourceImporter(val rd: ResourceDefinition,
               MonadSyncExceptionCode.FAIL_READ_DATA_FROM_DB,
               "fail to read " + col.name + " value from db")
             throw me;
-          case e: Throwable =>
+          case NonFatal(e) =>
             //假如设置忽略
             if (config.sync.ignore_data_when_unqualified_field) {
               throw e;
@@ -352,7 +353,7 @@ class ResourceImporter(val rd: ResourceDefinition,
         if (rd.sync.showBadRecordException) {
           logger.error("[{}] {} ", rd.name, e.toString)
         }
-      case e: Throwable =>
+      case NonFatal(e) =>
         if (rd.sync.showBadRecordException) {
           logger.warn("[" + rd.name + "] fail to import row", e)
         }

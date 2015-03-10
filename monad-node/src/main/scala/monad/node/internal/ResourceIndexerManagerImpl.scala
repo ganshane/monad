@@ -23,6 +23,8 @@ import org.apache.lucene.store.RateLimiter.SimpleRateLimiter
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 
+import scala.util.control.NonFatal
+
 /**
  * 实现资源索引管理
  * @author jcai
@@ -99,7 +101,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     try {
       disruptor.shutdown(2, TimeUnit.SECONDS)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         disruptor.halt()
     }
   }
@@ -121,7 +123,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
       } catch {
         case e: MonadException =>
           logger.error(e.toString)
-        case e: Throwable =>
+        case NonFatal(e) =>
           logger.error(e.toString, e)
       }
     }
