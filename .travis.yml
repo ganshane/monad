@@ -1,6 +1,5 @@
 sudo: false
 cache:
-  apt: true
   directories:
     - $HOME/.m2
 language: cpp
