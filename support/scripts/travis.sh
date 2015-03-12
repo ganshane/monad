@@ -7,8 +7,8 @@ ROOT_DIR=$(pwd)
 mkdir -p ${ROOT_DIR}/monad-jni/src/main/java/monad/jni/services/gen
 mkdir -p ${ROOT_DIR}/support/dll
 
-sudo apt-get -yy purge mingw32 mingw32-binutils
-sudo apt-get install -yy mingw-w64 g++-mingw-w64 swig
+apt-get -yy purge mingw32 mingw32-binutils
+apt-get install -yy mingw-w64 g++-mingw-w64 swig
 
 LIB_DIR=$(pwd)/_tmp
 mkdir -p $LIB_DIR
@@ -52,7 +52,7 @@ HOST=x86_64-w64-mingw32 ARCH=w64 JNI_DIR=windows64 CROSSPREFIX=x86_64-w64-mingw3
 HOST=i686-w64-mingw32 ARCH=w32 JNI_DIR=windows32 CROSSPREFIX=i686-w64-mingw32- compile_mingw
 
 #compile linux version
-sudo apt-get -yy install libleveldb-dev swig libsnappy-dev
+apt-get -yy install libleveldb-dev swig libsnappy-dev
 cd ${ROOT_DIR}/monad-c
 mkdir build
 cd build
@@ -71,8 +71,8 @@ tar xfz protobuf-2.5.0.tar.gz
 cd protobuf-2.5.0
 CC=gcc CXX=g++ ./configure
 CC=gcc CXX=g++ make -j2
-sudo make install
-sudo ldconfig
+make install
+ldconfig
 
 #building main scala project
 #gpg http://blog.sonatype.com/2010/01/how-to-generate-pgp-signatures-with-maven/
