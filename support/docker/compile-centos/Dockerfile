@@ -7,7 +7,7 @@ RUN yum update -y
 RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
 
 #Install package
-RUN yum install -y  git java-1.6.0-openjdk-devel.x86_64 which openssh-clients.x86_64 wget -y
+RUN yum install -y  git java-1.7.0-openjdk-devel.x86_64 which openssh-clients.x86_64 wget -y
 
 
 #Install gcc-4.7
@@ -88,6 +88,13 @@ RUN echo "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config
 
 #Add compile script
 ADD compile.sh /compile.sh
+
+#compile
+VOLUME /dist
+WORKDIR /build/monad
+CMD ["sh","/compile.sh"]
+
+
 
 
 
