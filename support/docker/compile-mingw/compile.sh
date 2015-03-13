@@ -56,9 +56,12 @@ make
 tar cfvz monad-jni-gen.tar.gz src/javaapi/*.java
 cd -
 
-scp build-w32/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w32/monad4j.dll
-scp build-w64/src/*.dll jcai@dev.egfit.com:/opt/app/sites/lichen/monad/dll/w64/monad4j.dll
-scp build-w64/monad-jni-gen.tar.gz jcai@dev.egfit.com:/opt/app/sites/lichen/monad/
+mkdir -p /dist/w32
+mkdir -p /dist/w64
+
+scp build-w32/src/*.dll /dist/w32/monad4j.dll
+scp build-w64/src/*.dll /dist/w64/monad4j.dll
+scp build-w64/monad-jni-gen.tar.gz /dist
 
 echo "[hit enter key to exit] or run 'docker stop <container>'"
 read cmd
