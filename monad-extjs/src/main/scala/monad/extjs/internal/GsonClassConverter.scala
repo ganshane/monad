@@ -2,9 +2,11 @@
 // site: http://www.ganshane.com
 package monad.extjs.internal
 
-import collection.JavaConversions._
 import java.lang.reflect.Type
+
 import com.google.gson._
+
+import scala.collection.JavaConversions._
 
 /**
  * gson 和 对象之间的转换
@@ -40,7 +42,7 @@ object GsonClassConverter {
      */
     def fromJSON[T](json: String)(implicit m: Manifest[T]): T = {
         //obtain type parameter
-        val clazz = m.erasure.asInstanceOf[Class[T]]
+        val clazz = m.runtimeClass.asInstanceOf[Class[T]]
         gson.fromJson(json, clazz)
     }
 }

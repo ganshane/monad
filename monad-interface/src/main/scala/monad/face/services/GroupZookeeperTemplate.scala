@@ -5,6 +5,7 @@ package monad.face.services
 import javax.annotation.PostConstruct
 
 import com.google.gson.JsonObject
+import monad.core.MonadCoreConstants
 import monad.face.{CloudPathConstants, MonadFaceConstants}
 import monad.support.services.ZookeeperTemplate
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
@@ -17,7 +18,7 @@ import org.apache.zookeeper.data.Stat
  * @author jcai
  */
 class GroupZookeeperTemplate(groupApi: GroupServerApi, periodExecutor: PeriodicExecutor)
-  extends ZookeeperTemplate(groupApi.GetCloudAddress, Some(CloudPathConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)) {
+  extends ZookeeperTemplate(groupApi.GetCloudAddress, Some(MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)) {
 
   /**
    * 启动对象实例

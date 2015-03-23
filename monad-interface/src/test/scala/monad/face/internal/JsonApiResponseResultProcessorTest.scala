@@ -7,7 +7,7 @@ import java.io.{ByteArrayOutputStream, OutputStream}
 import com.google.gson.{JsonArray, JsonObject, JsonPrimitive}
 import monad.face.model.JsonApiResponse
 import org.apache.tapestry5.services.Response
-import org.junit.{After, Before, Assert, Test}
+import org.junit.{After, Assert, Before, Test}
 import org.mockito.Mockito
 
 /**
@@ -59,7 +59,7 @@ class JsonApiResponseResultProcessorTest {
     }
     @Test
     def test_simple(){
-        val apiResponse = new JsonApiResponse
+      val apiResponse = new JsonApiResponse("")
         apiResponse.status = 2
         apiResponse.msg="test"
 
