@@ -9,7 +9,7 @@
   <groupId>com.ganshane.monad</groupId>
   <artifactId>monad-project</artifactId>
   <packaging>pom</packaging>
-  <version>dev-SNAPSHOT</version>
+  <version>5.0.4</version>
   <name>Monad Project</name>
   <description>monad是一个基于分布式数据查询系统</description>
   <modules>
