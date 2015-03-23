@@ -59,7 +59,7 @@ class JsonApiResponseResultProcessorTest {
     }
     @Test
     def test_simple(){
-      val apiResponse = new JsonApiResponse("")
+      val apiResponse = new JsonApiResponse(None)
         apiResponse.status = 2
         apiResponse.msg="test"
 
