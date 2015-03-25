@@ -5,7 +5,7 @@ package monad.core.services
 import java.io.{BufferedInputStream, IOException}
 import java.util.Properties
 
-import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.{AnsiConsole, Ansi}
 import org.slf4j.Logger
 
 /**
@@ -96,9 +96,9 @@ trait BootstrapTextSupport {
      */
     var str = logo
     try {
-      //AnsiConsole.systemInstall();
+      AnsiConsole.systemInstall();
 
-      str = Ansi.ansi().eraseScreen().render(logo, values.map(_.asInstanceOf[Object]): _ *).toString
+      str = Ansi.ansi().render(logo, values.map(_.asInstanceOf[Object]): _ *).toString
       /*
       val className = "org.fusesource.jansi.Ansi"
       val clazz = Thread.currentThread().getContextClassLoader.loadClass(className)
@@ -112,7 +112,7 @@ trait BootstrapTextSupport {
       */
       logger.info(str)
     } finally {
-      //AnsiConsole.systemUninstall()
+      AnsiConsole.systemUninstall()
     }
   }
 }
