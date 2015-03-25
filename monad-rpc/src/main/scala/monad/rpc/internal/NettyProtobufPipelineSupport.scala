@@ -60,24 +60,20 @@ trait NettyProtobufPipelineSupport {
   }
 
   class ProtobufEncoderWithSnappy extends OneToOneEncoder {
-    override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): AnyRef = {
-      msg match {
-        case lite: MessageLite =>
-          var array = lite.toByteArray
-          array = Snappy.compress(array)
-          return ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
-        case _ =>
-      }
+    private def compressMessage(messageLite: MessageLite, ctx: ChannelHandlerContext): ChannelBuffer = {
+      var array = messageLite.toByteArray
+      array = Snappy.compress(array)
+      ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
+    }
 
-      msg match {
-        case builder: MessageLite.Builder =>
-          var array = builder.build.toByteArray
-          array = Snappy.compress(array)
-          return ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
-        case _ =>
-      }
+    override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef) = msg match {
+      case lite: MessageLite =>
+        compressMessage(lite, ctx)
+      case builder: MessageLite.Builder =>
+        compressMessage(builder.build(), ctx)
+      case _ =>
+        msg
 
-      msg
     }
   }
 
