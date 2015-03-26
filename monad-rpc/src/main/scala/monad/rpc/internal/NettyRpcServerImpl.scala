@@ -111,8 +111,10 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
       val command = e.getMessage.asInstanceOf[BaseCommand]
       val result = messageHandler.handle(command, new ServerResponse(e.getChannel))
-      if (!result)
-        error("message not found {}", command.toString)
+      if (!result) {
+        error("message not handled {}", command.toString)
+        ctx.getChannel.close()
+      }
     }
 
     override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent): Unit = {
