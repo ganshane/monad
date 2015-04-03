@@ -13,7 +13,7 @@ option java_outer_classname = "InternalFindDocProto";
 /* 向节点服务器发送查询请求 */
 message InternalFindDocRequest {
   extend monad.rpc.protocol.BaseCommand {
-    required monad.protocol.internal.InternalFindDocRequest cmd = 107;
+    optional monad.protocol.internal.InternalFindDocRequest cmd = 107;
   }
   required string resource_name = 1;
   required int32 id = 2;
@@ -21,7 +21,7 @@ message InternalFindDocRequest {
 /* 节点服务器返回文档详细内容 */
 message InternalFindDocResponse {
   extend monad.rpc.protocol.BaseCommand {
-    required monad.protocol.internal.InternalFindDocResponse cmd = 108;
+    optional monad.protocol.internal.InternalFindDocResponse cmd = 108;
   }
   required string resource_name = 1;
   optional bytes json = 2;
