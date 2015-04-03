@@ -66,13 +66,25 @@ cp src/libmonad4j.so ${ROOT_DIR}/monad-jni/src/main/resources/META-INF/native/li
 
 #install protoc
 mkdir -p $ROOT_DIR/target
-wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
-tar xfz protobuf-2.5.0.tar.gz
-cd protobuf-2.5.0
+
+#wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz
+#tar xfz protobuf-2.5.0.tar.gz
+#cd protobuf-2.5.0
+#CC=gcc CXX=g++ ./configure
+#CC=gcc CXX=g++ make -j2
+#sudo make install
+
+wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
+tar xfvz protobuf-2.6.1.tar.gz
+cd protobuf-2.6.1
+CC=gcc CXX=g++ ./autogen.sh
 CC=gcc CXX=g++ ./configure
-CC=gcc CXX=g++ make -j2
+make
 sudo make install
+
+
 sudo ldconfig
+
 
 #building main scala project
 #gpg http://blog.sonatype.com/2010/01/how-to-generate-pgp-signatures-with-maven/
