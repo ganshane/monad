@@ -7,7 +7,7 @@ RUN yum update -y
 RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
 
 #Install package
-RUN yum install -y  git java-1.7.0-openjdk-devel.x86_64 which openssh-clients.x86_64 wget -y
+RUN yum install -y  git java-1.7.0-openjdk-devel.x86_64 which openssh-clients.x86_64 wget autoconf automake libtool -y
 
 
 #Install gcc-4.7
