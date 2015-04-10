@@ -71,8 +71,6 @@ RUN { \
     && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz \
     && tar xfvz protobuf-2.6.1.tar.gz \
     && cd protobuf-2.6.1 \
-    && ./autogen.sh \
-
     #&& wget http://lichen.egfit.com/nirvana/gz/protobuf-2.5.0.tar.gz \
     #&& tar xfvz protobuf-2.5.0.tar.gz \
     #&& cd protobuf-2.5.0 \
