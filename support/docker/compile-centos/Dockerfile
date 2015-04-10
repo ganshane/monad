@@ -68,7 +68,7 @@ ENV CXX /opt/centos/devtoolset-1.1/root/usr/bin/c++
 RUN { \
     wget http://lichen.egfit.com/nirvana/gz/libsnappy.a -O /usr/local/lib/libsnappy.a \
     && wget http://lichen.egfit.com/nirvana/gz/snappy.h -O /usr/local/include/snappy.h \
-    && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz \
+    && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
     && tar xfvz protobuf-2.6.1.tar.gz \
     && cd protobuf-2.6.1 \
     #&& wget http://lichen.egfit.com/nirvana/gz/protobuf-2.5.0.tar.gz \
