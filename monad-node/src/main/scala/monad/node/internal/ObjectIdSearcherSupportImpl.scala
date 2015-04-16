@@ -82,5 +82,7 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
     private def readObjectId(doc: Int): Int = {
       s.analyticObjectId(this.context.reader().asInstanceOf[SegmentReader], doc)
     }
+
+    override def needsScores(): Boolean = false
   }
 }

@@ -37,5 +37,7 @@ class ResultLimitCollector(delegate: Collector, limit: Int) extends SimpleCollec
     total += 1
     if (total > limit) throw new SizeLimitExceededException
   }
+
+  override def needsScores(): Boolean = delegate.needsScores()
 }
 

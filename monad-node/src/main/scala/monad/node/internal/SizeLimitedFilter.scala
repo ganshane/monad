@@ -17,6 +17,8 @@ private[internal] class SizeLimitedFilter(val limit: Int) extends Filter {
 
   def getDocIdSet(context: LeafReaderContext, acceptDocs: Bits) = new SizeLimitedDocIdSet
 
+  override def toString(field: String): String = "limit %s query".format(limit)
+
   class SizeLimitedDocIdSet extends DocIdSet {
 
     override def ramBytesUsed(): Long = -1L
@@ -55,5 +57,4 @@ private[internal] class SizeLimitedFilter(val limit: Int) extends Filter {
     }
 
   }
-
 }

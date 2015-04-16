@@ -78,6 +78,7 @@ class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends Si
     )
   }
 
+  override def needsScores(): Boolean = delegate.needsScores()
 }
 
 

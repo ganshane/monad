@@ -118,6 +118,12 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       filter = new SizeLimitedFilter(config.index.queryMaxLimit)
     }
     doInSearcher { searcher =>
+      /*
+      val booleanQuery = new BooleanQuery()
+      booleanQuery.add(query,BooleanClause.Occur.MUST)
+      booleanQuery.add(filter,BooleanClause.Occur.FILTER)
+      val topDocs = searcher.search(booleanQuery, topN)
+      */
       val topDocs = searcher.search(query, filter, topN)
       val endTime = new Date().getTime
       logger.info("[{}] q:{},time:{}ms,hits:{}",
@@ -130,6 +136,17 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.serverHash = regionId
       shardResult.maxDoc = searcher.getIndexReader.numDocs()
       shardResult
+    }
+  }
+
+  protected def parseQuery(q: String) = {
+    val parser = createParser()
+    try {
+      parser.parse(q)
+    } catch {
+      case NonFatal(e) =>
+        logger.error(e.toString)
+        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
   }
 
@@ -179,17 +196,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.maxDoc = searcher.getIndexReader.maxDoc()
 
       shardResult
-    }
-  }
-
-  protected def parseQuery(q: String) = {
-    val parser = createParser()
-    try {
-      parser.parse(q)
-    } catch {
-      case NonFatal(e) =>
-        logger.error(e.toString)
-        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
   }
 
@@ -268,6 +274,8 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
         result.set(doc + docBase)
       totalHits += 1
     }
+
+    override def needsScores(): Boolean = true
   }
 
   private class LimitSearcherCollector(collector: Collector) extends SimpleCollector {
@@ -296,5 +304,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       }
       totalHits += 1
     }
+
+    override def needsScores(): Boolean = collector.needsScores()
   }
 }
