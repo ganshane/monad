@@ -66,12 +66,12 @@ ENV CPP /opt/centos/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX /opt/centos/devtoolset-1.1/root/usr/bin/c++
 #Install snappy,rocksdb,nirvana-kernel
 RUN { \
-    wget http://lichen.ganshane.com/nirvana/gz/libsnappy.a -O /usr/local/lib/libsnappy.a \
-    && wget http://lichen.ganshane.com/nirvana/gz/snappy.h -O /usr/local/include/snappy.h \
+    wget http://lichen.egfit.com/nirvana/gz/libsnappy.a -O /usr/local/lib/libsnappy.a \
+    && wget http://lichen.egfit.com/nirvana/gz/snappy.h -O /usr/local/include/snappy.h \
     && wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
     && tar xfvz protobuf-2.6.1.tar.gz \
     && cd protobuf-2.6.1 \
-    #&& wget http://lichen.ganshane.com/nirvana/gz/protobuf-2.5.0.tar.gz \
+    #&& wget http://lichen.egfit.com/nirvana/gz/protobuf-2.5.0.tar.gz \
     #&& tar xfvz protobuf-2.5.0.tar.gz \
     #&& cd protobuf-2.5.0 \
     && ./configure && make && make install \
