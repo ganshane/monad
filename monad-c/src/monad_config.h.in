@@ -15,6 +15,7 @@
 #cmakedefine MONAD_HAVE_OSX
 #cmakedefine MONAD_HAVE_WINDOWS
 #cmakedefine MONAD_HAVE_ROCKSDB
+#cmakedefine MONAD_HAVE_WIREDTIGER
 #ifdef MONAD_HAVE_ROCKSDB
 #define leveldb rocksdb
 #endif

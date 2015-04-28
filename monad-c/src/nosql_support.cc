@@ -7,7 +7,9 @@
 #ifdef MONAD_HAVE_ROCKSDB
 #include "rocksdb/cache.h"
 #include "rocksdb/filter_policy.h"
+#ifndef MONAD_HAVE_WIREDTIGER
 #include "rocksdb/table.h"
+#endif
 #else
 #include "leveldb/cache.h"
 #include "leveldb/env.h"
@@ -30,10 +32,17 @@ namespace monad {
     _options.IncreaseParallelism(16);
     _options.OptimizeLevelStyleCompaction();
     
+////// rocksdb and wiredtiger common configuration
+    _options.max_open_files = options.max_open_files;
+
+    _options.write_buffer_size = options.write_buffer_mb * 1024 * 1024;
+
+    _options.compression = rocksdb::kSnappyCompression;
+#ifndef MONAD_HAVE_WIREDTIGER
     //允许使用linux的mmap
     _options.allow_mmap_reads = true;
     _options.allow_mmap_writes = true;
-    _options.max_open_files = options.max_open_files;
+    //_options.max_open_files = options.max_open_files;
     
     //level0的设置
     _options.level0_file_num_compaction_trigger = 4;
@@ -41,7 +50,7 @@ namespace monad {
     _options.level0_stop_writes_trigger = 12;
     
     //写的buffer大小，以及合并大小
-    _options.write_buffer_size = options.write_buffer_mb * 1024 * 1024;
+    //_options.write_buffer_size = options.write_buffer_mb * 1024 * 1024;
     _options.max_write_buffer_number = 8;
     _options.min_write_buffer_number_to_merge = 2;
     
@@ -55,7 +64,7 @@ namespace monad {
     _options.target_file_size_base = _options.max_bytes_for_level_base / 10;
     _options.target_file_size_multiplier = 1;
     
-    _options.compression = rocksdb::kSnappyCompression;
+    //_options.compression = rocksdb::kSnappyCompression;
     
     //每隔12个小时roll日志，最多保留10个日志
     _options.log_file_time_to_roll = 12 * 60 * 60;
@@ -67,6 +76,7 @@ namespace monad {
     block_based_options.block_cache = rocksdb::NewLRUCache(options.cache_size_mb * 1024 * 1024);
     block_based_options.block_size = options.block_size_kb * 1024;
     _options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(block_based_options));
+#endif
 #else
 #ifdef HAVE_LEVELDB_FILTER_POLICY_H
     _options.filter_policy = leveldb::NewBloomFilterPolicy(10);

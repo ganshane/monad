@@ -27,17 +27,21 @@ ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   ENDIF()
 ENDIF()
 
+OPTION(ENABLE_WIREDTIGER "enable wiredtiger db" OFF)
+IF(ENABLE_WIREDTIGER)
+  MESSAGE(INFO "using wired tiger ")
+  LINK_DIRECTORIES(/usr/local/lib/wiredtiger)
+  SET(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES};/usr/local/include/wiredtiger")
+  INCLUDE_DIRECTORIES(/usr/local/include/wiredtiger)
+  SET(MONAD_HAVE_WIREDTIGER true)
+ENDIF()
+
 INCLUDE(CheckIncludeFile)
 INCLUDE(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("leveldb/db.h" HAVE_LEVELDB_H)
 CHECK_INCLUDE_FILE_CXX ("rocksdb/db.h" HAVE_ROCKSDB_H)
 CHECK_INCLUDE_FILE_CXX ("leveldb/filter_policy.h" HAVE_LEVELDB_FILTER_POLICY_H)
 
-OPTION(ENABLE_WIREDTIGER "enable wiredtiger db" OFF)
-IF(ENABLE_WIREDTIGER)
-  LINK_DIRECTORIES(/usr/local/lib/wiredtiger)
-  INCLUDE_DIRECTORIES(/usr/local/include/wiredtiger)
-ENDIF()
 
 #define some variable
 OPTION(ENABLE_ROCKSDB "enable rocksdb" OFF)
