@@ -76,7 +76,7 @@ RUN { \
     #&& cd protobuf-2.5.0 \
     && ./configure && make && make install \
     && cd - && rm -rf protobuf* \
-    && git clone --depth=1 --branch=rocksdb-3.7 https://github.com/facebook/rocksdb.git \
+    && git clone --depth=1 --branch=rocksdb-3.10.2 https://github.com/facebook/rocksdb.git \
     && cd rocksdb \
     && CXXFLAGS="-fPIC" make static_lib \
     && cp -r include/* /usr/local/include/ && cp librocksdb.a /usr/local/lib/ \
