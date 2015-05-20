@@ -29,6 +29,10 @@
     </dependency>
     <dependency>
       <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-mmseg</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-rpc</artifactId>
     </dependency>
     <dependency>
