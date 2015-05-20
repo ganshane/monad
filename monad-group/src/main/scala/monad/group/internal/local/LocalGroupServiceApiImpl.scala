@@ -3,7 +3,7 @@
 package monad.group.internal.local
 
 import monad.core.config.ZkClientConfigSupport
-import monad.face.config.{GroupConfigSupport, CloudServerSupport}
+import monad.face.config.GroupConfigSupport
 import monad.face.model.{GroupConfig, ResourceDefinition}
 import monad.face.services.GroupServerApi
 import monad.group.internal.MonadGroupUpNotifier

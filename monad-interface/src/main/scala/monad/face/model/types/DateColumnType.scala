@@ -49,7 +49,6 @@ class DateColumnType extends MonadColumnType[Long] {
   }
 
   def setJdbcParameter(ps: PreparedStatement, i: Int, obj: Long, cd: ResourceProperty) {
-    i
     if (!InternalUtils.isBlank(cd.dbFormat)) {
       val formatter = new SimpleDateFormat(cd.dbFormat)
       ps.setString(i, formatter.format(new Date(obj)))

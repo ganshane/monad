@@ -13,7 +13,7 @@ option java_outer_classname = "InternalSyncProto";
 /* 向Sync服务器发送同步请求 */
 message SyncRequest {
   extend monad.rpc.protocol.BaseCommand {
-    required SyncRequest cmd = 101;
+    optional SyncRequest cmd = 101;
   }
   //资源名称
   required string resource_name = 1;
@@ -27,7 +27,7 @@ message SyncRequest {
 /* 响应同步请求，发送同步数据 */
 message SyncResponse {
   extend monad.rpc.protocol.BaseCommand {
-    required SyncResponse cmd = 102;
+    optional SyncResponse cmd = 102;
   }
   message ResponseData {
     required bytes binlog_value = 1;

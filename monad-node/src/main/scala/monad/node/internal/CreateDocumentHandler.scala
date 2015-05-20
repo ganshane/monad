@@ -11,6 +11,8 @@ import monad.jni.services.gen.DataCommandType
 import monad.node.services.ResourceIndexerManager
 import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
+
 /**
  * 创建文档
  * @author jcai
@@ -46,7 +48,7 @@ class CreateDocumentHandler(resourceIndexerManager: ResourceIndexerManager, docu
           throw new IllegalStateException("command not found")
       }
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         logger.error("[" + event.resource.name + "] fail to index", e)
     }
     //删除对对象的依赖

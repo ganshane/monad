@@ -12,11 +12,13 @@ import monad.face.services.ResourceSearcher
 import monad.node.internal.support.SearcherManagerSupport
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException
-import org.apache.lucene.index.{AtomicReaderContext, IndexReader, IndexWriter}
+import org.apache.lucene.index.{IndexReader, IndexWriter, LeafReaderContext}
 import org.apache.lucene.search._
-import org.apache.lucene.util.OpenBitSet
+import org.apache.lucene.util.LongBitSet
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
+
+import scala.util.control.NonFatal
 
 
 /**
@@ -48,7 +50,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
         try {
           warm(searcher)
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             logger.warn("Fail to warm index", e)
         }
         searcher
@@ -105,9 +107,9 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     */
     var collector: TopDocsCollector[_] = null
     if (sort == null) {
-      collector = TopScoreDocCollector.create(topN, false)
+      collector = TopScoreDocCollector.create(topN)
     } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false, false)
+      collector = TopFieldCollector.create(sort, topN, false, false, false)
     }
 
     val startTime = new Date().getTime
@@ -116,6 +118,12 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       filter = new SizeLimitedFilter(config.index.queryMaxLimit)
     }
     doInSearcher { searcher =>
+      /*
+      val booleanQuery = new BooleanQuery()
+      booleanQuery.add(query,BooleanClause.Occur.MUST)
+      booleanQuery.add(filter,BooleanClause.Occur.FILTER)
+      val topDocs = searcher.search(booleanQuery, topN)
+      */
       val topDocs = searcher.search(query, filter, topN)
       val endTime = new Date().getTime
       logger.info("[{}] q:{},time:{}ms,hits:{}",
@@ -136,7 +144,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     try {
       parser.parse(q)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         logger.error(e.toString)
         throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
@@ -167,9 +175,9 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     */
     var collector: TopDocsCollector[_] = null
     if (sort == null) {
-      collector = TopScoreDocCollector.create(topN, false)
+      collector = TopScoreDocCollector.create(topN)
     } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false, false)
+      collector = TopFieldCollector.create(sort, topN, false, false, false)
     }
 
     val startTime = new Date().getTime
@@ -219,9 +227,9 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     */
     var collector: TopDocsCollector[_] = null
     if (sort == null) {
-      collector = TopScoreDocCollector.create(topN, false)
+      collector = TopScoreDocCollector.create(topN)
     } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false, false)
+      collector = TopFieldCollector.create(sort, topN, false, false, false)
     }
 
     val startTime = new Date().getTime
@@ -250,12 +258,16 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     }
   }
 
-  private class NormalSearcherCollector(topN: Int) extends Collector {
-    val result = new OpenBitSet(1000)
+  private class NormalSearcherCollector(topN: Int) extends SimpleCollector {
+    val result = new LongBitSet(1000)
     var totalHits = 0
     private var docBase = 0
 
-    def setScorer(scorer: Scorer) {}
+
+    override def doSetNextReader(context: LeafReaderContext): Unit = {
+      docBase = context.docBase
+    }
+
 
     def collect(doc: Int) {
       if (totalHits < topN)
@@ -263,27 +275,28 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       totalHits += 1
     }
 
-
-    def setNextReader(context: AtomicReaderContext) {
-      this.docBase = context.docBase
-    }
-
-    def acceptsDocsOutOfOrder() = true
+    override def needsScores(): Boolean = true
   }
 
-  private class LimitSearcherCollector(collector: Collector) extends Collector {
+  private class LimitSearcherCollector(collector: Collector) extends SimpleCollector {
     private final val limit = 5000000
     var totalHits = 0
     private var notReachMax = true
+    private var context: LeafReaderContext = _
 
-    def setScorer(scorer: Scorer) {
-      if (notReachMax)
-        collector.setScorer(scorer)
+
+    override def setScorer(scorer: Scorer): Unit = {
+      collector.getLeafCollector(context).setScorer(scorer)
+    }
+
+
+    override def doSetNextReader(context: LeafReaderContext): Unit = {
+      this.context = context
     }
 
     def collect(doc: Int) {
       if (notReachMax) {
-        collector.collect(doc)
+        collector.getLeafCollector(context).collect(doc)
         notReachMax = limit > totalHits
         if (!notReachMax) {
           throw new SizeLimitExceededException()
@@ -292,12 +305,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       totalHits += 1
     }
 
-    def setNextReader(context: AtomicReaderContext) {
-      if (notReachMax)
-        collector.setNextReader(context)
-    }
-
-    def acceptsDocsOutOfOrder() = collector.acceptsDocsOutOfOrder()
+    override def needsScores(): Boolean = collector.needsScores()
   }
-
 }

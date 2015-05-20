@@ -9,6 +9,7 @@ import monad.support.services.MonadException
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
+import scala.util.control.NonFatal
 
 /**
  * jdbc操作数据库的通用类
@@ -23,7 +24,7 @@ private[internal] object JdbcDatabase {
       if (!autoCommit) conn.commit()
       ret
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         if (!autoCommit) conn.rollback()
         throw new MonadException(e, MonadSyncExceptionCode.JDBC_ERROR)
     }
@@ -54,14 +55,12 @@ private[internal] object JdbcDatabase {
 
   private def supportBatch(conn: Connection) = conn.getMetaData.supportsBatchUpdates
 
-  private def setParams(st: PreparedStatement, params: Seq[_]) {
-    for (i <- 1 to params.size) {
-      val value = params(i - 1)
-      if (value.isInstanceOf[java.util.Date]) {
-        st.setTimestamp(i, new Timestamp(params(i - 1).asInstanceOf[java.util.Date].getTime))
-      } else {
-        st.setObject(i, params(i - 1))
-      }
+  def execute(sql: String)(implicit conn: Connection) {
+    val st = conn.prepareStatement(sql)
+    try {
+      st.execute()
+    } finally {
+      closeJdbc(st)
     }
   }
 
@@ -78,16 +77,7 @@ private[internal] object JdbcDatabase {
         case _ => // do nothing
       }
     } catch {
-      case e: Throwable => logger.error(e.getMessage, e)
-    }
-  }
-
-  def execute(sql: String)(implicit conn: Connection) {
-    val st = conn.prepareStatement(sql)
-    try {
-      st.execute()
-    } finally {
-      closeJdbc(st)
+      case NonFatal(e) => logger.error(e.getMessage, e)
     }
   }
 
@@ -106,6 +96,17 @@ private[internal] object JdbcDatabase {
       }
     } finally {
       closeJdbc(st)
+    }
+  }
+
+  private def setParams(st: PreparedStatement, params: Seq[_]) {
+    for (i <- 1 to params.size) {
+      val value = params(i - 1)
+      if (value.isInstanceOf[java.util.Date]) {
+        st.setTimestamp(i, new Timestamp(params(i - 1).asInstanceOf[java.util.Date].getTime))
+      } else {
+        st.setObject(i, params(i - 1))
+      }
     }
   }
 

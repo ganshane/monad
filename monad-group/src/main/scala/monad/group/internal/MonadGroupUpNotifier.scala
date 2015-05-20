@@ -5,12 +5,15 @@ package monad.group.internal
 import javax.annotation.PostConstruct
 
 import com.google.gson.Gson
+import monad.core.MonadCoreConstants
+import monad.core.config.ZkClientConfigSupport
 import monad.face.CloudPathConstants
-import monad.face.config.{CloudServerSupport, GroupConfigSupport}
+import monad.face.config.GroupConfigSupport
 import monad.face.model.GroupConfig
 import monad.support.MonadSupportConstants
 import monad.support.services.{ServiceUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.Invokable
+import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.slf4j.LoggerFactory
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory
  * Cluster的管理类，主要针对Cluster的服务操作
  * @author jcai
  */
+@EagerLoad
 class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicExecutor, parallelExecutor: ParallelExecutor) {
   private val logger = LoggerFactory getLogger getClass
   //create base directory
@@ -29,7 +33,9 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
    */
   @PostConstruct
   def start(hub: RegistryShutdownHub) {
-    if (parallelExecutor == null) {
+    internalStart(hub)
+    /*
+   if (parallelExecutor == null) {
       internalStart(hub)
     } else {
       parallelExecutor.invoke(new Invokable[Unit] {
@@ -38,11 +44,11 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
         }
       })
     }
-
+    */
   }
 
   private def internalStart(hub: RegistryShutdownHub) {
-    rootZk = new ZookeeperTemplate(config.asInstanceOf[CloudServerSupport].cloudServer)
+    rootZk = new ZookeeperTemplate(config.asInstanceOf[ZkClientConfigSupport].zk.address)
     rootZk.start(hub)
     rootZk.startCheckFailed(periodExecutor)
     ServiceUtils.runInNoThrow {
@@ -58,11 +64,11 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
     groupConfig.cnName = config.group.cnName
     groupConfig.apiUrl = config.group.apiUrl
     val jsonObject = new Gson().toJson(groupConfig)
-    val stat = zookeeper.stat(CloudPathConstants.LIVE_PATH)
+    val stat = zookeeper.stat(MonadCoreConstants.LIVE_PATH)
     if (stat.isEmpty)
-      zookeeper.createPersistPath(CloudPathConstants.LIVE_PATH)
+      zookeeper.createPersistPath(MonadCoreConstants.LIVE_PATH)
     //watch the node,当失去连接，或者session过期的时候，能够自动创建
-    zookeeper.createEphemeralPath(CloudPathConstants.LIVE_PATH + "/" + config.group.id,
+    zookeeper.createEphemeralPath(MonadCoreConstants.LIVE_PATH + "/" + config.group.id,
       Some(jsonObject.getBytes(MonadSupportConstants.UTF8_ENCODING)))
   }
 
@@ -70,18 +76,18 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
    * 通知一下我自己已经起来了
    */
   private def notifyGroupUp() {
-    val groupPath = CloudPathConstants.GROUPS_PATH + "/" + config.group.id
+    val groupPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id
     rootZk.createPersistPath(groupPath, Some(config.group.cnName.getBytes(MonadSupportConstants.UTF8_ENCODING)))
-    val groupResourcesPath = CloudPathConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.RESOURCES_PATH
+    val groupResourcesPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.RESOURCES_PATH
     rootZk.createPersistPath(groupResourcesPath)
-    val groupNodesPath = CloudPathConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.NODE_PATH_FORMAT
+    val groupNodesPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.NODE_PATH_FORMAT
     rootZk.createPersistPath(groupNodesPath)
   }
 
 
   def getLiveGroups = {
-    rootZk.getChildren(CloudPathConstants.LIVE_PATH).foldLeft(List[GroupConfig]()) { (list, path) =>
-      val value = rootZk.getDataAsString(CloudPathConstants.LIVE_PATH + "/" + path)
+    rootZk.getChildren(MonadCoreConstants.LIVE_PATH).foldLeft(List[GroupConfig]()) { (list, path) =>
+      val value = rootZk.getDataAsString(MonadCoreConstants.LIVE_PATH + "/" + path)
       if (value.isDefined) {
         list :+ new Gson().fromJson(value.get, classOf[GroupConfig])
       } else {
@@ -95,7 +101,7 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
    * @param group 组的名称
    */
   def findResourcesContent(group: String): List[String] = {
-    val groupResourcesPath = CloudPathConstants.GROUPS_PATH + "/" + group + "/resources"
+    val groupResourcesPath = MonadCoreConstants.GROUPS_PATH + "/" + group + "/resources"
     rootZk.
       getChildren(groupResourcesPath).
       map(x => rootZk.getDataAsString(groupResourcesPath + "/" + x)).

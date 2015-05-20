@@ -2,6 +2,8 @@
 // site: http://www.ganshane.com
 package monad.support.services
 
+import scala.util.control.NonFatal
+
 
 /**
  * run some function in no exception thrown
@@ -12,7 +14,7 @@ trait RunInNoExceptionThrown {
     try {
       fun
     } catch {
-      case e: Throwable => error(e.getMessage, e)
+      case NonFatal(e) => error(e.getMessage, e)
     }
   }
 }

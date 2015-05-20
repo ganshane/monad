@@ -9,7 +9,7 @@
   <groupId>com.ganshane.monad</groupId>
   <artifactId>monad-project</artifactId>
   <packaging>pom</packaging>
-  <version>dev-SNAPSHOT</version>
+  <version>5.0.9</version>
   <name>Monad Project</name>
   <description>monad是一个基于分布式数据查询系统</description>
   <modules>
@@ -20,6 +20,7 @@
     <module>monad-group</module>
     <module>monad-interface</module>
     <module>monad-jni</module>
+    <module>monad-mmseg</module>
     <module>monad-node</module>
     <module>monad-protocol</module>
     <module>monad-rpc</module>
@@ -62,6 +63,11 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>monad-jni</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>monad-mmseg</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -175,7 +181,7 @@
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
-        <version>2.5.0</version>
+        <version>2.6.1</version>
       </dependency>
       <!-- metrics -->
       <dependency>
@@ -484,8 +490,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>2.3.2</version>
           <configuration>
-            <source>1.5</source>
-            <target>1.5</target>
+            <source>1.7</source>
+            <target>1.7</target>
             <optimize>true</optimize>
             <encoding>UTF-8</encoding>
           </configuration>
@@ -524,12 +530,7 @@
       </properties>
     </profile>
     <profile>
-      <id>windows</id>
-      <activation>
-        <os>
-          <family>windows</family>
-        </os>
-      </activation>
+      <id>oracle</id>
       <dependencies>
         <dependency>
           <groupId>com.oracle</groupId>
@@ -537,6 +538,14 @@
           <version>10.2.0.3</version>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
       <properties>
         <resource-conf>src/main/conf/development</resource-conf>
         <jdk-rt-path>${java.home}/lib/rt.jar</jdk-rt-path>
@@ -549,13 +558,6 @@
           <family>mac</family>
         </os>
       </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.oracle</groupId>
-          <artifactId>ojdbc14</artifactId>
-          <version>10.2.0.3</version>
-        </dependency>
-      </dependencies>
       <properties>
         <resource-conf>src/main/conf/development</resource-conf>
         <jdk-rt-path>${java.home}/bundle/Classes/classes.jar</jdk-rt-path>
@@ -676,7 +678,7 @@
     <scala-release-version>2.11.2</scala-release-version>
     <metrics-release-version>3.1.0</metrics-release-version>
     <hawtio-release-version>1.4.19</hawtio-release-version>
-    <lucene-release-version>4.10.2</lucene-release-version>
+    <lucene-release-version>5.1.0</lucene-release-version>
     <proguard-release-version>5.1</proguard-release-version>
     <lichen-release-version>0.5.10.1</lichen-release-version>
   </properties>

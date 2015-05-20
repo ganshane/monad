@@ -20,6 +20,7 @@ import org.apache.tapestry5.services.Core
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * 针对资源的监控
@@ -89,7 +90,7 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
     try {
       disruptor.shutdown(2, TimeUnit.SECONDS)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         disruptor.halt()
     }
   }

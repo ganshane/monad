@@ -8,6 +8,8 @@ import java.util.concurrent.{CountDownLatch, Executors, TimeUnit}
 
 import org.junit.{Assert, Test}
 
+import scala.util.control.NonFatal
+
 /**
  * Created by jcai on 14-8-17.
  */
@@ -43,7 +45,7 @@ class TimeoutMapTest extends LoggerSupport {
             }
           }
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             error("ex", e)
         }
         debug("finish loop")

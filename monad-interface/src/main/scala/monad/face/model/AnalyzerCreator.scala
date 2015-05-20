@@ -2,11 +2,9 @@
 // site: http://www.ganshane.com
 package monad.face.model
 
-import monad.face.MonadFaceConstants
 import monad.face.services.MonadFaceExceptionCode
 import monad.support.services.MonadException
 import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.util.Version
 
 /**
  * 分词器的创建
@@ -21,13 +19,14 @@ object AnalyzerCreator {
     }
 
     val clazz = analyzerType.clazz
+
     (analyzerType.constructorLen match {
       case 0 =>
         clazz.newInstance()
       case 1 =>
         clazz.
-          getConstructor(classOf[Version]).
-          newInstance(MonadFaceConstants.LUCENE_VERSION)
+          getConstructor().
+          newInstance()
     }).asInstanceOf[Analyzer]
   }
 }

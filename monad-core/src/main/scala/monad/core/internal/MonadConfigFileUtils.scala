@@ -7,6 +7,7 @@ import monad.support.MonadSupportConstants
 import monad.support.services.SymbolExpander
 
 import scala.io.Source
+import scala.util.control.NonFatal
 
 /**
  * process config file
@@ -19,7 +20,7 @@ object MonadConfigFileUtils {
     try {
       filePath = SymbolExpander.valueForSymbol(MonadCoreSymbols.CONFIG_DIR)
     } catch {
-      case e: Throwable => //ignore exception
+      case NonFatal(e) => //ignore exception
     }
     filePath += "/" + configFile
     Source.fromFile(filePath, MonadSupportConstants.UTF8_ENCODING).mkString

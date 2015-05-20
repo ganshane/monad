@@ -4,14 +4,16 @@ package monad.group.internal
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import monad.core.config.ZkClientConfigSupport
 import monad.face.CloudPathConstants
-import monad.face.config.CloudServerSupport
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
-import monad.face.services.{GroupZookeeperTemplate, DataTypeUtils}
+import monad.face.services.{DataTypeUtils, GroupZookeeperTemplate}
 import monad.support.MonadSupportConstants
 import monad.support.services.XmlLoader
 import org.slf4j.LoggerFactory
+
+import scala.util.control.NonFatal
 
 /**
  * monad group manager
@@ -48,7 +50,7 @@ class MonadGroupManager(config: ZkClientConfigSupport, zk: GroupZookeeperTemplat
       try {
         XmlLoader.parseXML[ResourceDefinition](y.get)
       } catch {
-        case e: Throwable =>
+        case NonFatal(e) =>
           logger.warn("不能解析XML", e)
           null
       }
@@ -64,9 +66,9 @@ class MonadGroupManager(config: ZkClientConfigSupport, zk: GroupZookeeperTemplat
 
   def getResource(name: String) = getXmlDefinition(CloudPathConstants.RESOURCE_PATH_FORMAT.format(name))
 
-  def getDynamic = getXmlDefinition(CloudPathConstants.DYNAMIC_PATH)
-
   def getXmlDefinition(path: String) = zk.getDataAsString(path).getOrElse("")
+
+  def getDynamic = getXmlDefinition(CloudPathConstants.DYNAMIC_PATH)
 
   def getRelation = getXmlDefinition(CloudPathConstants.RELATION_PATH)
 
@@ -99,6 +101,10 @@ class MonadGroupManager(config: ZkClientConfigSupport, zk: GroupZookeeperTemplat
     saveOrUpdate(CloudPathConstants.RELATION_PATH, resource, xml)
   }
 
+  def saveOrUpdateDynamic(resource: DynamicResourceDefinition, xml: Option[String]) {
+    saveOrUpdate(CloudPathConstants.DYNAMIC_PATH, resource, xml)
+  }
+
   private def saveOrUpdate[T](path: String, obj: T, xml: Option[String]) {
     val stat = zk.stat(path)
     val str = xml.getOrElse(XmlLoader.toXml(obj))
@@ -109,9 +115,5 @@ class MonadGroupManager(config: ZkClientConfigSupport, zk: GroupZookeeperTemplat
       )
     }
 
-  }
-
-  def saveOrUpdateDynamic(resource: DynamicResourceDefinition, xml: Option[String]) {
-    saveOrUpdate(CloudPathConstants.DYNAMIC_PATH, resource, xml)
   }
 }

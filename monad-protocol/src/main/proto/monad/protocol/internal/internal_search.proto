@@ -13,7 +13,7 @@ option java_outer_classname = "InternalSearchProto";
 /* 向分布式环境发送查询请求 */
 message InternalSearchRequest {
   extend monad.rpc.protocol.BaseCommand {
-    required InternalSearchRequest cmd = 105;
+    optional InternalSearchRequest cmd = 105;
   }
   required string resource_name = 1;
   required string q = 2;
@@ -23,7 +23,7 @@ message InternalSearchRequest {
 /* 返回查询结果 */
 message InternalSearchResponse {
   extend monad.rpc.protocol.BaseCommand {
-    required InternalSearchResponse cmd = 106;
+    optional InternalSearchResponse cmd = 106;
   }
   message DocScore {
     //文档的id

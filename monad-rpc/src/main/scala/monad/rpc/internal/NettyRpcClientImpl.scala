@@ -10,7 +10,6 @@ import java.util.concurrent.locks.ReentrantLock
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.rpc.model.RpcServerLocation
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, ServiceWaitingInitSupport}
@@ -19,6 +18,8 @@ import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.{NioClientSocketChannelFactory, NioWorkerPool}
+
+import scala.util.control.NonFatal
 
 /**
  * implements rpc client using netty framework
@@ -61,6 +62,16 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
     }
   }
 
+  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
+    var channelGroup = channels.get(serverLocation)
+
+    if (channelGroup == null) {
+      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
+      channelGroup = channels.get(serverLocation)
+    }
+    channelGroup.writeMessage(message)
+  }
+
   def writeMessageWithBlocking[T](serverPath: String, extension: GeneratedExtension[BaseCommand, T], value: T): Future[BaseCommand] = {
     val serverLocationOpt = rpcServerFinder.find(serverPath)
     val future = AsyncTaskMonitor.createBlockTask()
@@ -85,16 +96,6 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
     }
 
     future
-  }
-
-  private def writeMessage(serverLocation: RpcServerLocation, message: BaseCommand): Option[ChannelFuture] = {
-    var channelGroup = channels.get(serverLocation)
-
-    if (channelGroup == null) {
-      channels.putIfAbsent(serverLocation, new ClientChannelGroup(serverLocation))
-      channelGroup = channels.get(serverLocation)
-    }
-    channelGroup.writeMessage(message)
   }
 
   override def writeMessageWithChannel[T](channel: Channel, extension: GeneratedExtension[BaseCommand, T], value: T): Option[ChannelFuture] = {
@@ -192,7 +193,7 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
         try {
           task.handle(command, e.getChannel)
         } catch {
-          case e: Throwable =>
+          case NonFatal(e) =>
             error(e.getMessage, e)
         } finally {
           task.countDown()

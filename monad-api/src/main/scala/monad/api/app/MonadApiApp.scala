@@ -1,6 +1,6 @@
 // Copyright 2014,2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-package monad.storage.api.app
+package monad.api.app
 
 import monad.api.MonadApiModule
 import monad.core.MonadCoreSymbols

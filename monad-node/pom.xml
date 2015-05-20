@@ -12,7 +12,7 @@
   <parent>
     <groupId>com.ganshane.monad</groupId>
     <artifactId>monad-project</artifactId>
-    <version>dev-SNAPSHOT</version>
+    <version>5.0.9</version>
   </parent>
   <dependencies>
     <dependency>
@@ -26,6 +26,10 @@
     <dependency>
       <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-interface</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-mmseg</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ganshane.monad</groupId>

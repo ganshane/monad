@@ -28,6 +28,10 @@
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
+      <directory>../support/dic</directory>
+      <outputDirectory>dic</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>../support/doc</directory>
       <outputDirectory>doc</outputDirectory>
       <includes>

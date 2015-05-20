@@ -9,6 +9,8 @@ import monad.face.model.{ColumnType, IndexType, MonadColumnType}
 import monad.support.services.MonadException
 import org.apache.lucene.document.Field
 
+import scala.util.control.NonFatal
+
 /**
  * ResourceDefinition Conversions
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
@@ -69,7 +71,7 @@ trait ResourceDefinitionConversions {
       try {
         rp.columnType.getColumnType.readValueFromDfs(dbObj, rp)
       } catch {
-        case e: Throwable =>
+        case NonFatal(e) =>
           throw new MonadException("unable to read value from dfs with name:" + rp.name, e, null)
       }
     }

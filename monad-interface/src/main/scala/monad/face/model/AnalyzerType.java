@@ -12,8 +12,8 @@ package monad.face.model;
  */
 public enum AnalyzerType {
     Standard(0),
-    MMSeg(1),
-    Smart(2);
+    MMSeg(0),
+    Smart(0);
 
     public int constructorLen;
 
@@ -27,7 +27,7 @@ public enum AnalyzerType {
                 case 0:
                     return Class.forName("org.apache.lucene.analysis.standard.StandardAnalyzer");
                 case 1:
-                    return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
+                    return Class.forName("monad.mmseg.analysis.MMSegAnalyzer");
                 case 2:
                     return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
                 default:

@@ -4,7 +4,7 @@ package monad.node.internal
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import org.apache.lucene.index.AtomicReaderContext
+import org.apache.lucene.index.LeafReaderContext
 import org.apache.lucene.search.{DocIdSet, DocIdSetIterator, Filter}
 import org.apache.lucene.util.Bits
 
@@ -15,9 +15,14 @@ import org.apache.lucene.util.Bits
 private[internal] class SizeLimitedFilter(val limit: Int) extends Filter {
   private val size: AtomicInteger = new AtomicInteger(0)
 
-  def getDocIdSet(context: AtomicReaderContext, acceptDocs: Bits) = new SizeLimitedDocIdSet
+  def getDocIdSet(context: LeafReaderContext, acceptDocs: Bits) = new SizeLimitedDocIdSet
+
+  override def toString(field: String): String = "limit %s query".format(limit)
 
   class SizeLimitedDocIdSet extends DocIdSet {
+
+    override def ramBytesUsed(): Long = -1L
+
     def iterator() = new SizeLimitedDocIdSetIterator
 
     //不要缓存
@@ -52,5 +57,4 @@ private[internal] class SizeLimitedFilter(val limit: Int) extends Filter {
     }
 
   }
-
 }

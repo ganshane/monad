@@ -6,13 +6,14 @@ import java.net.SocketAddress
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.core.services.{MetricsService, RpcMetricsAdvice}
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcClient, RpcClientMessageHandler, RpcServerMessageHandler}
 import monad.support.services.LoggerSupport
 import org.apache.tapestry5.ioc.MethodAdviceReceiver
 import org.apache.tapestry5.plastic.{MethodAdvice, MethodInvocation}
 import org.jboss.netty.channel._
+
+import scala.util.control.NonFatal
 
 /**
  * rpc module metrics advice
@@ -58,7 +59,7 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
               successMeter.mark()
               r
             } catch {
-              case e: Throwable =>
+              case NonFatal(e) =>
                 failMeter.mark()
                 throw e
             }
@@ -71,7 +72,7 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
               successMeter.mark()
               r
             } catch {
-              case e: Throwable =>
+              case NonFatal(e) =>
                 failMeter.mark()
                 throw e
             }

@@ -3,12 +3,13 @@
 package monad.rpc.internal
 
 import com.google.protobuf.{ExtensionRegistry, MessageLite}
+import monad.rpc.MonadRpcConstants
 import monad.rpc.protocol.CommandProto
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.ChannelHandler.Sharable
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext, ChannelPipeline}
 import org.jboss.netty.handler.codec.oneone.{OneToOneDecoder, OneToOneEncoder}
-import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32FrameDecoder, ProtobufVarint32LengthFieldPrepender}
+import org.jboss.netty.handler.codec.protobuf.{ProtobufDecoder, ProtobufEncoder, ProtobufVarint32FrameDecoder, ProtobufVarint32LengthFieldPrepender}
 import org.xerial.snappy.Snappy
 
 /**
@@ -17,14 +18,24 @@ import org.xerial.snappy.Snappy
 trait NettyProtobufPipelineSupport {
   protected def extentionRegistry: ExtensionRegistry
 
+  private val commpressSupported =
+    System.getProperty(MonadRpcConstants.RPC_COMPRESS_SUPPORTED, "true") != "false"
+
   protected def InitPipeline(pipeline: ChannelPipeline) {
     //解码
     pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder())
     //构造函数传递要解码成的类型
-    pipeline.addLast("protobufDecoder", new ProtobufDecoderWithSnappy(CommandProto.BaseCommand.getDefaultInstance, extentionRegistry))
+    if (commpressSupported)
+      pipeline.addLast("protobufDecoder", new ProtobufDecoderWithSnappy(CommandProto.BaseCommand.getDefaultInstance, extentionRegistry))
+    else
+      pipeline.addLast("protobufDecoder", new ProtobufDecoder(CommandProto.BaseCommand.getDefaultInstance, extentionRegistry))
     //编码
     pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender())
-    pipeline.addLast("protobufEncoder", new ProtobufEncoderWithSnappy())
+
+    if (commpressSupported)
+      pipeline.addLast("protobufEncoder", new ProtobufEncoderWithSnappy())
+    else
+      pipeline.addLast("protobufEncoder", new ProtobufEncoder())
   }
 
   @Sharable
@@ -60,24 +71,20 @@ trait NettyProtobufPipelineSupport {
   }
 
   class ProtobufEncoderWithSnappy extends OneToOneEncoder {
-    override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): AnyRef = {
-      msg match {
-        case lite: MessageLite =>
-          var array = lite.toByteArray
-          array = Snappy.compress(array)
-          return ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
-        case _ =>
-      }
+    private def compressMessage(messageLite: MessageLite, ctx: ChannelHandlerContext): ChannelBuffer = {
+      var array = messageLite.toByteArray
+      array = Snappy.compress(array)
+      ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
+    }
 
-      msg match {
-        case builder: MessageLite.Builder =>
-          var array = builder.build.toByteArray
-          array = Snappy.compress(array)
-          return ctx.getChannel.getConfig.getBufferFactory.getBuffer(array, 0, array.length)
-        case _ =>
-      }
+    override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef) = msg match {
+      case lite: MessageLite =>
+        compressMessage(lite, ctx)
+      case builder: MessageLite.Builder =>
+        compressMessage(builder.build(), ctx)
+      case _ =>
+        msg
 
-      msg
     }
   }
 

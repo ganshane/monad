@@ -17,6 +17,7 @@ import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
  * 远程组服务API的实现类
@@ -36,12 +37,21 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
     executeApiRequest[JList[GroupConfig]](ApiConstants.GROUP_GetOtherGroups, rawType = Some(typeToken.getType)).toList
   }
 
+  //get all resources
+  def GetResources(group: Option[String]) = {
+    val typeToken = new TypeToken[JList[String]]() {}
+
+    executeApiRequest[JList[String]](ApiConstants.GROUP_GetResources, Some(Map("group" -> group.getOrElse(""))), rawType = Some(typeToken.getType)).map { content =>
+      XmlLoader.parseXML[ResourceDefinition](content)
+    }.toList
+  }
+
   private def executeApiRequest[T](api: String, params: Option[Map[String, String]] = None, rawType: Option[Type] = None)(implicit m: Manifest[T]): T = {
     var jsonStr: String = null
     try {
       jsonStr = httpRestClient.get(groupApi + "/" + api, params)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         throw new MonadException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
     }
     val jsonReader = new JsonReader(new StringReader(jsonStr))
@@ -52,7 +62,7 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       if (rawType.isDefined) {
         genericType = rawType.get
       } else {
-        val clazz = m.erasure.asInstanceOf[Class[T]]
+        val clazz = m.runtimeClass.asInstanceOf[Class[T]]
         genericType = TypeToken.get[T](clazz).getType
       }
       return gson.fromJson(json.get(ApiConstants.DATA), genericType).asInstanceOf[T]
@@ -60,15 +70,6 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
     throw new MonadException("fail to get self group config " + json.get(ApiConstants.MSG),
       MonadFaceExceptionCode.FAIL_GET_SELF_GROUP_CONFIG
     )
-  }
-
-  //get all resources
-  def GetResources(group: Option[String]) = {
-    val typeToken = new TypeToken[JList[String]]() {}
-
-    executeApiRequest[JList[String]](ApiConstants.GROUP_GetResources, Some(Map("group" -> group.getOrElse(""))), rawType = Some(typeToken.getType)).map { content =>
-      XmlLoader.parseXML[ResourceDefinition](content)
-    }.toList
   }
 
   def GetCloudAddress = {

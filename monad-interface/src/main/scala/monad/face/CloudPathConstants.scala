@@ -11,12 +11,6 @@ package monad.face
  * @author jcai
  */
 object CloudPathConstants {
-    //根路径
-    @deprecated(since = "5.0",message = "MonadCoreConstants#GROUPS_PATH ")
-    final val GROUPS_PATH="/groups"
-    @deprecated(since = "5.0",message = "MonadCoreConstants#LIVE")
-    final val LIVE_PATH="/live"
-
     //某一group下的子路径, 譬如：/groups/sc
     final val RESOURCES_PATH="/resources"
     final val RESOURCE_PATH_FORMAT=RESOURCES_PATH+"/%s"

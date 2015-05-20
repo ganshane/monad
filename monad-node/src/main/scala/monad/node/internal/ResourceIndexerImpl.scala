@@ -21,11 +21,12 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.MergePolicy.MergeSpecification
 import org.apache.lucene.index._
-import org.apache.lucene.store.{Directory, IOContext, MMapDirectory, RateLimitedDirectoryWrapper}
+import org.apache.lucene.store._
 import org.apache.lucene.util.{BytesRefBuilder, NumericUtils}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 
 import scala.annotation.tailrec
+import scala.util.control.NonFatal
 
 /**
  * 实现数据索引功能
@@ -60,8 +61,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       this.analyzerObj = AnalyzerCreator.create(rd.index.analyzer)
     }
 
-    val iwc = new IndexWriterConfig(MonadFaceConstants.LUCENE_VERSION,
-      this.analyzerObj).
+    val iwc = new IndexWriterConfig(this.analyzerObj).
       //.setIndexDeletionPolicy(NoDeletionPolicy.INSTANCE).
       setRAMBufferSizeMB(indexConfigSupport.index.writerBuffer)
 
@@ -80,7 +80,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     mergeScheduler.setMaxMergesAndThreads(6, 4)
     //mergeScheduler.setMaxThreadCount(4)
     //mergeScheduler.setMaxMergeCount(6)
-    mergeScheduler.setMergeThreadPriority(Thread.MIN_PRIORITY + 1)
+    //mergeScheduler.setMergeThreadPriority(Thread.MIN_PRIORITY + 1)
     iwc.setMergeScheduler(mergeScheduler)
 
     /*
@@ -120,15 +120,15 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
     indexPath = new File(indexConfigSupport.index.path + "/" + rd.name)
     logger.debug("[{}] index path is:{}", rd.name, indexPath)
-    var directory: Directory = null
-    indexerManager.getRateLimiter match {
-      case Some(limiter) =>
-        directory = new MMapDirectory(indexPath)
-        val tmpDirectory = new RateLimitedDirectoryWrapper(directory)
-        tmpDirectory.setRateLimiter(limiter, IOContext.Context.FLUSH)
-        directory = tmpDirectory
-      case None =>
-        directory = new MMapDirectory(indexPath)
+    var directory: Directory = FSDirectory.open(indexPath.toPath)
+    indexerManager.getRateLimiter foreach { limiter =>
+      //TODO 增加限速支持
+      directory = new FilterDirectory(directory) {
+        override def createOutput(name: String, context: IOContext): IndexOutput = {
+          val output = super.createOutput(name, context)
+          new RateLimitedIndexOutput(limiter, output)
+        }
+      }
     }
     indexWriter = new IndexWriter(directory, iwc)
     try {
@@ -142,7 +142,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       resourceSearcher.start()
       maybeOutputRegionInfo(0)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         shutdown()
         throw e
     }
@@ -167,21 +167,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private def rollback() {
     if (indexWriter != null)
       indexWriter.rollback()
-  }
-
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    /*
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
-    */
   }
 
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
@@ -247,6 +232,13 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.addDocument(doc)
   }
 
+  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
+    obtainIndexWriter
+    if (isSameVersion(dataVersion)) {
+      indexWriter.updateDocument(createIdTerm(id), doc)
+    }
+  }
+
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
       logger.warn("[" + rd.name + "] indexer version({}) != data version({})", version, dataVersion)
@@ -259,11 +251,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     indexWriter
   }
 
-  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.updateDocument(createIdTerm(id), doc)
-    }
+  private def createIdTerm(id: Int) = {
+    val bb = new BytesRefBuilder
+    NumericUtils.intToPrefixCoded(id, 0, bb)
+    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def deleteDocument(id: Int, dataVersion: Int) {
@@ -272,12 +263,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.deleteDocuments(createIdTerm(id))
       //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
     }
-  }
-
-  private def createIdTerm(id: Int) = {
-    val bb = new BytesRefBuilder
-    NumericUtils.intToPrefixCoded(id, 0, bb)
-    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
@@ -290,6 +275,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     resourceSearcher.maybeRefresh()
     val i = indexWriter.maxDoc()
     logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+  }
+
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    /*
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
+    */
   }
 
   private def writeLastLog(seq: Long) {

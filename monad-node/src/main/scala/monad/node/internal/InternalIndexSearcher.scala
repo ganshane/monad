@@ -8,7 +8,7 @@ import monad.face.model.ResourceDefinition
 import monad.node.internal.support.{GlobalObjectIdCache, ObjectIdCacheSupport}
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException
-import org.apache.lucene.index.{AtomicReaderContext, IndexReader, SegmentReader}
+import org.apache.lucene.index.{IndexReader, LeafReaderContext, SegmentReader}
 import org.apache.lucene.search.IndexSearcher
 
 import scala.collection.JavaConversions._
@@ -49,7 +49,7 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
     */
   }
 
-  private def getSubReaderContext(n: Int): AtomicReaderContext = {
+  private def getSubReaderContext(n: Int): LeafReaderContext = {
     // find reader for doc n:
     val size = leafContexts.size()
     1 until size foreach { i =>

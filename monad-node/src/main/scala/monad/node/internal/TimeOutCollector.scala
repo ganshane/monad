@@ -4,8 +4,8 @@ package monad.node.internal
 
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.{MonadException, ServiceLifecycle}
-import org.apache.lucene.index.AtomicReaderContext
-import org.apache.lucene.search.{Collector, Scorer}
+import org.apache.lucene.index.LeafReaderContext
+import org.apache.lucene.search.{Collector, Scorer, SimpleCollector}
 
 /**
  * 支持查询超时的API
@@ -55,16 +55,21 @@ object TimeOutCollector extends ServiceLifecycle {
 
 }
 
-class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends Collector {
+class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends SimpleCollector {
   private val maxTime: Long = TimeOutCollector.timer.getNanoTime + (timeoutSeconds * 1000000000L)
+  private var context: LeafReaderContext = _
 
-  def setScorer(scorer: Scorer) {
-    delegate.setScorer(scorer)
+  override def setScorer(scorer: Scorer) {
+    delegate.getLeafCollector(context).setScorer(scorer)
+  }
+
+  override def doSetNextReader(context: LeafReaderContext): Unit = {
+    this.context = context
   }
 
   def collect(doc: Int) {
     checkTimeout();
-    delegate.collect(doc)
+    delegate.getLeafCollector(context).collect(doc)
   }
 
   private def checkTimeout() {
@@ -73,11 +78,7 @@ class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends Co
     )
   }
 
-  def setNextReader(context: AtomicReaderContext) {
-    delegate.setNextReader(context)
-  }
-
-  def acceptsDocsOutOfOrder() = delegate.acceptsDocsOutOfOrder()
+  override def needsScores(): Boolean = delegate.needsScores()
 }
 
 

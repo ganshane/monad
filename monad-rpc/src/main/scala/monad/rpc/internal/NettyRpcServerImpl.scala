@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.rpc.config.RpcBindSupport
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
@@ -20,6 +19,8 @@ import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.group.DefaultChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+
+import scala.util.control.NonFatal
 
 /**
  * rpc server based on netty
@@ -87,7 +88,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
       channels.add(channel)
       channel
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         shutdown()
         throw MonadException.wrap(e)
     }
@@ -110,8 +111,10 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
       val command = e.getMessage.asInstanceOf[BaseCommand]
       val result = messageHandler.handle(command, new ServerResponse(e.getChannel))
-      if (!result)
-        error("message not found {}", command.toString)
+      if (!result) {
+        error("message not handled {}", command.toString)
+        ctx.getChannel.close()
+      }
     }
 
     override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent): Unit = {

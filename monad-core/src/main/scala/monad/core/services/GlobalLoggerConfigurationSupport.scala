@@ -31,11 +31,11 @@ trait GlobalLoggerConfigurationSupport {
       properties.put("log4j.rootCategory", "error,R")
       properties.put("log4j.appender.R", "org.apache.log4j.RollingFileAppender")
       properties.put("log4j.appender.R.layout", "org.apache.log4j.PatternLayout")
-      properties.put("log4j.appender.R.layout.ConversionPattern", "[" + prefix + "] %d{MM-dd HH:mm:ss} %m%n")
+      properties.put("log4j.appender.R.layout.ConversionPattern", "[" + prefix + "] %d{MM-dd HH:mm:ss} [%p] %m%n")
       properties.put("log4j.appender.R.File", logFile)
       properties.put("log4j.appender.R.MaxFileSize", "10000KB")
       properties.put("log4j.appender.R.MaxBackupIndex", "10")
-      loggerPrefix foreach { x => x.foreach(p => properties.put("log4j.category." + p, "info"))}
+      loggerPrefix foreach { p => properties.put("log4j.category." + p, "info")}
       properties.put("log4j.category.org.apache.zookeeper", "warn")
       properties.put("log4j.category.com.netflix", "warn")
 
