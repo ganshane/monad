@@ -49,7 +49,8 @@ public class DictionaryTest {
 
     @Test
     public void testloadMultiDic() {
-        Dictionary dic = Dictionary.getInstance();
+        String path = DictionaryTest.class.getResource("/data").getPath();
+        Dictionary dic = Dictionary.getInstance(path);
 
         Assert.assertTrue(dic.match("自定义词"));
     }
