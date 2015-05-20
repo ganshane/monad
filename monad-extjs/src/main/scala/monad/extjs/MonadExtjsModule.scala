@@ -2,26 +2,34 @@
 // site: http://www.ganshane.com
 package monad.extjs
 
+import com.google.gson.{JsonArray, JsonObject}
 import monad.extjs.internal._
-import model.ExtStreamResponse
-import org.apache.tapestry5.services.transform.ComponentClassTransformWorker2
+import monad.extjs.model.ExtStreamResponse
 import monad.extjs.services._
-import org.apache.tapestry5.services._
-import assets.{ContentTypeAnalyzer, AssetRequestHandler}
-import javascript.{JavaScriptStack, JavaScriptStackSource}
-import org.apache.tapestry5.ioc._
-import org.apache.tapestry5.ioc.annotations.Symbol
-import org.apache.tapestry5.ioc.services.{CoercionTuple, TypeCoercer, PropertyShadowBuilder}
-import com.google.gson.{JsonObject, JsonArray}
-import org.apache.tapestry5.internal.services.{AssetResourceLocator, ResourceStreamer}
-import org.apache.tapestry5.ioc.annotations.{Local, Decorate, Contribute}
 import org.apache.tapestry5.SymbolConstants
+import org.apache.tapestry5.internal.services.{AssetResourceLocator, ResourceStreamer}
+import org.apache.tapestry5.ioc._
+import org.apache.tapestry5.ioc.annotations.{Contribute, Decorate, Local, Symbol}
+import org.apache.tapestry5.ioc.services.{CoercionTuple, PropertyShadowBuilder, TypeCoercer}
+import org.apache.tapestry5.services._
+import org.apache.tapestry5.services.assets.{AssetRequestHandler, ContentTypeAnalyzer}
+import org.apache.tapestry5.services.javascript.{JavaScriptStack, JavaScriptStackSource}
+import org.apache.tapestry5.services.transform.ComponentClassTransformWorker2
 
 /**
  * integrate tapestry5 and extjs4 module
  * @author jcai
  */
 object MonadExtjsModule {
+  def contributeAssetDispatcher(configuration: MappedConfiguration[String, AssetRequestHandler],
+                                streamer: ResourceStreamer,
+                                assetResourceLocator: AssetResourceLocator) {
+    configuration.`override`("assets", new CoffeeScriptAssetRequestHandler(streamer, assetResourceLocator, "assets"))
+  }
+
+  def contributeClasspathAssetAliasManager(configuration: MappedConfiguration[String, String]) {
+    configuration.add("assets", "assets")
+  }
     def bind(binder:ServiceBinder){
         binder.bind(classOf[FileSystemAssetAliasManager], classOf[FileSystemAssetAliasManagerImpl]).withId("FileSystemAssetAliasManager")
         binder.bind(classOf[ExtDirectApiResolver],classOf[ExtDirectApiResolverImpl]).withId("ExtDirectApiResolver")
