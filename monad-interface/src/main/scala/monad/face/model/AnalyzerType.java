@@ -27,7 +27,7 @@ public enum AnalyzerType {
                 case 0:
                     return Class.forName("org.apache.lucene.analysis.standard.StandardAnalyzer");
                 case 1:
-                    return Class.forName("monad.mmseg.MMSegAnalyzer");
+                    return Class.forName("monad.mmseg.analysis.MMSegAnalyzer");
                 case 2:
                     return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
                 default:
