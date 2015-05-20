@@ -7,7 +7,6 @@ deploy:
     mvn -v
 release:
   script: |
-    git checkout develop
     mvn versions:set "-DnewVersion=${tag}"
     git commit -am "release ${tag}"
 
