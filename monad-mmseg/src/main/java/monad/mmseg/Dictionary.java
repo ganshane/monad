@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +34,7 @@ public class Dictionary {
      */
     private Map<File, Long> wordsLastTime = null;
     private long lastLoadTime = 0;
+    private static final ReentrantLock lock = new ReentrantLock();
 
     /**
      * 词典的目录
@@ -72,8 +74,15 @@ public class Dictionary {
         File normalizeDir = normalizeFile(path);
         Dictionary dic = dics.get(normalizeDir);
         if (dic == null) {
-            dic = new Dictionary(normalizeDir);
-            dics.put(normalizeDir, dic);
+            try{
+                lock.lock();
+                if(dic == null) {
+                    dic = new Dictionary(normalizeDir);
+                    dics.put(normalizeDir, dic);
+                }
+            }finally {
+                lock.unlock();
+            }
         }
         return dic;
     }
@@ -147,6 +156,7 @@ public class Dictionary {
      */
     public static File getDefalutPath() {
         if (defalutPath == null) {
+            /*
             String defPath = System.getProperty("mmseg.dic.path");
             log.info("look up in mmseg.dic.path=" + defPath);
             if (defPath == null) {
@@ -160,6 +170,8 @@ public class Dictionary {
                 }
 
             }
+            */
+            String defPath = System.getProperty("server.home")+"/dic";
 
             defalutPath = new File(defPath);
             if (!defalutPath.exists()) {
