@@ -414,15 +414,19 @@ case "$ACTION" in
           sleep 1
           if running $SERVER_PID
           then
-              sleep 3
+            sleep 3
+            if running $SERVER_PID
+            then
+              sleep 10
               if running $SERVER_PID
               then
-                  sleep 30
-                  if running $SERVER_PID
-                  then
-                      start-stop-daemon -K -p $SERVER_PID -d $SERVER_HOME -a $JAVA -s KILL
-                  fi
+                sleep 30
+                if running $SERVER_PID
+                then
+                  start-stop-daemon -K -p $SERVER_PID -d $SERVER_HOME -a $JAVA -s KILL
+                fi
               fi
+            fi
           fi
 
           rm -f $SERVER_PID
