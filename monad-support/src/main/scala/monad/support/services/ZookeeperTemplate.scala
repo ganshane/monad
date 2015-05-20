@@ -4,6 +4,7 @@ package monad.support.services
 
 import java.util.concurrent._
 
+import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.apache.zookeeper.{CreateMode, WatchedEvent, Watcher, ZooKeeper}
 
@@ -11,6 +12,7 @@ import org.apache.zookeeper.{CreateMode, WatchedEvent, Watcher, ZooKeeper}
  * zookeeper template
  * @author jcai
  */
+@EagerLoad
 class ZookeeperTemplate(val address: String,
                         val basePath: Option[String] = None,
                         val sessionTimeout: Int = 6000)

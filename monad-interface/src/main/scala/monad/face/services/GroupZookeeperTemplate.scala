@@ -8,6 +8,7 @@ import com.google.gson.JsonObject
 import monad.core.MonadCoreConstants
 import monad.face.{CloudPathConstants, MonadFaceConstants}
 import monad.support.services.ZookeeperTemplate
+import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.zookeeper.KeeperException
@@ -17,6 +18,7 @@ import org.apache.zookeeper.data.Stat
  * 基于组的zookeeper模板类
  * @author jcai
  */
+@EagerLoad
 class GroupZookeeperTemplate(groupApi: GroupServerApi, periodExecutor: PeriodicExecutor)
   extends ZookeeperTemplate(groupApi.GetCloudAddress, Some(MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)) {
 
