@@ -13,6 +13,7 @@ import monad.face.model.GroupConfig
 import monad.support.MonadSupportConstants
 import monad.support.services.{ServiceUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.Invokable
+import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.slf4j.LoggerFactory
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory
  * Cluster的管理类，主要针对Cluster的服务操作
  * @author jcai
  */
+@EagerLoad
 class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicExecutor, parallelExecutor: ParallelExecutor) {
   private val logger = LoggerFactory getLogger getClass
   //create base directory
@@ -31,7 +33,9 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
    */
   @PostConstruct
   def start(hub: RegistryShutdownHub) {
-    if (parallelExecutor == null) {
+    internalStart(hub)
+    /*
+   if (parallelExecutor == null) {
       internalStart(hub)
     } else {
       parallelExecutor.invoke(new Invokable[Unit] {
@@ -40,7 +44,7 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
         }
       })
     }
-
+    */
   }
 
   private def internalStart(hub: RegistryShutdownHub) {
