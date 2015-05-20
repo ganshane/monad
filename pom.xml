@@ -20,6 +20,7 @@
     <module>monad-group</module>
     <module>monad-interface</module>
     <module>monad-jni</module>
+    <module>monad-mmseg</module>
     <module>monad-node</module>
     <module>monad-protocol</module>
     <module>monad-rpc</module>

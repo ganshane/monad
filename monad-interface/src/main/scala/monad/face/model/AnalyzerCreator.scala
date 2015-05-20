@@ -19,6 +19,7 @@ object AnalyzerCreator {
     }
 
     val clazz = analyzerType.clazz
+
     (analyzerType.constructorLen match {
       case 0 =>
         clazz.newInstance()
