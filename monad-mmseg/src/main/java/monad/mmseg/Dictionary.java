@@ -20,11 +20,14 @@ import java.util.logging.Logger;
 public class Dictionary {
 
     private static final Logger log = Logger.getLogger(Dictionary.class.getName());
-
+    private static final ConcurrentHashMap<File, Dictionary> dics = new ConcurrentHashMap<File, Dictionary>();
+    /**
+     * 不要直接使用, 通过 {@link #getDefalutPath()} 使用
+     */
+    private static File defalutPath = null;
     private File dicPath;    //词库目录
     private volatile Map<Character, CharNode> dict;
     private volatile Map<Character, Object> unit;    //单个字的单位
-
     /**
      * 记录 word 文件的最后修改时间
      */
@@ -32,16 +35,10 @@ public class Dictionary {
     private long lastLoadTime = 0;
 
     /**
-     * 不要直接使用, 通过 {@link #getDefalutPath()} 使用
+     * 词典的目录
      */
-    private static File defalutPath = null;
-    private static final ConcurrentHashMap<File, Dictionary> dics = new ConcurrentHashMap<File, Dictionary>();
-
-    protected void finalize() throws Throwable {
-        /*
-		 * 使 class reload 的时也可以释放词库
-		 */
-        destroy();
+    private Dictionary(File path) {
+        init(path);
     }
 
     /**
@@ -93,17 +90,6 @@ public class Dictionary {
     }
 
     /**
-     * 销毁, 释放资源. 此后此对像不再可用.
-     */
-    void destroy() {
-        clear(dicPath);
-
-        dicPath = null;
-        dict = null;
-        unit = null;
-    }
-
-    /**
      * @see Dictionary#clear(File)
      */
     public static Dictionary clear(String path) {
@@ -121,11 +107,84 @@ public class Dictionary {
         return dics.remove(normalizeDir);
     }
 
+    private static long now() {
+        return System.currentTimeMillis();
+    }
+
     /**
-     * 词典的目录
+     * 加载词文件的模板
+     *
+     * @return 文件总行数
      */
-    private Dictionary(File path) {
-        init(path);
+    public static int load(InputStream fin, FileLoading loading) throws IOException {
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(new BufferedInputStream(fin), "UTF-8"));
+        String line = null;
+        int n = 0;
+        while ((line = br.readLine()) != null) {
+            if (line == null || line.startsWith("#")) {
+                continue;
+            }
+            n++;
+            loading.row(line, n);
+        }
+        return n;
+    }
+
+    /**
+     * 取得 str 除去第一个char的部分
+     *
+     * @author chenlb 2009-3-3 下午10:05:26
+     */
+    private static char[] tail(String str) {
+        char[] cs = new char[str.length() - 1];
+        str.getChars(1, str.length(), cs, 0);
+        return cs;
+    }
+
+    /**
+     * 当 words.dic 是从 jar 里加载时, 可能 defalut 不存在
+     */
+    public static File getDefalutPath() {
+        if (defalutPath == null) {
+            String defPath = System.getProperty("mmseg.dic.path");
+            log.info("look up in mmseg.dic.path=" + defPath);
+            if (defPath == null) {
+                URL url = Dictionary.class.getClassLoader().getResource("data");
+                if (url != null) {
+                    defPath = url.getFile();
+                    log.info("look up in classpath=" + defPath);
+                } else {
+                    defPath = System.getProperty("user.dir") + "/data";
+                    log.info("look up in user.dir=" + defPath);
+                }
+
+            }
+
+            defalutPath = new File(defPath);
+            if (!defalutPath.exists()) {
+                log.warning("defalut dic path=" + defalutPath + " not exist");
+            }
+        }
+        return defalutPath;
+    }
+
+    protected void finalize() throws Throwable {
+        /*
+         * 使 class reload 的时也可以释放词库
+		 */
+        destroy();
+    }
+
+    /**
+     * 销毁, 释放资源. 此后此对像不再可用.
+     */
+    void destroy() {
+        clear(dicPath);
+
+        dicPath = null;
+        dict = null;
+        unit = null;
     }
 
     private void init(File path) {
@@ -133,10 +192,6 @@ public class Dictionary {
         wordsLastTime = new HashMap<File, Long>();
 
         reload();    //加载词典
-    }
-
-    private static long now() {
-        return System.currentTimeMillis();
     }
 
     /**
@@ -250,74 +305,6 @@ public class Dictionary {
         log.info("unit loaded time=" + (now() - s) + "ms, line=" + lineNum + ", on file=" + unitFile);
 
         return unit;
-    }
-
-    /**
-     * 加载 wordsXXX.dic 文件类。
-     *
-     * @author chenlb 2009-10-15 下午02:12:55
-     */
-    private static class WordsFileLoading implements FileLoading {
-        final Map<Character, CharNode> dic;
-
-        /**
-         * @param dic 加载的词，保存在此结构中。
-         */
-        public WordsFileLoading(Map<Character, CharNode> dic) {
-            this.dic = dic;
-        }
-
-        public void row(String line, int n) {
-            if (line.length() < 2) {
-                return;
-            }
-            CharNode cn = dic.get(line.charAt(0));
-            if (cn == null) {
-                cn = new CharNode();
-                dic.put(line.charAt(0), cn);
-            }
-            cn.addWordTail(tail(line));
-        }
-    }
-
-    /**
-     * 加载词文件的模板
-     *
-     * @return 文件总行数
-     */
-    public static int load(InputStream fin, FileLoading loading) throws IOException {
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(new BufferedInputStream(fin), "UTF-8"));
-        String line = null;
-        int n = 0;
-        while ((line = br.readLine()) != null) {
-            if (line == null || line.startsWith("#")) {
-                continue;
-            }
-            n++;
-            loading.row(line, n);
-        }
-        return n;
-    }
-
-    /**
-     * 取得 str 除去第一个char的部分
-     *
-     * @author chenlb 2009-3-3 下午10:05:26
-     */
-    private static char[] tail(String str) {
-        char[] cs = new char[str.length() - 1];
-        str.getChars(1, str.length(), cs, 0);
-        return cs;
-    }
-
-    public static interface FileLoading {
-        /**
-         * @param line 读出的一行
-         * @param n    当前第几行
-         * @author chenlb 2009-3-3 下午09:55:54
-         */
-        void row(String line, int n);
     }
 
     /**
@@ -446,33 +433,6 @@ public class Dictionary {
     }
 
     /**
-     * 当 words.dic 是从 jar 里加载时, 可能 defalut 不存在
-     */
-    public static File getDefalutPath() {
-        if (defalutPath == null) {
-            String defPath = System.getProperty("mmseg.dic.path");
-            log.info("look up in mmseg.dic.path=" + defPath);
-            if (defPath == null) {
-                URL url = Dictionary.class.getClassLoader().getResource("data");
-                if (url != null) {
-                    defPath = url.getFile();
-                    log.info("look up in classpath=" + defPath);
-                } else {
-                    defPath = System.getProperty("user.dir") + "/data";
-                    log.info("look up in user.dir=" + defPath);
-                }
-
-            }
-
-            defalutPath = new File(defPath);
-            if (!defalutPath.exists()) {
-                log.warning("defalut dic path=" + defalutPath + " not exist");
-            }
-        }
-        return defalutPath;
-    }
-
-    /**
      * 仅仅用来观察词库.
      */
     public Map<Character, CharNode> getDict() {
@@ -484,6 +444,22 @@ public class Dictionary {
      */
     public File getDicPath() {
         return dicPath;
+    }
+
+    /**
+     * 最后加载词库的时间
+     */
+    public long getLastLoadTime() {
+        return lastLoadTime;
+    }
+
+    public static interface FileLoading {
+        /**
+         * @param line 读出的一行
+         * @param n    当前第几行
+         * @author chenlb 2009-3-3 下午09:55:54
+         */
+        void row(String line, int n);
     }
 
     /**
@@ -512,12 +488,5 @@ public class Dictionary {
             }
             cn.addWordTail(tail(line));
         }
-    }
-
-    /**
-     * 最后加载词库的时间
-     */
-    public long getLastLoadTime() {
-        return lastLoadTime;
     }
 }
