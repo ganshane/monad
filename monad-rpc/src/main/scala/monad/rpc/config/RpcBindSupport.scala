@@ -17,6 +17,8 @@ trait RpcBindSupport {
 class RpcBind {
   @XmlElement(name = "bind")
   var bind: String = _
+  @XmlElement(name = "expose")
+  var expose: String = _
   @XmlElement(name = "io_thread")
   var ioThread: Int = 1
   @XmlElement(name = "worker_thread")

@@ -18,7 +18,7 @@ class NodeRpcServerListener(zk: ZookeeperTemplate, rpc: RpcBindSupport with Part
   override def afterStop(): Unit = ()
 
   override def afterStart(): Unit = {
-    val rpcServerLocation = RpcServerLocation.fromBindString(rpc.rpc.bind)
+    val rpcServerLocation = RpcServerLocation.exposeRpcLocation(rpc.rpc)
     zk.createEphemeralPathWithStringData(
       MonadFaceConstants.MACHINE_NODE_FORMAT.format(rpc.partitionId),
       Some(rpcServerLocation.toJSON.toCompactString))

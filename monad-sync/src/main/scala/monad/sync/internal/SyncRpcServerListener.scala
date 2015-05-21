@@ -15,7 +15,7 @@ class SyncRpcServerListener(zk: ZookeeperTemplate, rpc: RpcBindSupport) extends 
   override def afterStop(): Unit = ()
 
   override def afterStart(): Unit = {
-    val rpcServerLocation = RpcServerLocation.fromBindString(rpc.rpc.bind)
+    val rpcServerLocation = RpcServerLocation.exposeRpcLocation(rpc.rpc)
     zk.createEphemeralPathWithStringData(
       MonadFaceConstants.MACHINE_SYNC,
       Some(rpcServerLocation.toJSON.toCompactString))
