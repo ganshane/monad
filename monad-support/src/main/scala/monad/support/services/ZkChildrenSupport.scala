@@ -122,7 +122,7 @@ trait ZkChildrenSupport {
   }
 
   protected def retryFailedChildrenWatcher() {
-    info("retry to watch children")
+    debug("retry to watch children")
     val it = failedChildrenWatcher.iterator()
     while (it.hasNext) {
       val path = it.next()

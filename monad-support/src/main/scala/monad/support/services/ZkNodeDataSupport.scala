@@ -191,7 +191,7 @@ trait ZkNodeDataSupport {
   }
 
   protected def retryFailedWatchNodeData() {
-    info("retry to watch node data")
+    debug("retry to watch node data")
     val it = failedNodeDataWatcher.iterator()
     while (it.hasNext) {
       val path = it.next()
