@@ -110,7 +110,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     mergePolicy.setSegmentsPerTier(10)
     mergePolicy.setMaxMergeAtOnce(10)
     mergePolicy.setMaxMergeAtOnceExplicit(10)
-    mergePolicy.setMaxMergedSegmentMB(18000)
+    mergePolicy.setMaxMergedSegmentMB(8000)
 
     mergePolicy.setFloorSegmentMB(5)
 
@@ -266,18 +266,18 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  private def createIdTerm(id: Int) = {
-    val bb = new BytesRefBuilder
-    NumericUtils.intToPrefixCoded(id, 0, bb)
-    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
-  }
-
   def deleteDocument(id: Int, dataVersion: Int) {
     obtainIndexWriter
     if (isSameVersion(dataVersion)) {
       indexWriter.deleteDocuments(createIdTerm(id))
       //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
     }
+  }
+
+  private def createIdTerm(id: Int) = {
+    val bb = new BytesRefBuilder
+    NumericUtils.intToPrefixCoded(id, 0, bb)
+    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
