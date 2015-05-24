@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import java.io.File
+import java.io.{OutputStream, File, IOException}
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -16,7 +16,7 @@ import monad.jni.services.gen.{DataCommandType, NormalSeqDataKey, SlaveNoSQLSupp
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
 import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
-import org.apache.commons.io.FileUtils
+import org.apache.commons.io.{IOUtils, FileUtils}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.MergePolicy.MergeSpecification
@@ -293,8 +293,18 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   private def writeLastLog(seq: Long) {
-    FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
+    //FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
+    var out: OutputStream = null
+    try {
+      out = FileUtils.openOutputStream(logFile, false)
+      out.write(DataTypeUtils.convertAsArray(seq))
+      out.flush()
+      out.close
+    } finally {
+      IOUtils.closeQuietly(out)
+    }
   }
+
 
   def findObject(key: Array[Byte]) = {
     val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, DataTypeUtils.convertAsInt(key));
