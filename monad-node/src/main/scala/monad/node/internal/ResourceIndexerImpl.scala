@@ -2,9 +2,9 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import java.io.{OutputStream, File, IOException}
+import java.io.{File, OutputStream}
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import com.google.gson.{JsonObject, JsonParser}
 import com.lmax.disruptor.EventTranslator
@@ -16,7 +16,7 @@ import monad.jni.services.gen.{DataCommandType, NormalSeqDataKey, SlaveNoSQLSupp
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
 import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
-import org.apache.commons.io.{IOUtils, FileUtils}
+import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.MergePolicy.MergeSpecification
@@ -50,7 +50,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private var indexPath: File = _
   private var jobRunning = true
 
-  private var indexRef = new AtomicInteger()
+  private val indexRef = new AtomicLong()
 
   def start() {
     logger.info("[{}] start node,version:{}", rd.name, version)
