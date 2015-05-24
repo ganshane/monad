@@ -201,7 +201,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
   def index(): Unit = {
     val waiting = indexRef.get()
-    if(waiting != 0){
+    if(waiting == 0){
       val nosql = nosqlOpt().get
       val latestSeq = nosql.FindLastBinlog()
       val fromSeq = readLastLog() + 1
