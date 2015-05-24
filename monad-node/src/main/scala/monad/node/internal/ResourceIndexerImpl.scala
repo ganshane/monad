@@ -50,6 +50,8 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private var indexPath: File = _
   private var jobRunning = true
 
+  private var indexRef = new AtomicInteger()
+
   def start() {
     logger.info("[{}] start node,version:{}", rd.name, version)
     startNoSQLInstance(rd)
@@ -198,23 +200,29 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   def index(): Unit = {
-    val nosql = nosqlOpt().get
-    val latestSeq = nosql.FindLastBinlog()
-    val fromSeq = readLastLog() + 1
-    if (fromSeq <= latestSeq) {
-      info("begin to index from {} to {}", fromSeq, latestSeq)
-      val range = Range.Long.inclusive(fromSeq, latestSeq, 1)
-      indexRange(-1, nosql, range)
-      info("finish to index from {} to {}", fromSeq, latestSeq)
+    val waiting = indexRef.get()
+    if(waiting != 0){
+      val nosql = nosqlOpt().get
+      val latestSeq = nosql.FindLastBinlog()
+      val fromSeq = readLastLog() + 1
+      if (fromSeq <= latestSeq) {
+        info("begin to index from {} to {}", fromSeq, latestSeq)
+        val range = Range.Long.inclusive(fromSeq, latestSeq, 1)
+        indexRange(-1, nosql, range)
+        info("finish to index from {} to {}", fromSeq, latestSeq)
+      }
+      if (latestSeq - fromSeq > 100) {
+        nosql.DeleteBinlogRange(fromSeq, latestSeq - 100)
+      }
+      else
+        logger.info("[{}] no data indexed,current log_seq {}", rd.name, latestSeq)
+    }else{
+      info("[{}] index working index waiting {}",rd.name, waiting)
     }
-    if (latestSeq - fromSeq > 100) {
-      nosql.DeleteBinlogRange(fromSeq, latestSeq - 100)
-    }
-    else
-      logger.info("[{}] no data indexed,current log_seq {}", rd.name, latestSeq)
   }
 
   def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
+    indexRef.incrementAndGet()
     indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
       def translateTo(event: IndexEvent, sequence: Long) {
         event.reset()
@@ -230,6 +238,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
   def triggerCommit(logSeq: Long) {
     logger.debug("commit log seq :{}", logSeq)
+    indexRef.incrementAndGet()
     indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
       def translateTo(event: IndexEvent, sequence: Long) {
         event.reset()
@@ -241,11 +250,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     })
   }
 
-  def indexDocument(doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion))
-      indexWriter.addDocument(doc)
-  }
 
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
@@ -258,19 +262,37 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private def obtainIndexWriter: IndexWriter = ServiceUtils.waitUntilObjectLive("%s索引对象".format(rd.name)) {
     indexWriter
   }
+  def indexDocument(doc: Document, dataVersion: Int) {
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion))
+        indexWriter.addDocument(doc)
+    }
+  }
 
   def updateDocument(id: Int, doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.updateDocument(createIdTerm(id), doc)
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion)) {
+        indexWriter.updateDocument(createIdTerm(id), doc)
+      }
     }
   }
 
   def deleteDocument(id: Int, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.deleteDocuments(createIdTerm(id))
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+    doInDecrementRef{
+      obtainIndexWriter
+      if (isSameVersion(dataVersion)) {
+        indexWriter.deleteDocuments(createIdTerm(id))
+        //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+      }
+    }
+  }
+  private def doInDecrementRef(fun: =>Unit): Unit ={
+    try{
+      fun
+    }finally{
+      indexRef.decrementAndGet()
     }
   }
 
@@ -281,15 +303,18 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
-    obtainIndexWriter
+    doInDecrementRef{
 
-    indexWriter.commit()
-    writeLastLog(lastSeq)
-    maybeOutputRegionInfo(lastSeq)
+      obtainIndexWriter
 
-    resourceSearcher.maybeRefresh()
-    val i = indexWriter.maxDoc()
-    logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+      indexWriter.commit()
+      writeLastLog(lastSeq)
+      maybeOutputRegionInfo(lastSeq)
+
+      resourceSearcher.maybeRefresh()
+      val i = indexWriter.maxDoc()
+      logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+    }
   }
 
   private def writeLastLog(seq: Long) {
