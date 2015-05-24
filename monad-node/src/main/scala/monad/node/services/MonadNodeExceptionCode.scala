@@ -38,4 +38,6 @@ object MonadNodeExceptionCode {
 
   case object OVERFLOW_RESOURCE_RANGE extends ErrorCode(5014)
 
+  case object INVALID_BINLOG_SEQ extends ErrorCode(5015)
+
 }

@@ -43,14 +43,13 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private final val parser = new JsonParser
   private val needMerge = new AtomicInteger()
   private val logFile = new File(indexConfigSupport.index.path + "/" + rd.name + "/_log_seq")
+  private val indexRef = new AtomicLong()
   private var analyzerObj: Analyzer = _
   private var indexWriter: IndexWriter = _
   private var mergeScheduler: ConcurrentMergeScheduler = _
   private var resourceSearcher: ResourceSearcher = _
   private var indexPath: File = _
   private var jobRunning = true
-
-  private val indexRef = new AtomicLong()
 
   def start() {
     logger.info("[{}] start node,version:{}", rd.name, version)
@@ -171,21 +170,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       indexWriter.rollback()
   }
 
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    /*
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
-    }
-    */
-  }
-
   def getResourceSearcher = ServiceUtils.waitUntilObjectLive("%s搜索对象".format(rd.name)) {
     resourceSearcher
   }
@@ -221,35 +205,13 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
-    indexRef.incrementAndGet()
-    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
-      def translateTo(event: IndexEvent, sequence: Long) {
-        event.reset()
-        event.resource = rd
-        event.id = id
-        event.row = row
-        event.version = version
-        event.command = command
-        event.objectId = objectId
-      }
-    })
+  def indexDocument(doc: Document, dataVersion: Int) {
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion))
+        indexWriter.addDocument(doc)
+    }
   }
-
-  def triggerCommit(logSeq: Long) {
-    logger.debug("commit log seq :{}", logSeq)
-    indexRef.incrementAndGet()
-    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
-      def translateTo(event: IndexEvent, sequence: Long) {
-        event.reset()
-        event.resource = rd
-        event.commitFlag = true
-        event.commitSeq = logSeq
-        event.version = version
-      }
-    })
-  }
-
 
   private def isSameVersion(dataVersion: Int): Boolean = {
     if (version != dataVersion) {
@@ -262,11 +224,12 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private def obtainIndexWriter: IndexWriter = ServiceUtils.waitUntilObjectLive("%s索引对象".format(rd.name)) {
     indexWriter
   }
-  def indexDocument(doc: Document, dataVersion: Int) {
-    doInDecrementRef {
-      obtainIndexWriter
-      if (isSameVersion(dataVersion))
-        indexWriter.addDocument(doc)
+
+  private def doInDecrementRef(fun: => Unit): Unit = {
+    try {
+      fun
+    } finally {
+      indexRef.decrementAndGet()
     }
   }
 
@@ -279,27 +242,20 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
+  private def createIdTerm(id: Int) = {
+    val bb = new BytesRefBuilder
+    NumericUtils.intToPrefixCoded(id, 0, bb)
+    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
+  }
+
   def deleteDocument(id: Int, dataVersion: Int) {
-    doInDecrementRef{
+    doInDecrementRef {
       obtainIndexWriter
       if (isSameVersion(dataVersion)) {
         indexWriter.deleteDocuments(createIdTerm(id))
         //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
       }
     }
-  }
-  private def doInDecrementRef(fun: =>Unit): Unit ={
-    try{
-      fun
-    }finally{
-      indexRef.decrementAndGet()
-    }
-  }
-
-  private def createIdTerm(id: Int) = {
-    val bb = new BytesRefBuilder
-    NumericUtils.intToPrefixCoded(id, 0, bb)
-    new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME, bb.get)
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
@@ -317,6 +273,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
+  private def maybeOutputRegionInfo(lastSeq: Long) {
+    //导到需要更新分区信息，或者不是数字整批提交模式
+    /*
+    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
+      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
+    ) {
+      val jsonObject = new JsonObject
+      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
+      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
+      jsonObject.addProperty("index_count", indexWriter.maxDoc())
+      indexerManager.setRegionInfo(rd.name, jsonObject)
+    }
+    */
+  }
+
   private def writeLastLog(seq: Long) {
     //FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
     var out: OutputStream = null
@@ -329,7 +300,6 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
       IOUtils.closeQuietly(out)
     }
   }
-
 
   def findObject(key: Array[Byte]) = {
     val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, DataTypeUtils.convertAsInt(key));
@@ -352,6 +322,35 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     None
   }
 
+  private def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
+    indexRef.incrementAndGet()
+    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
+      def translateTo(event: IndexEvent, sequence: Long) {
+        event.reset()
+        event.resource = rd
+        event.id = id
+        event.row = row
+        event.version = version
+        event.command = command
+        event.objectId = objectId
+      }
+    })
+  }
+
+  private def triggerCommit(logSeq: Long) {
+    logger.debug("commit log seq :{}", logSeq)
+    indexRef.incrementAndGet()
+    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
+      def translateTo(event: IndexEvent, sequence: Long) {
+        event.reset()
+        event.resource = rd
+        event.commitFlag = true
+        event.commitSeq = logSeq
+        event.version = version
+      }
+    })
+  }
+
   @tailrec
   private def indexRange(lastSeq: Long, nosql: SlaveNoSQLSupport, range: Seq[Long]): Unit = {
     range.headOption match {
@@ -364,23 +363,28 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         if (binlogValue == null) {
           throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
         }
-        val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
-        val key = nosqlKey.DataSeq()
-        val valBytes = nosql.Get(nosqlKey)
+        if (binlogValue.Seq() != seq) {
+          //throw new MonadException("["+rd.name+"] seq:"+seq+" db_seq:"+binlogValue.Seq(),MonadNodeExceptionCode.INVALID_BINLOG_SEQ)
+          error("[{}] seq:{} != db_seq:{}", rd.name, seq, binlogValue.Seq())
+        } else {
+          val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
+          val key = nosqlKey.DataSeq()
+          val valBytes = nosql.Get(nosqlKey)
 
-        var data: JsonObject = null
-        if (valBytes != null) {
-          data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
-        }
-        val command = binlogValue.CommandType()
-        command match {
-          case DataCommandType.PUT | DataCommandType.UPDATE =>
-            if (data != null) {
+          var data: JsonObject = null
+          if (valBytes != null) {
+            data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
+          }
+          val command = binlogValue.CommandType()
+          command match {
+            case DataCommandType.PUT | DataCommandType.UPDATE =>
+              if (data != null) {
+                indexData(key, data, command.swigValue(), None)
+              }
+            case DataCommandType.DEL =>
               indexData(key, data, command.swigValue(), None)
-            }
-          case DataCommandType.DEL =>
-            indexData(key, data, command.swigValue(), None)
 
+          }
         }
 
         indexRange(seq, nosql, range.tail)
