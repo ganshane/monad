@@ -122,6 +122,11 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
   }
 
   class DelegateChannel(channel: Channel) extends Channel {
+
+    override def getUserDefinedWritability(i: Int): Boolean = channel.getUserDefinedWritability(i)
+
+    override def setUserDefinedWritability(i: Int, b: Boolean): Unit = channel.setUserDefinedWritability(i, b)
+
     override def compareTo(o: Channel): Int = channel.compareTo(o)
 
     override def getAttachment: AnyRef = channel.getAttachment
