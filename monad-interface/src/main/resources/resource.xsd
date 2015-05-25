@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright 2012 The EGF IT Software Department.
+  ~ Copyright 2013,2015 the original author or authors. All rights reserved.
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
