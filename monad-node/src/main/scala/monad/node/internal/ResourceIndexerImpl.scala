@@ -2,9 +2,9 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import java.io.File
+import java.io.{File, OutputStream}
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import com.google.gson.{JsonObject, JsonParser}
 import com.lmax.disruptor.EventTranslator
@@ -16,7 +16,7 @@ import monad.jni.services.gen.{DataCommandType, NormalSeqDataKey, SlaveNoSQLSupp
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
 import monad.support.MonadSupportConstants
 import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
-import org.apache.commons.io.FileUtils
+import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.MergePolicy.MergeSpecification
@@ -43,6 +43,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   private final val parser = new JsonParser
   private val needMerge = new AtomicInteger()
   private val logFile = new File(indexConfigSupport.index.path + "/" + rd.name + "/_log_seq")
+  private val indexRef = new AtomicLong()
   private var analyzerObj: Analyzer = _
   private var indexWriter: IndexWriter = _
   private var mergeScheduler: ConcurrentMergeScheduler = _
@@ -70,7 +71,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
       override def merge(writer: IndexWriter, trigger: MergeTrigger, newMergesFound: Boolean): Unit = {
         super.merge(writer, trigger, newMergesFound)
-        super.sync()
+        //super.sync()
         if (needMerge.get() > 0) {
           val seq = needMerge.decrementAndGet()
           logger.info("[{}] finish to merge,remain {} ....", rd.name, seq)
@@ -110,7 +111,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     mergePolicy.setSegmentsPerTier(10)
     mergePolicy.setMaxMergeAtOnce(10)
     mergePolicy.setMaxMergeAtOnceExplicit(10)
-    mergePolicy.setMaxMergedSegmentMB(18000)
+    mergePolicy.setMaxMergedSegmentMB(8000)
 
     mergePolicy.setFloorSegmentMB(5)
 
@@ -183,59 +184,32 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   def index(): Unit = {
-    val nosql = nosqlOpt().get
-    val latestSeq = nosql.FindLastBinlog()
-    val fromSeq = readLastLog() + 1
-    if (fromSeq <= latestSeq) {
-      info("begin to index from {} to {}", fromSeq, latestSeq)
-      val range = Range.Long.inclusive(fromSeq, latestSeq, 1)
-      indexRange(-1, nosql, range)
-      info("finish to index from {} to {}", fromSeq, latestSeq)
-    }
-    if (latestSeq - fromSeq > 100) {
-      nosql.DeleteBinlogRange(fromSeq, latestSeq - 100)
-    }
-    else
-      logger.info("[{}] no data indexed,current log_seq {}", rd.name, latestSeq)
-  }
-
-  def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
-    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
-      def translateTo(event: IndexEvent, sequence: Long) {
-        event.reset()
-        event.resource = rd
-        event.id = id
-        event.row = row
-        event.version = version
-        event.command = command
-        event.objectId = objectId
+    val waiting = indexRef.get()
+    if(waiting == 0){
+      val nosql = nosqlOpt().get
+      val latestSeq = nosql.FindLastBinlog()
+      val fromSeq = readLastLog() + 1
+      if (fromSeq <= latestSeq) {
+        info("begin to index from {} to {}", fromSeq, latestSeq)
+        val range = Range.Long.inclusive(fromSeq, latestSeq, 1)
+        indexRange(-1, nosql, range)
+        info("finish to index from {} to {}", fromSeq, latestSeq)
       }
-    })
-  }
-
-  def triggerCommit(logSeq: Long) {
-    logger.debug("commit log seq :{}", logSeq)
-    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
-      def translateTo(event: IndexEvent, sequence: Long) {
-        event.reset()
-        event.resource = rd
-        event.commitFlag = true
-        event.commitSeq = logSeq
-        event.version = version
+      if (latestSeq - fromSeq > 100) {
+        nosql.DeleteBinlogRange(fromSeq, latestSeq - 100)
       }
-    })
+      else
+        logger.info("[{}] no data indexed,current log_seq {}", rd.name, latestSeq)
+    }else{
+      info("[{}] index working index waiting {}",rd.name, waiting)
+    }
   }
 
   def indexDocument(doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion))
-      indexWriter.addDocument(doc)
-  }
-
-  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.updateDocument(createIdTerm(id), doc)
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion))
+        indexWriter.addDocument(doc)
     }
   }
 
@@ -251,6 +225,23 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     indexWriter
   }
 
+  private def doInDecrementRef(fun: => Unit): Unit = {
+    try {
+      fun
+    } finally {
+      indexRef.decrementAndGet()
+    }
+  }
+
+  def updateDocument(id: Int, doc: Document, dataVersion: Int) {
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion)) {
+        indexWriter.updateDocument(createIdTerm(id), doc)
+      }
+    }
+  }
+
   private def createIdTerm(id: Int) = {
     val bb = new BytesRefBuilder
     NumericUtils.intToPrefixCoded(id, 0, bb)
@@ -258,23 +249,28 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   def deleteDocument(id: Int, dataVersion: Int) {
-    obtainIndexWriter
-    if (isSameVersion(dataVersion)) {
-      indexWriter.deleteDocuments(createIdTerm(id))
-      //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+    doInDecrementRef {
+      obtainIndexWriter
+      if (isSameVersion(dataVersion)) {
+        indexWriter.deleteDocuments(createIdTerm(id))
+        //indexWriter.deleteDocuments(new Term(MonadFaceConstants.OBJECT_ID_FIELD_NAME,NumericUtils.intToPrefixCoded(id)))
+      }
     }
   }
 
   def commit(lastSeq: Long, dataVersion: Int) {
-    obtainIndexWriter
+    doInDecrementRef{
 
-    indexWriter.commit()
-    writeLastLog(lastSeq)
-    maybeOutputRegionInfo(lastSeq)
+      obtainIndexWriter
 
-    resourceSearcher.maybeRefresh()
-    val i = indexWriter.maxDoc()
-    logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+      indexWriter.commit()
+      writeLastLog(lastSeq)
+      maybeOutputRegionInfo(lastSeq)
+
+      resourceSearcher.maybeRefresh()
+      val i = indexWriter.maxDoc()
+      logger.info("[{}] {} records commited,log seq :" + lastSeq, rd.name, i)
+    }
   }
 
   private def maybeOutputRegionInfo(lastSeq: Long) {
@@ -293,7 +289,16 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
   }
 
   private def writeLastLog(seq: Long) {
-    FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
+    //FileUtils.writeByteArrayToFile(logFile, DataTypeUtils.convertAsArray(seq))
+    var out: OutputStream = null
+    try {
+      out = FileUtils.openOutputStream(logFile, false)
+      out.write(DataTypeUtils.convertAsArray(seq))
+      out.flush()
+      out.close
+    } finally {
+      IOUtils.closeQuietly(out)
+    }
   }
 
   def findObject(key: Array[Byte]) = {
@@ -317,6 +322,35 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     None
   }
 
+  private def indexData(id: Int, row: JsonObject, command: Int, objectId: Option[Int]) {
+    indexRef.incrementAndGet()
+    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
+      def translateTo(event: IndexEvent, sequence: Long) {
+        event.reset()
+        event.resource = rd
+        event.id = id
+        event.row = row
+        event.version = version
+        event.command = command
+        event.objectId = objectId
+      }
+    })
+  }
+
+  private def triggerCommit(logSeq: Long) {
+    logger.debug("commit log seq :{}", logSeq)
+    indexRef.incrementAndGet()
+    indexerManager.getDisruptor.publishEvent(new EventTranslator[IndexEvent] {
+      def translateTo(event: IndexEvent, sequence: Long) {
+        event.reset()
+        event.resource = rd
+        event.commitFlag = true
+        event.commitSeq = logSeq
+        event.version = version
+      }
+    })
+  }
+
   @tailrec
   private def indexRange(lastSeq: Long, nosql: SlaveNoSQLSupport, range: Seq[Long]): Unit = {
     range.headOption match {
@@ -329,23 +363,28 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         if (binlogValue == null) {
           throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
         }
-        val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
-        val key = nosqlKey.DataSeq()
-        val valBytes = nosql.Get(nosqlKey)
+        if (binlogValue.Seq() != seq) {
+          //throw new MonadException("["+rd.name+"] seq:"+seq+" db_seq:"+binlogValue.Seq(),MonadNodeExceptionCode.INVALID_BINLOG_SEQ)
+          error("[{}] seq:{} != db_seq:{}", rd.name, seq, binlogValue.Seq())
+        } else {
+          val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
+          val key = nosqlKey.DataSeq()
+          val valBytes = nosql.Get(nosqlKey)
 
-        var data: JsonObject = null
-        if (valBytes != null) {
-          data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
-        }
-        val command = binlogValue.CommandType()
-        command match {
-          case DataCommandType.PUT | DataCommandType.UPDATE =>
-            if (data != null) {
+          var data: JsonObject = null
+          if (valBytes != null) {
+            data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
+          }
+          val command = binlogValue.CommandType()
+          command match {
+            case DataCommandType.PUT | DataCommandType.UPDATE =>
+              if (data != null) {
+                indexData(key, data, command.swigValue(), None)
+              }
+            case DataCommandType.DEL =>
               indexData(key, data, command.swigValue(), None)
-            }
-          case DataCommandType.DEL =>
-            indexData(key, data, command.swigValue(), None)
 
+          }
         }
 
         indexRange(seq, nosql, range.tail)

@@ -22,6 +22,7 @@
   <xs:complexType name="rpcType">
     <xs:sequence>
       <xs:element name="bind" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="expose" type="xs:string" minOccurs="0" maxOccurs="1"/>
       <xs:element name="io_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="1"/>
       <xs:element name="worker_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="8"/>
     </xs:sequence>

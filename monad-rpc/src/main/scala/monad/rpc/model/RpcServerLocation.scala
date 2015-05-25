@@ -2,7 +2,9 @@
 // site: http://www.ganshane.com
 package monad.rpc.model
 
+import monad.rpc.config.RpcBind
 import monad.support.services.MonadUtils
+import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.json.JSONObject
 
 
@@ -53,8 +55,12 @@ object RpcServerLocation {
     new RpcServerLocation(host, port, weight, region)
   }
 
-  def fromBindString(bind: String) = {
-    val tuple = MonadUtils.parseBind(bind)
+  def exposeRpcLocation(bind: RpcBind) = {
+    var exposeAddress = bind.expose
+    if (InternalUtils.isBlank(exposeAddress)) {
+      exposeAddress = bind.bind
+    }
+    val tuple = MonadUtils.parseBind(exposeAddress)
     new RpcServerLocation(tuple._1, tuple._2.toInt)
   }
 }

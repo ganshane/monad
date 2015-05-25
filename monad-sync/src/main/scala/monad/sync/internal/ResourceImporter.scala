@@ -75,8 +75,8 @@ class ResourceImporter(val rd: ResourceDefinition,
   def start() {
     logger.info("[{}] start importer with version:{}", rd.name, version)
     init()
-    startScheduler()
     startNoSQL()
+    startScheduler()
   }
 
   def init() {

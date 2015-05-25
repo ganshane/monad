@@ -74,7 +74,7 @@ trait ZkEphemeralPathSupport {
   }
 
   protected def retryFailedEphemeralNodes() {
-    info("retry to create ephemeral nodes")
+    debug("retry to create ephemeral nodes")
     val it = failedEphemeralNodes.iterator()
     while (it.hasNext) {
       val node = it.next()

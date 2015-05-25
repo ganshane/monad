@@ -9,7 +9,7 @@
   <groupId>com.ganshane.monad</groupId>
   <artifactId>monad-project</artifactId>
   <packaging>pom</packaging>
-  <version>5.0.9</version>
+  <version>dev-SNAPSHOT</version>
   <name>Monad Project</name>
   <description>monad是一个基于分布式数据查询系统</description>
   <modules>
@@ -216,7 +216,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty</artifactId>
-        <version>3.9.2.Final</version>
+        <version>3.9.8.Final</version>
       </dependency>
 
       <!-- js library -->
