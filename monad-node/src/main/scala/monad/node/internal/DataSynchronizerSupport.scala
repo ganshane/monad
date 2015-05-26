@@ -6,6 +6,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 
 import monad.core.services.{CronScheduleWithStartModel, StartAtDelay}
+import monad.face.MonadFaceConstants
 import monad.jni.services.JNIErrorCode
 import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
 import monad.node.services.MonadNodeExceptionCode
@@ -53,6 +54,7 @@ trait DataSynchronizerSupport
   }
   private val processTime: AtomicLong = new AtomicLong(System.currentTimeMillis())
   private val afterDoing = new AtomicBoolean(false)
+  private val totalData = new AtomicLong(0)
   private var syncJob: Option[PeriodicJob] = None
   private var resourceIndex = 0
   private var resources: Array[String] = _
@@ -138,8 +140,11 @@ trait DataSynchronizerSupport
             throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
           }
           status.delete()
+          val num = totalData.incrementAndGet()
+          if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
+            debug("{} row synchronized", response.getResponseDataCount)
+          }
         }
-        info("{} row processed.", response.getResponseDataCount)
         isContinue(response)
       case None =>
         warn("nosql not found by partition id[{}]", response.getPartitionId)

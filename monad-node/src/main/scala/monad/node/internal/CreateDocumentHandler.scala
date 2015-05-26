@@ -5,6 +5,7 @@ package monad.node.internal
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.lmax.disruptor.EventHandler
+import monad.face.MonadFaceConstants
 import monad.face.model.IndexEvent
 import monad.face.services.DocumentSource
 import monad.jni.services.gen.DataCommandType
@@ -30,6 +31,9 @@ class CreateDocumentHandler(resourceIndexerManager: ResourceIndexerManager, docu
       indexer.commit(event.commitSeq, event.version)
       event.reset()
       return
+    }
+    if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
+      logger.info("{} index event processed", sequence)
     }
 
     try {
