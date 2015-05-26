@@ -11,7 +11,7 @@ import monad.face.model.ColumnType
 import monad.face.services.DataTypeUtils
 import monad.jni.services.gen.DataCommandType
 import monad.support.MonadSupportConstants
-import monad.support.services.MonadException
+import monad.support.services.{LoggerSupport, MonadException}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 
@@ -21,7 +21,9 @@ import scala.collection.JavaConversions._
  * 保存记录的操作
  * @author jcai
  */
-class SaveRecordHandler(manager: ResourceImporterManager) extends EventHandler[DataEvent] {
+class SaveRecordHandler(manager: ResourceImporterManager)
+  extends EventHandler[DataEvent]
+  with LoggerSupport {
   private val threadNameFlag = new AtomicBoolean(false)
 
   def onEvent(event: DataEvent, sequence: Long, endOfBatch: Boolean) {
@@ -68,5 +70,9 @@ class SaveRecordHandler(manager: ResourceImporterManager) extends EventHandler[D
     val status = importer.put(primaryKey, json, DataCommandType.PUT, timestamp)
     if (!status.ok())
       throw new MonadException("[%s] fail save data with status:%s".format(event.resourceName, status.toString), MonadSyncExceptionCode.FAIL_SAVE_DATA)
+
+    if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
+      info("{} records saved", sequence)
+    }
   }
 }
