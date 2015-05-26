@@ -1,6 +1,9 @@
 #!/bin/bash -e
 set -e
-git clone --branch develop --depth 5 https://github.com/ganshane/monad.git .
+if [ -z $TAG ]; then
+  TAG=develop
+fi
+git clone --branch $TAG --depth 1 https://github.com/ganshane/monad.git .
 export CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc
 export CPP=/opt/centos/devtoolset-1.1/root/usr/bin/cpp
 export CXX=/opt/centos/devtoolset-1.1/root/usr/bin/c++
