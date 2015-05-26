@@ -6,6 +6,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 
 import monad.core.services.{CronScheduleWithStartModel, StartAtDelay}
+import monad.face.MonadFaceConstants
 import monad.jni.services.JNIErrorCode
 import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
 import monad.node.services.MonadNodeExceptionCode
@@ -58,6 +59,7 @@ trait DataSynchronizerSupport
   private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
   private var masterMachinePath: String = _
+  private var totalData = new AtomicLong(0)
 
   override def unlock(channel: Channel): Unit = {
     try {
@@ -138,8 +140,11 @@ trait DataSynchronizerSupport
             throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
           }
           status.delete()
+          val num = totalData.incrementAndGet()
+          if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
+            debug("{} row synchronized", response.getResponseDataCount)
+          }
         }
-        info("{} row processed.", response.getResponseDataCount)
         isContinue(response)
       case None =>
         warn("nosql not found by partition id[{}]", response.getPartitionId)
