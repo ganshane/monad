@@ -54,12 +54,12 @@ trait DataSynchronizerSupport
   }
   private val processTime: AtomicLong = new AtomicLong(System.currentTimeMillis())
   private val afterDoing = new AtomicBoolean(false)
+  private val totalData = new AtomicLong(0)
   private var syncJob: Option[PeriodicJob] = None
   private var resourceIndex = 0
   private var resources: Array[String] = _
   private var rpcClient: RpcClient = _
   private var masterMachinePath: String = _
-  private var totalData = new AtomicLong(0)
 
   override def unlock(channel: Channel): Unit = {
     try {
