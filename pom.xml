@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
   <version>5.0.10</version>
   <name>Monad Project</name>
-  <description>monad是一个基于分布式数据查询系统</description>
+  <description>data search and analytics application</description>
   <modules>
     <module>monad-api</module>
     <module>monad-cloud</module>
