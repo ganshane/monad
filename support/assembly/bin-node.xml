@@ -79,7 +79,6 @@
   <dependencySets>
     <dependencySet>
       <outputDirectory>lib</outputDirectory>
-      <useProjectAttachments>true</useProjectAttachments>
     </dependencySet>
   </dependencySets>
 </assembly>
