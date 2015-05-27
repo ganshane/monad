@@ -5,7 +5,7 @@ package monad.face
 import monad.face.internal.ResourcesWatcher
 import monad.face.services.{ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
 import org.apache.tapestry5.ioc.ServiceBinder
-import org.apache.tapestry5.ioc.annotations.Marker
+import org.apache.tapestry5.ioc.annotations.{EagerLoad, Marker}
 import org.apache.tapestry5.ioc.services.ChainBuilder
 import org.apache.tapestry5.services.Core
 
@@ -14,6 +14,7 @@ import org.apache.tapestry5.services.Core
  * @author jcai
  */
 object ResourceModule {
+  @EagerLoad
   def bind(binder: ServiceBinder) {
     binder.bind(classOf[ResourceDefinitionLoader], classOf[ResourcesWatcher]).withId("ResourceDefinitionLoader")
   }

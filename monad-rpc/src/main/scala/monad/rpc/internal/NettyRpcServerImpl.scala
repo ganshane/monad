@@ -5,7 +5,6 @@ package monad.rpc.internal
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
-import javax.annotation.PostConstruct
 
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
@@ -37,7 +36,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
   //一个主IO，2个worker
   val ioThread = rpcBindSupport.rpc.ioThread
   val workerThread = rpcBindSupport.rpc.workerThread
-  val executor = Executors.newFixedThreadPool(ioThread + workerThread, new ThreadFactory {
+  val executor = Executors.newFixedThreadPool(ioThread + workerThread + 2, new ThreadFactory {
     private val seq = new AtomicInteger(0)
 
     override def newThread(r: Runnable): Thread = {
@@ -55,7 +54,8 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
   /**
    * 启动对象实例
    */
-  @PostConstruct
+  //@PostConstruct
+  //因为需要在最后启动RPC Server
   def start(hub: RegistryShutdownHub) {
 
     channelFactory = new NioServerSocketChannelFactory(executor, executor, workerThread)
