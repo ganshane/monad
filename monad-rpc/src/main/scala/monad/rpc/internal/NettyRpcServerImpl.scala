@@ -118,7 +118,13 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     }
 
     override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent): Unit = {
-      error("rpc server exception,client:" + e.getChannel.getRemoteAddress, e.getCause)
+      e.getCause match {
+        case me: MonadException =>
+          error("server exception,client:{} msg:{}", e.getChannel.getRemoteAddress, me.toString)
+        case other =>
+          error("server exception,client:" + e.getChannel.getRemoteAddress, other)
+      }
+
       //服务器上发生异常，则关闭此channel
       e.getChannel.close()
     }
