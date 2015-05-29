@@ -69,7 +69,7 @@ class SaveRecordHandler(manager: ResourceImporterManager)
 
     val status = importer.put(primaryKey, json, DataCommandType.PUT, timestamp)
     if (!status.ok())
-      throw new MonadException("[%s] fail save data with status:%s".format(event.resourceName, status.toString), MonadSyncExceptionCode.FAIL_SAVE_DATA)
+      throw new MonadException("[%s] fail save data with status:%s".format(event.resourceName, new String(status.ToString())), MonadSyncExceptionCode.FAIL_SAVE_DATA)
 
     if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
       info("{} records saved", sequence)
