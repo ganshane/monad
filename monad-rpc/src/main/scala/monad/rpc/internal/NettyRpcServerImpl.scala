@@ -75,9 +75,6 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     openOnce()
     listener.afterStart()
 
-    hub.addRegistryWillShutdownListener(new Runnable {
-      override def run(): Unit = shutdown()
-    })
   }
 
   private def openOnce(): Channel = {
@@ -94,10 +91,17 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
     }
   }
 
+  def registryShutdownListener(hub: RegistryShutdownHub): Unit = {
+    hub.addRegistryWillShutdownListener(new Runnable {
+      override def run(): Unit = shutdown()
+    })
+  }
+
   /**
    * 关闭对象
    */
   def shutdown() {
+    info("closing rpc server ...")
     closeAllChannels()
     channels.close().awaitUninterruptibly()
     channelFactory.releaseExternalResources()

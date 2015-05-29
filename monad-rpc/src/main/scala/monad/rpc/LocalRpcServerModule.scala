@@ -22,12 +22,22 @@ object LocalRpcServerModule {
   */
   //@Contribute(classOf[RegistryStartup])
   def contributeRegistryStartup(registryShutdownHub: RegistryShutdownHub, orderedConfiguration: OrderedConfiguration[Runnable], objectLocator: ObjectLocator): Unit = {
+    val server = objectLocator.autobuild(classOf[NettyRpcServerImpl])
+    //最后启动
     orderedConfiguration.add("rpc-server", new Runnable() {
       override def run(): Unit = {
-        objectLocator.autobuild(classOf[NettyRpcServerImpl]).start(registryShutdownHub)
+        server.start(registryShutdownHub)
       }
     }, "after:*")
+    //最先关闭
+    orderedConfiguration.add("rpc-server-closer", new Runnable {
+      override def run(): Unit = {
+        server.registryShutdownListener(registryShutdownHub)
+      }
+    }, "before:*")
+
   }
+
 
   def buildRpcServerListener(chainBuilder: ChainBuilder, configuration: java.util.List[RpcServerListener]): RpcServerListener = {
     chainBuilder.build(classOf[RpcServerListener], configuration)

@@ -14,7 +14,6 @@ import monad.face.model.{ResourceDefinition, ResourceEvent}
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
 import monad.support.MonadSupportConstants
 import monad.support.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
-import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.apache.tapestry5.services.Core
 import org.slf4j.LoggerFactory
@@ -26,7 +25,7 @@ import scala.util.control.NonFatal
  * 针对资源的监控
  * @author jcai
  */
-@EagerLoad
+//@EagerLoad
 class ResourcesWatcher(zk: GroupZookeeperTemplate,
                        @Core listener: ResourceDefinitionLoaderListener,
                        parallelExecutor: ParallelExecutor) extends ResourceDefinitionLoader {
