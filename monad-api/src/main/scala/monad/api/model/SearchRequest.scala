@@ -23,6 +23,8 @@ class SearchRequest {
   var start: Int = 0
   /** 搜索的偏移量 **/
   var offset: Int = 0
+  /** 是否需要highlight **/
+  var hl:Boolean = true
   /** 是否要得到结果数据 **/
   var includeData: Boolean = true
   /** 针对结果的处理 **/
