@@ -142,7 +142,7 @@ trait DataSynchronizerSupport
           status.delete()
           val num = totalData.incrementAndGet()
           if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
-            debug("{} row synchronized", response.getResponseDataCount)
+            info("{} row synchronized", response.getResponseDataCount)
           }
         }
         isContinue(response)
@@ -208,6 +208,7 @@ trait DataSynchronizerSupport
       val nosqlOpt = findNoSQLByResourceName(rd)
       builder.setLogSeqFrom(nosqlOpt.get.FindLastBinlog() + 1)
       builder.setSize(ONE_BATCH_SIZE)
+      info("start seq:{} batch_size:{}",builder.getLogSeqFrom,builder.getSize)
       builder.build()
     } catch {
       case e: Throwable =>
