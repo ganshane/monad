@@ -66,8 +66,8 @@ ENV CPP /opt/centos/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX /opt/centos/devtoolset-1.1/root/usr/bin/c++
 #Install snappy,rocksdb,nirvana-kernel
 RUN { \
-    wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
-    #wget http://lichen.egfit.com/nirvana/gz/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
+    #wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
+    wget http://lichen.egfit.com/nirvana/gz/protobuf-2.6.1.tar.gz -O protobuf-2.6.1.tar.gz \
     && tar xfvz protobuf-2.6.1.tar.gz \
     && cd protobuf-2.6.1 \
     #&& wget http://lichen.egfit.com/nirvana/gz/protobuf-2.5.0.tar.gz \
@@ -100,10 +100,11 @@ RUN { \
 }
 
 RUN { \
-    git clone --depth=1 --branch=2.5.3 https://github.com/wiredtiger/wiredtiger.git \
+    git clone --depth=1 --branch=2.6.1 https://github.com/wiredtiger/wiredtiger.git \
     && cd wiredtiger \
     && ./autogen.sh \
-    && CXXFLAGS="-fPIC" ./configure --with-pic --disable-shared --enable-static --enable-leveldb=rocksdb --with-builtins=snappy CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"\
+    #&& CXXFLAGS="-fPIC" ./configure --with-pic --disable-shared --enable-static --enable-leveldb=rocksdb --with-builtins=snappy CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"\
+    && CXXFLAGS="-fPIC" ./configure --with-pic --disable-shared --enable-static --enable-leveldb --with-builtins=snappy CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"\
     && make && make install \
     && cd - && rm -rf * \
     && ldconfig ; \
