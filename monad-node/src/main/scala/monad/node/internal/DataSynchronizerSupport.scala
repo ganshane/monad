@@ -142,7 +142,7 @@ trait DataSynchronizerSupport
           status.delete()
           val num = totalData.incrementAndGet()
           if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
-            info("{} row synchronized", response.getResponseDataCount)
+            info("{} row synchronized", num)
           }
         }
         isContinue(response)
