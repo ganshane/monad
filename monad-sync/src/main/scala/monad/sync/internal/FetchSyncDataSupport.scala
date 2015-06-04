@@ -36,7 +36,7 @@ trait FetchSyncDataSupport {
         logKey.delete()
         if (logData == null) {
           //TODO 是否进行跳号处理？
-          //warn("binlog {} not found for partition id:{}",log,partitionId)
+          warn("binlog {} not found for partition id:{}",log,partitionId)
           logKey.delete()
         } else {
           val responseDataBuilder = syncResponseBuilder.addResponseDataBuilder()
