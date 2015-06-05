@@ -8,7 +8,7 @@ import monad.rpc.protocol.CommandProto
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.ChannelHandler.Sharable
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext, ChannelPipeline}
-import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder
+import org.jboss.netty.handler.codec.frame.{LengthFieldPrepender, LengthFieldBasedFrameDecoder}
 import org.jboss.netty.handler.codec.oneone.{OneToOneDecoder, OneToOneEncoder}
 import org.jboss.netty.handler.codec.protobuf.{ProtobufDecoder, ProtobufEncoder}
 import org.xerial.snappy.Snappy
@@ -32,7 +32,7 @@ trait NettyProtobufPipelineSupport {
     else
       pipeline.addLast("protobufDecoder", new ProtobufDecoder(CommandProto.BaseCommand.getDefaultInstance, extentionRegistry))
     //编码
-    pipeline.addLast("frameEncoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH,0,4,0,4))
+    pipeline.addLast("frameEncoder", new LengthFieldPrepender(4))
 
     if (commpressSupported)
       pipeline.addLast("protobufEncoder", new ProtobufEncoderWithSnappy())
