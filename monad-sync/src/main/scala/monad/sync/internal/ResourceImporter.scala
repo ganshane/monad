@@ -178,9 +178,11 @@ class ResourceImporter(val rd: ResourceDefinition,
         case false =>
           job = periodicExecutor.addJob(new CronScheduleWithStartModel(rd.sync.cron, StartAtOnce), jobName, new Runnable {
             def run() {
-              importerFuture = importerManager.submitSync {
-                doImport()
-              }
+              //避免重复进行同步操作
+              if(importerFuture == null)
+                importerFuture = importerManager.submitSync {
+                  doImport()
+                }
             }
           })
       }

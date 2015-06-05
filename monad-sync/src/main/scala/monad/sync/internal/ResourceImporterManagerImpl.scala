@@ -144,7 +144,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
         try{
           fun
         }catch{
-          case NonFatal(e) =>
+          case e:Throwable =>
             logger.error("fail to run sync function",e)
         }
       }
