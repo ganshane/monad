@@ -141,7 +141,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         resourceSearcher = searcherSource.newResourceSearcher(rd, indexWriter, indexConfigSupport.partitionId, null)
       resourceSearcher.asInstanceOf[ResourceSearcherImpl].config = indexConfigSupport
       resourceSearcher.start()
-      maybeOutputRegionInfo(0)
+      maybeOutputRegionInfo()
     } catch {
       case NonFatal(e) =>
         shutdown()
@@ -265,7 +265,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
       indexWriter.commit()
       writeLastLog(lastSeq)
-      maybeOutputRegionInfo(lastSeq)
+      maybeOutputRegionInfo()
 
       resourceSearcher.maybeRefresh()
       val i = indexWriter.maxDoc()
@@ -273,19 +273,17 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  private def maybeOutputRegionInfo(lastSeq: Long) {
-    //导到需要更新分区信息，或者不是数字整批提交模式
-    /*
-    if ((lastSeq & MonadFaceConstants.NUM_OF_NEED_UPDATE_REGION_INFO) == 0 ||
-      (lastSeq & MonadFaceConstants.NUM_OF_NEED_COMMIT) != 0
-    ) {
-      val jsonObject = new JsonObject
-      jsonObject.addProperty("data_count", nosql.GetDataStatCount())
-      jsonObject.addProperty("binlog_seq", nosql.GetLastLogSeq())
-      jsonObject.addProperty("index_count", indexWriter.maxDoc())
-      indexerManager.setRegionInfo(rd.name, jsonObject)
+  private def maybeOutputRegionInfo() {
+    nosqlOpt() match {
+      case Some(nosql) =>
+          val jsonObject = new JsonObject
+          jsonObject.addProperty("data_count", nosql.GetDataCount())
+          jsonObject.addProperty("binlog_seq", nosql.FindLastBinlog())
+          jsonObject.addProperty("index_count", indexWriter.numDocs())
+          indexerManager.setRegionInfo(rd.name, jsonObject)
+      case None =>
+        //do nothing
     }
-    */
   }
 
   private def writeLastLog(seq: Long) {

@@ -82,7 +82,9 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
       override def run(): Unit = {
         val it = objects.values().iterator()
         while(it.hasNext){
-          it.next().outputRegionInfo(zk)
+          util.control.Exception.ignoring(classOf[Throwable]){
+            it.next().outputRegionInfo(zk)
+          }
         }
       }
     })
