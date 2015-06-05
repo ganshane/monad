@@ -78,7 +78,7 @@ trait DataSynchronizerSupport
         val timeDiff = System.currentTimeMillis() - processTime.get()
         resourceIndex = 0
         if (timeDiff > thirtySeconds && !afterDoing.get()) {
-          warn("no response data from meta server,time:{}", timeDiff)
+          warn("no response data from sync server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
           //初始化分区信息
