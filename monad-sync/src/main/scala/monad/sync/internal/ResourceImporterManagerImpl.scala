@@ -141,7 +141,12 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
   def submitSync(fun: => Unit) = {
     dbReader.submit(new Runnable() {
       def run() {
-        fun
+        try{
+          fun
+        }catch{
+          case NonFatal(e) =>
+            logger.error("fail to run sync function",e)
+        }
       }
     })
   }
