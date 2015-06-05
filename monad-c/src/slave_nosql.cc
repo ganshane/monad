@@ -31,7 +31,7 @@ namespace monad {
     //写入同步日志
     SlaveBinlogKey key(binlog_value.Seq());
     batch.Put(key.ToString(), binlog_value.ToString());
-    LogDebug("write seq:%lld binlog seql:%lld ", key.Seq(), binlog_value.Seq());
+    LogInfo("write seq:%lld binlog seql:%lld ", key.Seq(), binlog_value.Seq());
 
      //写入数据统计数据,仅当数据不等时候
     if(tmp_count != _data_count){
@@ -40,10 +40,12 @@ namespace monad {
       batch.Put(count_key.ToString(), count_value.ToString());
     }
 
+    LogInfo("begin to write database ...");
     leveldb::Status status = _db->Write(leveldb::WriteOptions(), &batch);
     if (status.ok()) {
       _data_count = tmp_count;
     }
+    LogInfo("finish to write database");
 
     return MonadStatus::FromLeveldbStatus(status);
   }

@@ -9,13 +9,15 @@ import java.util.concurrent.Future
 import java.util.concurrent.locks.LockSupport
 import java.util.regex.Pattern
 
+import com.google.gson.{JsonArray, JsonObject}
 import monad.core.services.{CronScheduleWithStartModel, StartAtDelay, StartAtOnce}
 import monad.face.config.SyncConfigSupport
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
+import monad.face.services.GroupZookeeperTemplate
 import monad.face.services.ResourceDefinitionConversions._
-import monad.support.services.{LoggerSupport, MonadException, ServiceLifecycle, ServiceUtils}
+import monad.support.services._
 import monad.sync.internal.JdbcDatabase._
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -403,4 +405,30 @@ class ResourceImporter(val rd: ResourceDefinition,
     "%s importer".format(rd.name)
   }
 
+  def outputRegionInfo(zk:GroupZookeeperTemplate){
+    val formatter = new SimpleDateFormat(DEFAULT_TIMESTAMP_FORMATTER)
+    val jsonObject = new JsonObject
+    val it = partitionInfoData.entrySet().iterator()
+
+    val jsonArray = new JsonArray
+    var total = 0
+    while(it.hasNext){
+      val partition = it.next()
+      val partitionObj = new JsonObject
+      partitionObj.addProperty("id",partition.getKey)
+      partitionObj.addProperty("weight",partition.getValue.partition.weight)
+      partitionObj.addProperty("data_seq",partition.getValue.dataSeq)
+      partitionObj.addProperty("binlog_seq",partition.getValue.binlogSeq)
+      jsonArray.add(partitionObj)
+
+      total += nosql.FindOrLoadPartitionCount(partition.getKey)
+    }
+    jsonObject.add("region_data",jsonArray)
+
+    jsonObject.addProperty("data_count",total)
+    val timestamp = findMaxTimestamp().getOrElse(0L)
+    jsonObject.addProperty("time_stamp",formatter.format(new Date(timestamp))+"("+timestamp+")")
+    zk.setRegionSyncInfo(rd.name,jsonObject)
+  }
+  private final val DEFAULT_TIMESTAMP_FORMATTER="yyyy-MM-dd HH:mm:ss"
 }
