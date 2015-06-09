@@ -3,12 +3,10 @@
 package monad.sync
 
 import monad.core.MonadCoreSymbols
-import monad.support.MonadSupportConstants
+import monad.core.internal.MonadCoreUtils
 import monad.support.services.XmlLoader
 import monad.sync.config.MonadSyncConfig
 import org.apache.tapestry5.ioc.annotations.Symbol
-
-import scala.io.Source
 
 /**
  * monad synchronizer module
@@ -22,8 +20,7 @@ object MonadSyncModule {
   }
   */
   def buildMonadSyncConfig(@Symbol(MonadCoreSymbols.SERVER_HOME) serverHome: String) = {
-    val filePath = serverHome + "/config/monad-sync.xml"
-    val content = Source.fromFile(filePath, MonadSupportConstants.UTF8_ENCODING).mkString
+    val content = MonadCoreUtils.readConfigContent(serverHome,"monad-sync.xml")
     XmlLoader.parseXML[MonadSyncConfig](content, xsd = Some(getClass.getResourceAsStream("/monad/sync/monad-sync.xsd")))
   }
 }
