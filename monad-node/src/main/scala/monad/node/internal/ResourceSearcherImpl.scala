@@ -7,7 +7,8 @@ import java.util.concurrent.ExecutorService
 import javax.naming.SizeLimitExceededException
 
 import monad.face.config.IndexConfigSupport
-import monad.face.model.{ResourceDefinition, ShardResult}
+import monad.face.model.ResourceDefinition.ResourceProperty
+import monad.face.model.{ColumnType, ResourceDefinition, ShardResult}
 import monad.face.services.ResourceSearcher
 import monad.node.internal.support.SearcherManagerSupport
 import monad.node.services.MonadNodeExceptionCode
@@ -18,6 +19,7 @@ import org.apache.lucene.util.LongBitSet
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.util.control.NonFatal
 
 
@@ -97,7 +99,18 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     //sort
     var sort: Sort = null
     if (!InternalUtils.isBlank(sortStr)) {
-      sort = new Sort(new SortField(sortStr, SortField.Type.STRING, true))
+      val it = rd.properties.iterator()
+      val sortOpt = sortStr.trim.split("\\s+").toList match{
+        case field::"asc"::Nil =>
+          createSortField(field,false,it)
+        case field::Nil =>
+          createSortField(field,false,it)
+        case field::"desc"::Nil =>
+          createSortField(field,true,it)
+        case o =>
+          None
+      }
+      sortOpt foreach(x=>sort=x)
     }
     /*
     else {
@@ -255,6 +268,30 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.maxDoc = searcher.getIndexReader.maxDoc()
 
       shardResult
+    }
+  }
+
+  @tailrec
+  private def createSortField(sort:String,reverse:Boolean,it:java.util.Iterator[ResourceProperty]): Option[Sort] ={
+    if(it.hasNext){
+      val property = it.next()
+      if(property.name == sort){
+        property.columnType match{
+          case ColumnType.Long =>
+            Some(new Sort(new SortField(sort,SortField.Type.LONG,reverse)))
+          case ColumnType.Int | ColumnType.Date =>
+            Some(new Sort(new SortField(sort,SortField.Type.INT,reverse)))
+          case ColumnType.String | ColumnType.Clob =>
+            Some(new Sort(new SortField(sort,SortField.Type.STRING,reverse)))
+          case other=>
+            logger.error("wrong column type:{}",other)
+            None
+        }
+      }else{
+        createSortField(sort,reverse,it)
+      }
+    }else{
+      None
     }
   }
 
