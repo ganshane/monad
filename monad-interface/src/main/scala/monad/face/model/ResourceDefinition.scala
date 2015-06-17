@@ -184,9 +184,6 @@ object ResourceDefinition {
     var mark: Int = 0
     @XmlAttribute(name = "boost")
     var boost: Float = 1.0f
-    /** 该字段是否支持排序 **/
-    @XmlAttribute(name = "sort")
-    var sort: Boolean = false
     //仅仅方便在数据同步时候得到设置的编码
     var resourceDefinition: ResourceDefinition = _
   }
