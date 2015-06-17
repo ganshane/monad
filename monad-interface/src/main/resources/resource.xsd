@@ -207,6 +207,11 @@
             <xs:documentation>用来调整某一字段的影响力,设置超过1，将使得改字段的影响力加重</xs:documentation>
           </xs:annotation>
         </xs:attribute>
+        <xs:attribute type="xs:boolean" name="sort" use="optional">
+          <xs:annotation>
+            <xs:documentation>用来调整某一字段的影响力,设置超过1，将使得改字段的影响力加重</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

@@ -2,7 +2,6 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import java.util
 import java.util.Date
 import java.util.concurrent.ExecutorService
 import javax.naming.SizeLimitExceededException
@@ -14,10 +13,8 @@ import monad.face.services.ResourceSearcher
 import monad.node.internal.support.SearcherManagerSupport
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException
-import org.apache.lucene.index.{DirectoryReader, IndexReader, IndexWriter, LeafReaderContext}
+import org.apache.lucene.index.{IndexReader, IndexWriter, LeafReaderContext}
 import org.apache.lucene.search._
-import org.apache.lucene.uninverting.UninvertingReader
-import org.apache.lucene.uninverting.UninvertingReader.Type
 import org.apache.lucene.util.LongBitSet
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
@@ -51,7 +48,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     initQueryParser(rd)
     searcherManager = new SearcherManager(writer, false, new SearcherFactory() {
       override def newSearcher(reader: IndexReader) = {
-        val searcher = new InternalIndexSearcher(UninvertingReader.wrap(reader.asInstanceOf[DirectoryReader],new util.HashMap[String,Type]), rd, executor)
+        val searcher = new InternalIndexSearcher(reader, rd, executor)
         try {
           warm(searcher)
         } catch {
@@ -83,9 +80,10 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     sb.append(sort)
     sb.append(topN)
 
-    //val result = SearchResultCache.getOrPut[ShardResult](sb.toString) {
-    val result =  search(query, sort, topN)
-    //}
+    val result = SearchResultCache.getOrPut[ShardResult](sb.toString) {
+      search(query, sort, topN)
+    }
+
     result.maxDoc = maxDoc
     result.serverHash = regionId
 
@@ -99,10 +97,10 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     logger.info("[{}] \"{}\" sort:\"{}\" searching .... ", Array[AnyRef](rd.name, q,sortStr))
     val query = parseQuery(q)
     //sort
-    var sort: Sort = null
+    var sortOpt: Option[Sort] = None
     if (!InternalUtils.isBlank(sortStr)) {
       val it = rd.properties.iterator()
-      val sortOpt = sortStr.trim.split("\\s+").toList match{
+      sortOpt = sortStr.trim.split("\\s+").toList match{
         case field::"asc"::Nil =>
           createSortField(field,false,it)
         case field::Nil =>
@@ -112,19 +110,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
         case o =>
           None
       }
-      sortOpt foreach(x=>sort=x)
-    }
-    /*
-    else {
-        //如果没有设置sort，则使用相关性来进行查询
-        //sort = new Sort(SortField.FIELD_DOC)
-    }
-    */
-    var collector: TopDocsCollector[_] = null
-    if (sort == null) {
-      collector = TopScoreDocCollector.create(topN)
-    } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false)
     }
 
     var filter: Filter = null
@@ -133,15 +118,21 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     }
     doInSearcher { searcher =>
       val startTime = System.currentTimeMillis()
-      /*
       val booleanQuery = new BooleanQuery()
       booleanQuery.add(query,BooleanClause.Occur.MUST)
-      booleanQuery.add(filter,BooleanClause.Occur.FILTER)
-      val topDocs = searcher.search(booleanQuery, topN)
-      */
-      searcher.search(query, filter,collector)
-      //val topDocs = searcher.search(query, filter, topN)
-      val topDocs = collector.topDocs(topN)
+      if(filter != null)
+        booleanQuery.add(filter,BooleanClause.Occur.FILTER)
+
+      val topDocs = sortOpt match{
+        case Some(sort) =>
+          searcher.search(booleanQuery, topN,sort)
+        case None =>
+          searcher.search(booleanQuery, topN)
+      }
+
+      //searcher.search(query, filter,collector)
+      //val topDocs = collector.topDocs(topN)
+      //val topDocs = searcher.search(query, filter, topN,sort)
       val endTime = System.currentTimeMillis()
       logger.info("[{}] q:{},time:{}ms,hits:{}",
         Array[Object](rd.name, q,
@@ -285,10 +276,8 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
             Some(new Sort(new SortField(sort,SortField.Type.LONG,reverse)))
           case ColumnType.Int | ColumnType.Date =>
             Some(new Sort(new SortField(sort,SortField.Type.INT,reverse)))
-          case ColumnType.String | ColumnType.Clob =>
-            Some(new Sort(new SortField(sort,SortField.Type.STRING,reverse)))
           case other=>
-            logger.error("wrong column type:{}",other)
+            logger.error("{} sort unsupported ",sort)
             None
         }
       }else{

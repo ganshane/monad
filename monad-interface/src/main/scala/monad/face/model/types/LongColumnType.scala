@@ -7,7 +7,7 @@ import java.sql.{PreparedStatement, ResultSet}
 import com.google.gson.JsonObject
 import monad.face.model.MonadColumnType
 import monad.face.model.ResourceDefinition.ResourceProperty
-import org.apache.lucene.document.{Field, LongField}
+import org.apache.lucene.document.{Field, NumericDocValuesField}
 
 /**
  * Long Type Column
@@ -37,9 +37,11 @@ class LongColumnType extends MonadColumnType[Long] {
   }
 
   def createIndexField(value: Long, cd: ResourceProperty) =
-    new LongField(cd.name, value, LongField.TYPE_NOT_STORED)
+    new NumericDocValuesField(cd.name,value)
+    //new LongField(cd.name, value, LongField.TYPE_NOT_STORED)
+
 
   def setIndexValue(f: Field, value: Long, cd: ResourceProperty) {
-    f.asInstanceOf[Field].setLongValue(value)
+    f.setLongValue(value)
   }
 }
