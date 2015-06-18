@@ -9,8 +9,7 @@ import java.util.Date
 import com.google.gson.JsonObject
 import monad.face.model.MonadColumnType
 import monad.face.model.ResourceDefinition.ResourceProperty
-import monad.face.services.DataTypeUtils
-import org.apache.lucene.document.{Field, NumericDocValuesField}
+import org.apache.lucene.document.{Field, LongField, NumericDocValuesField}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 
 /**
@@ -57,12 +56,11 @@ class DateColumnType extends MonadColumnType[Long] {
     }
   }
 
-  def createIndexField(value: Long, cd: ResourceProperty) = {
-    val valueConverted = DataTypeUtils.convertDateAsInt(value)
-    new NumericDocValuesField(cd.name, valueConverted)
-  }
+  def createIndexField(value: Long, cd: ResourceProperty) =
+    (new LongField(cd.name, value, LongField.TYPE_NOT_STORED),Some(new NumericDocValuesField(cd.name,value)))
 
-  def setIndexValue(f: Field, value: Long, cd: ResourceProperty) {
-    f.setLongValue(DataTypeUtils.convertDateAsInt(value))
+  def setIndexValue(f: (Field,Option[Field]), value: Long, cd: ResourceProperty) {
+    f._1.setLongValue(value)
+    f._2.foreach(_.setLongValue(value))
   }
 }

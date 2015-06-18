@@ -49,7 +49,7 @@ trait MonadColumnType[T] {
   /**
    * 创建索引字段对象
    */
-  def createIndexField(value: T,cd:ResourceProperty):Field
+  def createIndexField(value: T,cd:ResourceProperty):(Field,Option[Field])
 
-  def setIndexValue(f:Field,value:T,cd:ResourceProperty)
+  def setIndexValue(f:(Field,Option[Field]),value:T,cd:ResourceProperty)
 }

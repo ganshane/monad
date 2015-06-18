@@ -72,7 +72,7 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
 }
 
 class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
-  private val cachedFields = scala.collection.mutable.Map[String, Field]()
+  private val cachedFields = scala.collection.mutable.Map[String, (Field,Option[Field])]()
   private var version = -1
 
   def newDocument(event: IndexEvent) = {
@@ -94,11 +94,15 @@ class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
           f match {
             case Some(field) =>
               setIndexValue(col, field, value)
-              doc.add(field)
+              doc.add(field._1)
+              //添加排序
+              field._2.foreach(doc.add)
             case None =>
               val field = createFieldable(col, value)
               cachedFields.put(col.name, field)
-              doc.add(field)
+              doc.add(field._1)
+              //添加排序
+              field._2.foreach(doc.add)
           }
         case _ =>
         //
@@ -112,7 +116,7 @@ class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
     col.createIndexField(value)
   }
 
-  protected def setIndexValue(col: ResourceProperty, f: Field, value: Any) {
+  protected def setIndexValue(col: ResourceProperty, f: (Field,Option[Field]), value: Any) {
     col.setIndexValue(f, value)
   }
 }

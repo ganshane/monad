@@ -43,11 +43,11 @@ trait ResourceDefinitionConversions {
     }
   }
   implicit def resourcePropertyOps(rp: ResourceProperty) = new {
-    def createIndexField(value: Any): Field = {
+    def createIndexField(value: Any): (Field,Option[Field]) = {
       rp.columnType.getColumnType.asInstanceOf[MonadColumnType[Any]].createIndexField(value, rp)
     }
 
-    def setIndexValue(f: Field, value: Any) {
+    def setIndexValue(f: (Field,Option[Field]), value: Any) {
       rp.columnType.getColumnType.asInstanceOf[MonadColumnType[Any]].setIndexValue(f, value, rp)
     }
 
