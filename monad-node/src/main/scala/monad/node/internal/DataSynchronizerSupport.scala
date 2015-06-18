@@ -78,7 +78,7 @@ trait DataSynchronizerSupport
         val timeDiff = System.currentTimeMillis() - processTime.get()
         resourceIndex = 0
         if (timeDiff > thirtySeconds && !afterDoing.get()) {
-          warn("no response data from meta server,time:{}", timeDiff)
+          warn("no response data from sync server,time:{}", timeDiff)
         }
         if (semaphore.tryAcquire()) {
           //初始化分区信息
@@ -142,7 +142,7 @@ trait DataSynchronizerSupport
           status.delete()
           val num = totalData.incrementAndGet()
           if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
-            debug("{} row synchronized", response.getResponseDataCount)
+            info("{} row synchronized", num)
           }
         }
         isContinue(response)
@@ -208,6 +208,7 @@ trait DataSynchronizerSupport
       val nosqlOpt = findNoSQLByResourceName(rd)
       builder.setLogSeqFrom(nosqlOpt.get.FindLastBinlog() + 1)
       builder.setSize(ONE_BATCH_SIZE)
+      info("start seq:{} batch_size:{}",builder.getLogSeqFrom,builder.getSize)
       builder.build()
     } catch {
       case e: Throwable =>

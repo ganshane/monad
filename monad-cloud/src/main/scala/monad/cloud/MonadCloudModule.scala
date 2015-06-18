@@ -19,9 +19,8 @@ import org.apache.tapestry5.ioc.annotations.Symbol
  **/
 object MonadCloudModule {
   def buildMonadCloudConfig(@Symbol(MonadCoreSymbols.SERVER_HOME) serverHome: String) = {
-    val content = MonadConfigFileUtils.findConfigPath(serverHome, "monad-cloud.xml")
-    XmlLoader.parseXML[MonadCloudConfig](content,
-      xsd = Some(getClass.getResourceAsStream("/monad/cloud/monad-cloud.xsd")))
+    val content = MonadConfigFileUtils.readConfigFileContent(serverHome, "monad-cloud.xml")
+    XmlLoader.parseXML[MonadCloudConfig](content,xsd = Some(getClass.getResourceAsStream("/monad/cloud/monad-cloud.xsd")))
 
     //MonadCoreUtils.autoFixIpAddress(config)
 

@@ -14,6 +14,8 @@ import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.data.Stat
 
+import scala.annotation.tailrec
+
 /**
  * 基于组的zookeeper模板类
  * @author jcai
@@ -108,7 +110,8 @@ class GroupZookeeperTemplate(groupApi: GroupServerApi, periodExecutor: PeriodicE
     }
   }
 
-  def setRegionIndexInfo(resourceName: String, regionSeq: Int, regionIndexInfo: JsonObject) {
+  @tailrec
+  final def setRegionIndexInfo(resourceName: String, regionSeq: Int, regionIndexInfo: JsonObject) {
     val path = CloudPathConstants.RESOURCE_REGION_INFO_PATH_FORMAT.format(resourceName)
     val stat = new Stat
     stat.setVersion(-1)

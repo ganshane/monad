@@ -11,16 +11,16 @@ import monad.face.model.ResourceDefinition
  * @see ResourceDefinitionLoaderListener
  */
 trait ResourceDefinitionLoader {
-    /**
-     * 得到所有的资源定义
-     * @return 资源定义集合
-     */
-    def getResourceDefinitions:Iterator[ResourceDefinition]
+  /**
+   * 得到所有的资源定义
+   * @return 资源定义集合
+   */
+  def getResourceDefinitions: Iterator[ResourceDefinition]
 
-    /**
-     * 得到某一个资源定义
-     * @param name 资源名称
-     * @return 某一个资源定义
-     */
-    def getResourceDefinition(name:String):Option[ResourceDefinition]
+  /**
+   * 得到某一个资源定义
+   * @param name 资源名称
+   * @return 某一个资源定义
+   */
+  def getResourceDefinition(name: String): Option[ResourceDefinition]
 }

@@ -63,6 +63,8 @@ class SearchApi extends BaseApi {
     //offset number
     val offsetStr = request.getParameter("offset")
     val limitStr = request.getParameter("limit")
+    //hl
+    val hlStr = request.getParameter("hl")
     //sort
     val sortStr = request.getParameter("sort")
     searchRequest.sort = sortStr
@@ -103,6 +105,11 @@ class SearchApi extends BaseApi {
       offset = 10000
     }
     searchRequest.offset = offset
+
+    //hl
+    if(InternalUtils.isNonBlank(hlStr) && hlStr == "false"){
+      searchRequest.hl = false
+    }
 
     search(searchRequest)
   }

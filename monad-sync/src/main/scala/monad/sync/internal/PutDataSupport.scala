@@ -68,6 +68,8 @@ trait PutDataSupport {
       if (internalCommand == DataCommandType.PUT) {
         dataSequence.decrementAndGet()
       }
+    }else{
+
     }
     status
   }

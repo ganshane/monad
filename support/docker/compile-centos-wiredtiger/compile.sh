@@ -10,7 +10,7 @@ ROOT=$(pwd)
 mkdir monad-c/build
 cd monad-c/build
 rm -rf *
-CC=/opt/centos/devtoolset-1.1/root/usr/bin/cc cmake -DCMAKE_CXX_FLAGS="-I/opt/centos/devtoolset-1.1/root/usr/include -std=c++11"  -DENABLE_ROCKSDB=on -DENABLE_WIREDTIGER=on -DSTATIC_LINK=on -DCMAKE_BUILD_TYPE=Release ..
+CC=/opt/centos/devtoolset-1.1/root/usr/bin/cc cmake -DCMAKE_CXX_FLAGS="-I/opt/centos/devtoolset-1.1/root/usr/include -std=c++11"  -DENABLE_ROCKSDB=off -DENABLE_WIREDTIGER=on -DSTATIC_LINK=on -DCMAKE_BUILD_TYPE=Release ..
 make
 mkdir -p ${ROOT}/monad-jni/src/main/resources/META-INF/native/linux64
 cp src/*.so ${ROOT}/monad-jni/src/main/resources/META-INF/native/linux64

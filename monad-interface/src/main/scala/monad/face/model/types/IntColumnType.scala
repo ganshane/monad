@@ -7,7 +7,7 @@ import java.sql.{PreparedStatement, ResultSet}
 import com.google.gson.JsonObject
 import monad.face.model.MonadColumnType
 import monad.face.model.ResourceDefinition.ResourceProperty
-import org.apache.lucene.document.{Field, IntField}
+import org.apache.lucene.document.{IntField, Field, NumericDocValuesField}
 
 /**
  * Int Type Column
@@ -35,9 +35,10 @@ class IntColumnType extends MonadColumnType[Int] {
   }
 
   def createIndexField(value: Int, cd: ResourceProperty) =
-    new IntField(cd.name, value, IntField.TYPE_NOT_STORED)
+    (new IntField(cd.name, value, IntField.TYPE_NOT_STORED),Some(new NumericDocValuesField(cd.name,value)))
 
-  def setIndexValue(f: Field, value: Int, cd: ResourceProperty) {
-    f.asInstanceOf[IntField].setIntValue(value)
+  def setIndexValue(f: (Field,Option[Field]), value: Int, cd: ResourceProperty) {
+    f._1.setIntValue(value)
+    f._2.foreach(_.setLongValue(value))
   }
 }

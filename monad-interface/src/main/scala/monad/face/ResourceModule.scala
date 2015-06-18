@@ -4,9 +4,9 @@ package monad.face
 
 import monad.face.internal.ResourcesWatcher
 import monad.face.services.{ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
-import org.apache.tapestry5.ioc.ServiceBinder
 import org.apache.tapestry5.ioc.annotations.Marker
-import org.apache.tapestry5.ioc.services.ChainBuilder
+import org.apache.tapestry5.ioc.services.{ChainBuilder, RegistryShutdownHub}
+import org.apache.tapestry5.ioc.{OrderedConfiguration, ServiceBinder}
 import org.apache.tapestry5.services.Core
 
 /**
@@ -16,6 +16,16 @@ import org.apache.tapestry5.services.Core
 object ResourceModule {
   def bind(binder: ServiceBinder) {
     binder.bind(classOf[ResourceDefinitionLoader], classOf[ResourcesWatcher]).withId("ResourceDefinitionLoader")
+  }
+
+  def contributeRegistryStartup(registryShutdownHub: RegistryShutdownHub,
+                                orderedConfiguration: OrderedConfiguration[Runnable], resourceDefinitionLoader: ResourceDefinitionLoader): Unit = {
+    //最后启动
+    orderedConfiguration.add("resources", new Runnable() {
+      override def run(): Unit = {
+        resourceDefinitionLoader.getResourceDefinitions
+      }
+    }, "before:*")
   }
 
   @Marker(Array(classOf[Core]))

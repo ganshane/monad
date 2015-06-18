@@ -12,8 +12,8 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
  */
 object SearchResultCache {
 
-  final val EXPIRED_TIME = TimeUnit.NANOSECONDS.convert(5, TimeUnit.MINUTES)
-  val cache = new ConcurrentLinkedHashMap.Builder[String, CacheEntity]()
+  private final val EXPIRED_TIME = TimeUnit.NANOSECONDS.convert(5, TimeUnit.MINUTES)
+  private val cache = new ConcurrentLinkedHashMap.Builder[String, CacheEntity]()
     .maximumWeightedCapacity(2000)
     .build()
 
@@ -34,6 +34,6 @@ object SearchResultCache {
     entity.value.asInstanceOf[T]
   }
 
-  class CacheEntity(val key: String, var value: Any, var expiredTime: Long)
+  private case class CacheEntity(key: String, var value: Any, var expiredTime: Long)
 
 }

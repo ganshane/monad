@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct
 import com.google.protobuf.ByteString
 import com.lmax.disruptor.dsl.Disruptor
 import com.lmax.disruptor.{EventFactory, EventTranslator}
-import monad.core.services.LogExceptionHandler
+import monad.core.services.{StartAtDelay, CronScheduleWithStartModel, LogExceptionHandler}
 import monad.face.config.SyncConfigSupport
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
@@ -78,6 +78,16 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
     hub.addRegistryWillShutdownListener(new Runnable {
       override def run(): Unit = shutdown()
     })
+    periodicExecutor.addJob(new CronScheduleWithStartModel("0 * * * * ? *",StartAtDelay),"update-region",new Runnable {
+      override def run(): Unit = {
+        val it = objects.values().iterator()
+        while(it.hasNext){
+          util.control.Exception.ignoring(classOf[Throwable]){
+            it.next().outputRegionInfo(zk)
+          }
+        }
+      }
+    })
   }
 
   /**
@@ -131,7 +141,12 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
   def submitSync(fun: => Unit) = {
     dbReader.submit(new Runnable() {
       def run() {
-        fun
+        try{
+          fun
+        }catch{
+          case e:Throwable =>
+            logger.error("fail to run sync function",e)
+        }
       }
     })
   }

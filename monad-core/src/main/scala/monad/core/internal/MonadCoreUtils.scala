@@ -11,8 +11,12 @@ import monad.support.services.{MonadException, MonadUtils}
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  */
 object MonadCoreUtils {
+  @deprecated(message="use readConfigContent",since = "5.0.12")
   def findConfigPath(serverHome: String, configFile: String) = {
-    MonadConfigFileUtils.findConfigPath(serverHome, configFile)
+    readConfigContent(serverHome,configFile)
+  }
+  def readConfigContent(serverHome: String, configFile: String) = {
+    MonadConfigFileUtils.readConfigFileContent(serverHome, configFile)
   }
 
   def autoFixIpAddress[T](rpcBind: T) = {

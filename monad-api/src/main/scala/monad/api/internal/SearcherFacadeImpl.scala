@@ -31,8 +31,8 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   def search(searchRequest: SearchRequest): JsonObject = {
     doInSearcherQueue {
       var highlighter: Option[ResultHighlighter] = None
-      //当搜索有q的时候，才进行高亮显示
-      if (!InternalUtils.isBlank(searchRequest.q)) {
+      //当需要高亮并且有q的时候，才进行高亮显示
+      if (searchRequest.hl && !InternalUtils.isBlank(searchRequest.q)) {
         highlighter = Some(new ResultHighlighter {
           private lazy val (highlighter, analyzer) = {
             searcherQueue.createHighlighter(searchRequest.q)

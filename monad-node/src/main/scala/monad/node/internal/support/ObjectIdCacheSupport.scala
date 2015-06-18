@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock
 import monad.face.MonadFaceConstants
 import monad.face.services.DataTypeUtils
 import org.apache.lucene.index.LeafReader.CoreClosedListener
-import org.apache.lucene.index.SegmentReader
+import org.apache.lucene.index.{LeafReader, SegmentReader}
 import org.apache.lucene.util.Bits
 import org.slf4j.LoggerFactory
 
@@ -66,7 +66,7 @@ trait ObjectIdCacheSupport {
     cache.get(reader.getCoreCacheKey)
   }
 
-  def loadObjectIdWithLocalCache(name: String, reader: SegmentReader) {
+  def loadObjectIdWithLocalCache(name: String, reader: LeafReader) {
     var objectIds: IdBuffer = null
     val key = reader.getCoreCacheKey
     objectIds = cache.get(key)
@@ -75,7 +75,7 @@ trait ObjectIdCacheSupport {
         locker.lock()
         objectIds = cache.get(key)
         if (objectIds == null) {
-          logger.debug("building object id cache {} for key:{}", reader.getSegmentName, key)
+          //logger.debug("building object id cache {} for key:{}", reader.getSegmentName, key)
           objectIds = readObjectIdAsArray(name, reader)
           cache.put(key, objectIds)
           reader.addCoreClosedListener(corePurgeListener)
@@ -91,7 +91,7 @@ trait ObjectIdCacheSupport {
   }
 
   //直接存入对象Int避免过多的转换
-  private def readObjectIdAsArray(name: String, reader: SegmentReader): IdBuffer = {
+  private def readObjectIdAsArray(name: String, reader: LeafReader): IdBuffer = {
     val docValues = reader.getNumericDocValues(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD)
     val maxDoc = reader.maxDoc()
     val buffer = new JNAIdBuffer(reader.maxDoc(), getPayloadBytesLength)

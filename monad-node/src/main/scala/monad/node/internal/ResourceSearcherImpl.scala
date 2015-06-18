@@ -7,7 +7,8 @@ import java.util.concurrent.ExecutorService
 import javax.naming.SizeLimitExceededException
 
 import monad.face.config.IndexConfigSupport
-import monad.face.model.{ResourceDefinition, ShardResult}
+import monad.face.model.ResourceDefinition.ResourceProperty
+import monad.face.model.{ColumnType, ResourceDefinition, ShardResult}
 import monad.face.services.ResourceSearcher
 import monad.node.internal.support.SearcherManagerSupport
 import monad.node.services.MonadNodeExceptionCode
@@ -18,6 +19,7 @@ import org.apache.lucene.util.LongBitSet
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.util.control.NonFatal
 
 
@@ -81,6 +83,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     val result = SearchResultCache.getOrPut[ShardResult](sb.toString) {
       search(query, sort, topN)
     }
+
     result.maxDoc = maxDoc
     result.serverHash = regionId
 
@@ -91,41 +94,46 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
    * search index with index name and keyword
    */
   private def search(q: String, sortStr: String, topN: Int): ShardResult = {
-    logger.info("[{}] \"{}\"searching .... ", rd.name, q)
+    logger.info("[{}] \"{}\" sort:\"{}\" searching .... ", Array[AnyRef](rd.name, q,sortStr))
     val query = parseQuery(q)
-
     //sort
-    var sort: Sort = null
+    var sortOpt: Option[Sort] = None
     if (!InternalUtils.isBlank(sortStr)) {
-      sort = new Sort(new SortField(sortStr, SortField.Type.STRING, true))
-    }
-    /*
-    else {
-        //如果没有设置sort，则使用相关性来进行查询
-        //sort = new Sort(SortField.FIELD_DOC)
-    }
-    */
-    var collector: TopDocsCollector[_] = null
-    if (sort == null) {
-      collector = TopScoreDocCollector.create(topN)
-    } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false)
+      val it = rd.properties.iterator()
+      sortOpt = sortStr.trim.split("\\s+").toList match{
+        case field::"asc"::Nil =>
+          createSortField(field,false,it)
+        case field::Nil =>
+          createSortField(field,false,it)
+        case field::"desc"::Nil =>
+          createSortField(field,true,it)
+        case o =>
+          None
+      }
     }
 
-    val startTime = new Date().getTime
     var filter: Filter = null
     if (config.index.queryMaxLimit > 0) {
       filter = new SizeLimitedFilter(config.index.queryMaxLimit)
     }
     doInSearcher { searcher =>
-      /*
+      val startTime = System.currentTimeMillis()
       val booleanQuery = new BooleanQuery()
       booleanQuery.add(query,BooleanClause.Occur.MUST)
-      booleanQuery.add(filter,BooleanClause.Occur.FILTER)
-      val topDocs = searcher.search(booleanQuery, topN)
-      */
-      val topDocs = searcher.search(query, filter, topN)
-      val endTime = new Date().getTime
+      if(filter != null)
+        booleanQuery.add(filter,BooleanClause.Occur.FILTER)
+
+      val topDocs = sortOpt match{
+        case Some(sort) =>
+          searcher.search(booleanQuery, topN,sort)
+        case None =>
+          searcher.search(booleanQuery, topN)
+      }
+
+      //searcher.search(query, filter,collector)
+      //val topDocs = collector.topDocs(topN)
+      //val topDocs = searcher.search(query, filter, topN,sort)
+      val endTime = System.currentTimeMillis()
       logger.info("[{}] q:{},time:{}ms,hits:{}",
         Array[Object](rd.name, q,
           (endTime - startTime).asInstanceOf[Object],
@@ -255,6 +263,28 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       shardResult.maxDoc = searcher.getIndexReader.maxDoc()
 
       shardResult
+    }
+  }
+
+  @tailrec
+  private def createSortField(sort:String,reverse:Boolean,it:java.util.Iterator[ResourceProperty]): Option[Sort] ={
+    if(it.hasNext){
+      val property = it.next()
+      if(property.name == sort){
+        property.columnType match{
+          case ColumnType.Long =>
+            Some(new Sort(new SortField(sort,SortField.Type.LONG,reverse)))
+          case ColumnType.Int | ColumnType.Date =>
+            Some(new Sort(new SortField(sort,SortField.Type.INT,reverse)))
+          case other=>
+            logger.error("{} sort unsupported ",sort)
+            None
+        }
+      }else{
+        createSortField(sort,reverse,it)
+      }
+    }else{
+      None
     }
   }
 

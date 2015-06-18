@@ -15,7 +15,7 @@ import scala.util.control.NonFatal
  * @since 2015-01-30
  */
 object MonadConfigFileUtils {
-  def findConfigPath(serverHome: String, configFile: String) = {
+  def readConfigFileContent(serverHome: String, configFile: String) = {
     var filePath = serverHome + "/config"
     try {
       filePath = SymbolExpander.valueForSymbol(MonadCoreSymbols.CONFIG_DIR)

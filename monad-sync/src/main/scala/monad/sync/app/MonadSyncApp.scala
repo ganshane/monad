@@ -29,14 +29,14 @@ object MonadSyncApp
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting sync server ....")
     val classes = List[Class[_]](
+      Class.forName("monad.rpc.LocalRpcServerModule"),
       Class.forName("monad.core.LocalMonadCoreModule"),
-      Class.forName("monad.face.ResourceModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.core.ThreadPoolModule"),
-      Class.forName("monad.rpc.LocalRpcModule"),
-      Class.forName("monad.rpc.LocalRpcServerModule"),
       Class.forName("monad.sync.LocalMonadSyncModule"),
-      Class.forName("monad.sync.MonadSyncModule")
+      Class.forName("monad.sync.MonadSyncModule"),
+      Class.forName("monad.rpc.LocalRpcModule"),
+      Class.forName("monad.face.ResourceModule")
     )
     startUpContainer(classes: _*)
 

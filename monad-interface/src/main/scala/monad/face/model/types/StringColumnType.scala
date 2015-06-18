@@ -43,7 +43,7 @@ class StringColumnType extends MonadColumnType[String]{
         ps.setString(i,obj)
     }
     def createIndexField(value: String,cd:ResourceProperty) = {
-      cd.indexType match {
+      val f = cd.indexType match {
         case IndexType.Keyword =>
           new StringField(cd.name, value, Store.NO)
         case IndexType.Text =>
@@ -51,8 +51,9 @@ class StringColumnType extends MonadColumnType[String]{
         case other =>
           throw new MonadException("index type %s unsupported".format(cd.indexType), MonadFaceExceptionCode.INDEX_TYPE_NOT_SUPPORTED)
       }
+      (f,None)
     }
-    def setIndexValue(f:Field,value:String,cd:ResourceProperty){
-        f.asInstanceOf[Field].setStringValue(value)
+    def setIndexValue(f:(Field,Option[Field]),value:String,cd:ResourceProperty){
+        f._1.asInstanceOf[Field].setStringValue(value)
     }
 }
