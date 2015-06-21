@@ -49,7 +49,9 @@ trait DataSynchronizerSupport
   private val semaphore = new Semaphore(1)
   private val closeListener = new ChannelFutureListener {
     override def operationComplete(future: ChannelFuture): Unit = {
-      semaphore.release()
+      //semaphore.release()
+      //如果是服务器端关掉当前的channel，则执行完成request操作
+      finishRequest()
     }
   }
   private val processTime: AtomicLong = new AtomicLong(System.currentTimeMillis())
