@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct
 import com.google.protobuf.ByteString
 import com.lmax.disruptor.dsl.Disruptor
 import com.lmax.disruptor.{EventFactory, EventTranslator}
-import monad.core.services.{StartAtDelay, CronScheduleWithStartModel, LogExceptionHandler}
+import monad.core.services.{CronScheduleWithStartModel, LogExceptionHandler, StartAtDelay}
 import monad.face.config.SyncConfigSupport
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
@@ -107,16 +107,17 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
 
   override def fetchSyncData(request: SyncRequest): SyncResponse = {
     val resourceName = request.getResourceName
-    val importer = directGetObject(resourceName)
-    if (importer == null) {
-      val syncResponseBuilder = SyncResponse.newBuilder()
-      syncResponseBuilder.setResourceName(resourceName)
-      syncResponseBuilder.setPartitionId(request.getPartitionId)
-      syncResponseBuilder.setMessage(ByteString.copyFromUtf8("resource not found"))
-      syncResponseBuilder.build()
-    } else {
-      importer.doFetchSyncData(request).setResourceName(resourceName).build()
-    }
+      val importerOpt = directGetObject(resourceName)
+      importerOpt match{
+        case Some(importer) =>
+          importer.doFetchSyncData(request).setResourceName(resourceName).build()
+        case None =>
+          val syncResponseBuilder = SyncResponse.newBuilder()
+          syncResponseBuilder.setResourceName(resourceName)
+          syncResponseBuilder.setPartitionId(request.getPartitionId)
+          syncResponseBuilder.setMessage(ByteString.copyFromUtf8("resource not found"))
+          syncResponseBuilder.build()
+      }
   }
 
   def importData(resourceName: String,

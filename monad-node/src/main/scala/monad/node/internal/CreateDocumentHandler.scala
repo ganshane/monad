@@ -26,34 +26,39 @@ class CreateDocumentHandler(resourceIndexerManager: ResourceIndexerManager, docu
     if (threadNameFlag.compareAndSet(false, true)) {
       Thread.currentThread().setName("monad-background-CreateIndex")
     }
-    val indexer = resourceIndexerManager.directGetObject(event.resource.name)
-    if (event.commitFlag) {
-      indexer.commit(event.commitSeq, event.version)
-      event.reset()
-      return
-    }
-    if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
-      logger.info("{} index event processed", sequence)
-    }
+    val indexerOpt = resourceIndexerManager.directGetObject(event.resource.name)
+    indexerOpt match{
+      case Some(indexer) =>
+        if (event.commitFlag) {
+          indexer.commit(event.commitSeq, event.version)
+          event.reset()
+          return
+        }
+        if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
+          logger.info("{} index event processed", sequence)
+        }
 
-    try {
-      val rowId = event.id
-      val command = DataCommandType.swigToEnum(event.command)
-      command match {
-        case DataCommandType.PUT =>
-          val doc = documentSource.newDocument(event)
-          indexer.indexDocument(doc, event.version)
-        case DataCommandType.UPDATE =>
-          val doc = documentSource.newDocument(event)
-          indexer.updateDocument(rowId, doc, event.version)
-        case DataCommandType.DEL =>
-          indexer.deleteDocument(rowId, event.version)
-        case other =>
-          throw new IllegalStateException("command not found")
-      }
-    } catch {
-      case NonFatal(e) =>
-        logger.error("[" + event.resource.name + "] fail to index", e)
+        try {
+          val rowId = event.id
+          val command = DataCommandType.swigToEnum(event.command)
+          command match {
+            case DataCommandType.PUT =>
+              val doc = documentSource.newDocument(event)
+              indexer.indexDocument(doc, event.version)
+            case DataCommandType.UPDATE =>
+              val doc = documentSource.newDocument(event)
+              indexer.updateDocument(rowId, doc, event.version)
+            case DataCommandType.DEL =>
+              indexer.deleteDocument(rowId, event.version)
+            case other =>
+              throw new IllegalStateException("command not found")
+          }
+        } catch {
+          case NonFatal(e) =>
+            logger.error("[" + event.resource.name + "] fail to index", e)
+        }
+      case None=>
+        logger.error("[" + event.resource.name + "] indexer not found")
     }
     //删除对对象的依赖
     event.reset()
