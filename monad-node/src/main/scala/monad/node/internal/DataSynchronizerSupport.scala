@@ -176,15 +176,16 @@ trait DataSynchronizerSupport
   }
 
   private def finishRequest(): Unit = {
-    try {
-      afterDoing.set(true)
-      afterFinishSync()
-    } catch {
-      case NonFatal(e) =>
-        error(e.getMessage, e)
-    } finally {
-      afterDoing.set(false)
-      semaphore.release()
+    if(afterDoing.compareAndSet(false,true)){
+      try {
+        afterFinishSync()
+      } catch {
+        case NonFatal(e) =>
+          error(e.getMessage, e)
+      } finally {
+        afterDoing.set(false)
+        semaphore.release()
+      }
     }
   }
 
