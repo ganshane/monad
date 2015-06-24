@@ -118,7 +118,13 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     getResourceList.foreach { r =>
       try {
         info("[{}] begin index ...", r)
-        directGetObject(r).asInstanceOf[ResourceIndexerImpl].index()
+        directGetObject(r) match{
+          case Some(indexer) =>
+            indexer.asInstanceOf[ResourceIndexerImpl].index()
+          case None =>
+            //do nothing
+            error("["+r+" indexer not found]")
+        }
         info("[{}] finish index", r)
       } catch {
         case e: MonadException =>
