@@ -111,14 +111,20 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   }
 
   override def findNoSQLByResourceName(resourceName: String): Option[SlaveNoSQLSupport] = {
-    directGetObject(resourceName).nosqlOpt()
+    directGetObject(resourceName).flatMap(_.nosqlOpt())
   }
 
   override def afterFinishSync(): Unit = {
     getResourceList.foreach { r =>
       try {
         info("[{}] begin index ...", r)
-        directGetObject(r).asInstanceOf[ResourceIndexerImpl].index()
+        directGetObject(r) match{
+          case Some(indexer) =>
+            indexer.asInstanceOf[ResourceIndexerImpl].index()
+          case None =>
+            //do nothing
+            error("["+r+" indexer not found]")
+        }
         info("[{}] finish index", r)
       } catch {
         case e: MonadException =>
@@ -145,23 +151,62 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
    * search index with index name and keyword
    */
   def collectSearch(resourceName: String, q: String, sort: String, topN: Int) = {
-    directGetObject(resourceName).getResourceSearcher.collectSearch(q, sort, topN)
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.getResourceSearcher.collectSearch(q, sort, topN)
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        val shardResult = new ShardResult
+        shardResult.results=Array[(Array[Byte],AnyVal)]()
+        shardResult.maxDoc = 0
+        shardResult.totalRecord = 0
+
+        shardResult
+    }
 
   }
 
   def collectSearch2(resourceName: String, q: String, sort: String, topN: Int) = {
-    directGetObject(resourceName).getResourceSearcher.collectSearch2(q, sort, topN)
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.getResourceSearcher.collectSearch2(q, sort, topN)
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        val shardResult = new ShardResult
+        shardResult.results=Array[(Array[Byte],AnyVal)]()
+        shardResult.maxDoc = 0
+        shardResult.totalRecord = 0
+
+        shardResult
+    }
 
   }
 
   //------ search
 
   override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {
-    directGetObject(resourceName).getResourceSearcher.facetSearch(q, field, upper, lower)
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.getResourceSearcher.facetSearch(q, field, upper,lower)
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        val shardResult = new ShardResult
+        shardResult.results=Array[(Array[Byte],AnyVal)]()
+        shardResult.maxDoc = 0
+        shardResult.totalRecord = 0
+
+        shardResult
+    }
   }
 
   def maxDoc(resourceName: String) = {
-    directGetObject(resourceName).getResourceSearcher.maxDoc
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.getResourceSearcher.maxDoc
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        0
+    }
   }
 
   /**
@@ -171,12 +216,23 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
    * @return 搜索比中结果
    */
   def searchObjectId(resourceName: String, q: String) = {
-    directGetObject(resourceName).getResourceSearcher.searchObjectId(q)
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.getResourceSearcher.searchObjectId(q)
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        throw new UnsupportedOperationException
+    }
   }
 
   def findObject(serverId: Short, resourceName: String, key: Array[Byte]): Option[Array[Byte]] = {
-    //TODO 服务器做校验
-    directGetObject(resourceName).findObject(key)
+    directGetObject(resourceName) match{
+      case Some(indexer) =>
+        indexer.findObject(key)
+      case None =>
+        logger.error("[{}] indexer not found",resourceName)
+        None
+    }
   }
 
 
