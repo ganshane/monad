@@ -272,9 +272,9 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
       val property = it.next()
       if(property.name == sort){
         property.columnType match{
-          case ColumnType.Long =>
+          case ColumnType.Long | ColumnType.Date =>
             Some(new Sort(new SortField(sort,SortField.Type.LONG,reverse)))
-          case ColumnType.Int | ColumnType.Date =>
+          case ColumnType.Int =>
             Some(new Sort(new SortField(sort,SortField.Type.INT,reverse)))
           case other=>
             logger.error("{} sort unsupported ",sort)
