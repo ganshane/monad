@@ -37,10 +37,6 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
     throw new UnsupportedOperationException
   }
 
-  override def collectSearch2(resourceName: String, q: String, sort: String, topN: Int): ShardResult = {
-    throw new UnsupportedOperationException
-  }
-
   /**
    * 查找对象的详细信息
    * @param serverId 服务器的Hash值

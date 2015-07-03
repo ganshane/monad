@@ -47,7 +47,8 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
   def start() {
     initQueryParser(rd)
     searcherManager = new SearcherManager(writer, false, new SearcherFactory() {
-      override def newSearcher(reader: IndexReader) = {
+
+      override def newSearcher(reader: IndexReader, previousReader: IndexReader): IndexSearcher = {
         val searcher = new InternalIndexSearcher(reader, rd, executor)
         try {
           warm(searcher)
@@ -160,53 +161,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
 
   def maxDoc: Int = doInSearcher(_.getIndexReader.numDocs())
 
-  def collectSearch2(query: String, sort: String, topN: Int) = {
-    search2(query, sort, topN)
-  }
-
-  /**
-   * search index with index name and keyword
-   */
-  private def search2(q: String, sortStr: String, topN: Int): ShardResult = {
-    logger.info("[{}] \"{}\"searching .... ", rd.name, q)
-    val query = parseQuery(q)
-    //sort
-    var sort: Sort = null
-    if (!InternalUtils.isBlank(sortStr)) {
-      sort = new Sort(new SortField(sortStr, SortField.Type.STRING, true))
-    }
-    /*
-    else {
-        //如果没有设置sort，则使用相关性来进行查询
-        //sort = new Sort(SortField.FIELD_DOC)
-    }
-    */
-    var collector: TopDocsCollector[_] = null
-    if (sort == null) {
-      collector = TopScoreDocCollector.create(topN)
-    } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false)
-    }
-
-    val startTime = new Date().getTime
-    doInSearcher { searcher =>
-      val topDocs = searcher.search(query, new SizeLimitedFilter(5000000), topN); //,delegateCollector)
-
-      val endTime = new Date().getTime
-      logger.info("[{}] q:{},time:{}ms,hits:{}",
-        Array[Object](rd.name, q,
-          (endTime - startTime).asInstanceOf[Object],
-          topDocs.totalHits.asInstanceOf[Object]))
-      val shardResult = new ShardResult
-      shardResult.totalRecord = topDocs.totalHits
-      shardResult.results = topDocs.scoreDocs.map(x => (searcher.objectId(x.doc), x.score))
-      shardResult.serverHash = regionId
-      shardResult.maxDoc = searcher.getIndexReader.maxDoc()
-
-      shardResult
-    }
-  }
-
   def maybeRefresh() {
     searcherManager.maybeRefresh()
   }
@@ -215,56 +169,6 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
 
   //全局搜索对象
   protected def getSearcherManager = searcherManager
-
-  /**
-   * search index with index name and keyword
-   */
-  private def search3(q: String, sortStr: String, topN: Int): ShardResult = {
-    logger.info("[{}] \"{}\"searching .... ", rd.name, q)
-    val query = parseQuery(q)
-    //sort
-    var sort: Sort = null
-    if (!InternalUtils.isBlank(sortStr)) {
-      sort = new Sort(new SortField(sortStr, SortField.Type.STRING, true))
-    }
-    /*
-    else {
-        //如果没有设置sort，则使用相关性来进行查询
-        //sort = new Sort(SortField.FIELD_DOC)
-    }
-    */
-    var collector: TopDocsCollector[_] = null
-    if (sort == null) {
-      collector = TopScoreDocCollector.create(topN)
-    } else {
-      collector = TopFieldCollector.create(sort, topN, false, false, false)
-    }
-
-    val startTime = new Date().getTime
-    doInSearcher { searcher =>
-      val delegateCollector = new LimitSearcherCollector(new TimeOutCollector(collector))
-      try {
-        searcher.search(query, delegateCollector)
-      } catch {
-        case e: SizeLimitExceededException =>
-          logger.warn("[{}] over 5M", rd.name)
-      }
-      val topDocs = collector.topDocs(0, topN)
-
-      val endTime = new Date().getTime
-      logger.info("[{}] q:{},time:{}ms,hits:{}",
-        Array[Object](rd.name, q,
-          (endTime - startTime).asInstanceOf[Object],
-          delegateCollector.totalHits.asInstanceOf[Object]))
-      val shardResult = new ShardResult
-      shardResult.totalRecord = delegateCollector.totalHits
-      shardResult.results = topDocs.scoreDocs.map(x => (searcher.objectId(x.doc), x.score))
-      shardResult.serverHash = regionId
-      shardResult.maxDoc = searcher.getIndexReader.maxDoc()
-
-      shardResult
-    }
-  }
 
   @tailrec
   private def createSortField(sort:String,reverse:Boolean,it:java.util.Iterator[ResourceProperty]): Option[Sort] ={

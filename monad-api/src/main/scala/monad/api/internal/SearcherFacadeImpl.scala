@@ -52,30 +52,6 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
     throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
   }
 
-  def search2(searchRequest: SearchRequest): JsonObject = {
-    doInSearcherQueue {
-      var highlighter: Option[ResultHighlighter] = None
-      //当搜索有q的时候，才进行高亮显示
-      if (!InternalUtils.isBlank(searchRequest.q)) {
-        highlighter = Some(new ResultHighlighter {
-          private lazy val (highlighter, analyzer) = {
-            searcherQueue.createHighlighter(searchRequest.q)
-          }
-
-          def highlight(fieldName: String, text: String, maxNumFragments: Int) = {
-            val tokenStream = analyzer.tokenStream(fieldName, new StringReader(text))
-            val result = highlighter.getBestFragments(tokenStream, text, maxNumFragments, "......")
-            if (InternalUtils.isBlank(result)) text else result
-          }
-        })
-      }
-      return extractor.extract(searchRequest, { request =>
-        searcherQueue.search2(request.q, request.start, request.offset, request.sort)
-      }, highlighter)
-    }
-    throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
-  }
-
   private def doInSearcherQueue[T](fun: => T): T = {
     if (semaphore.tryAcquire(ONE_MINUTE, TimeUnit.SECONDS)) {
       try {

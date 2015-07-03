@@ -38,8 +38,6 @@ trait SearcherQueue extends ServiceLifecycle {
    */
   def search(q: String, start: Int, offset: Int, sortStr: String): SearchResult
 
-  def search2(q: String, start: Int, offset: Int, sortStr: String): SearchResult
-
   //def idSearch(q: String): IdShardResult
 
   /**

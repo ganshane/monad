@@ -18,7 +18,6 @@ trait ResourceSearcherSupport {
      */
     def collectSearch(q:String,sort:String,topN:Int):ShardResult
     def facetSearch(q:String,field:String,upper:Int, lower:Int):ShardResult
-    def collectSearch2(q:String,sort:String,topN:Int):ShardResult
     def maxDoc:Int
     def searchObjectId(q:String):IdShardResult
 }

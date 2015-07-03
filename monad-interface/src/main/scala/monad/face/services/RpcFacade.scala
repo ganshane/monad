@@ -22,8 +22,6 @@ trait RpcSearcherFacade {
 
   def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult
 
-  def collectSearch2(resourceName: String, q: String, sort: String, topN: Int): ShardResult
-
   def maxDoc(resourceName: String): Long
 
   /**
