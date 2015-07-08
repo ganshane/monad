@@ -339,9 +339,15 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
                      tableName: String,
                      columnName: String,
                      columnType: SqlType,
-                     options: ColumnOption*): String = {
-    alterColumnSql(schemaNameOpt,
-      newColumnDefinition(tableName, columnName, columnType, options: _*))
+                     options: ColumnOption*): Array[String] = {
+    val cd = newColumnDefinition(tableName, columnName, columnType, options: _*)
+    val alterSql = alterColumnSql(schemaNameOpt,cd)
+    cd.toCommentSql  match{
+      case Some(commentSql) =>
+        Array[String](alterSql,commentSql)
+      case None =>
+        Array[String](alterSql)
+    }
   }
 
   /**
@@ -358,7 +364,7 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
   def alterColumnSql(tableName: String,
                      columnName: String,
                      columnType: SqlType,
-                     options: ColumnOption*): String = {
+                     options: ColumnOption*): Array[String] = {
     alterColumnSql(schemaNameOpt,
       tableName,
       columnName,

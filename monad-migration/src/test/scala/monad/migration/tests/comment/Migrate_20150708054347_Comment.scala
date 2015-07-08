@@ -45,6 +45,8 @@ class Migrate_20150708054347_Comment
 
     commentTable(tableName,"修改表1")
     commentColumn(tableName,"name","列1的注释")
+
+    alterColumn(tableName,"name",BigintType,Comment("修改列1的注释"))
   }
 
   def down() {

@@ -316,10 +316,12 @@ abstract class Migration {
                         columnName: String,
                         columnType: SqlType,
                         options: ColumnOption*) {
-    execute(adapter.alterColumnSql(tableName,
+    val sqls = adapter.alterColumnSql(tableName,
       columnName,
       columnType,
-      options: _*))
+      options: _*)
+
+    execute(sqls:_*)
   }
 
   final def removeColumn(tableName: String,
