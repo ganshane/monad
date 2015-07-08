@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 import com.codahale.metrics._
+import monad.core.MonadCoreConstants
 import monad.core.services.MetricsService
 import monad.support.services.{LoggerSupport, RunInNoExceptionThrown}
 import org.apache.tapestry5.ioc.services.cron.{CronSchedule, PeriodicExecutor}
@@ -80,32 +81,35 @@ class MetricsServiceImpl(periodicExecutor: PeriodicExecutor)
     jolokia.start()
     val jolokiaServer = JolokiaMBeanServerUtil.getJolokiaMBeanServer();
 
-    val jmxReporter = JmxReporter.forRegistry(metrics)
-      .convertDurationsTo(TimeUnit.MILLISECONDS)
-      .convertRatesTo(TimeUnit.SECONDS)
-      .registerWith(jolokiaServer)
-      .build()
-    jmxReporter.start()
     */
-
-    val reporter = Slf4jReporter.forRegistry(metrics)
-      .outputTo(LoggerFactory.getLogger(classOf[MetricsServiceImpl]))
-      .convertRatesTo(TimeUnit.SECONDS)
-      .convertDurationsTo(TimeUnit.MILLISECONDS)
-      .build()
-    //FIXES #100 手工关闭reporter的线程
-    runInNotExceptionThrown {
-      reporter.stop()
-    }
-    periodicExecutor.addJob(new CronSchedule("0 * * * * ? *"), "metrics-reporter", new Runnable {
-      override def run(): Unit = {
-        try {
-          reporter.report()
-        } catch {
-          case NonFatal(e) =>
-            error("fail to report metrics", e)
-        }
+    val reporterName = System.getProperty(MonadCoreConstants.METRICS_REPORT_KEY,"log4j")
+    if(reporterName == "jmx"){
+      val jmxReporter = JmxReporter.forRegistry(metrics)
+        .convertDurationsTo(TimeUnit.MILLISECONDS)
+        .convertRatesTo(TimeUnit.SECONDS)
+        //.registerWith(jolokiaServer)
+        .build()
+      jmxReporter.start()
+    }else{
+      val reporter = Slf4jReporter.forRegistry(metrics)
+        .outputTo(LoggerFactory.getLogger(classOf[MetricsServiceImpl]))
+        .convertRatesTo(TimeUnit.SECONDS)
+        .convertDurationsTo(TimeUnit.MILLISECONDS)
+        .build()
+      //FIXES #100 手工关闭reporter的线程
+      runInNotExceptionThrown {
+        reporter.stop()
       }
-    })
+      periodicExecutor.addJob(new CronSchedule("0 * * * * ? *"), "metrics-reporter", new Runnable {
+        override def run(): Unit = {
+          try {
+            reporter.report()
+          } catch {
+            case NonFatal(e) =>
+              error("fail to report metrics", e)
+          }
+        }
+      })
+    }
   }
 }

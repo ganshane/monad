@@ -21,4 +21,8 @@ object MonadCoreConstants {
   //每台机器错误信息
   final val ERRORS = "/errors"
 
+
+  //配置JMX的输出支持
+  final val METRICS_REPORT_KEY="metrics.report"
+
 }
