@@ -27,8 +27,6 @@ trait SearcherFacade {
    */
   def search(searchRequest: SearchRequest): JsonObject
 
-  def search2(searchRequest: SearchRequest): JsonObject
-
   /**
    * 针对id的搜索服务
    * @param searchRequest 搜索请求

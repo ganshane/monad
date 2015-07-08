@@ -166,22 +166,6 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
 
   }
 
-  def collectSearch2(resourceName: String, q: String, sort: String, topN: Int) = {
-    directGetObject(resourceName) match{
-      case Some(indexer) =>
-        indexer.getResourceSearcher.collectSearch2(q, sort, topN)
-      case None =>
-        logger.error("[{}] indexer not found",resourceName)
-        val shardResult = new ShardResult
-        shardResult.results=Array[(Array[Byte],AnyVal)]()
-        shardResult.maxDoc = 0
-        shardResult.totalRecord = 0
-
-        shardResult
-    }
-
-  }
-
   //------ search
 
   override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {
