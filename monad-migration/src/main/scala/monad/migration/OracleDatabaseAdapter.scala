@@ -300,4 +300,32 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
       case opt => super.onDeleteSql(opt)
     }
   }
+
+  /**
+   * 对某一列增加注释
+   * @param tableName 表名
+   * @param columnName  列名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  override def commentColumnSql(tableName: String, columnName: String, comment: String): String = {
+    new java.lang.StringBuffer().append("COMMENT ON COLUMN ")
+      .append(quoteTableName(schemaNameOpt, tableName))
+      .append(".").append(columnName.toUpperCase())
+      .append(" IS '").append(comment).append("'").toString();
+  }
+
+  /**
+   * 对表添加注释
+   * @param tableName 表名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  override def commentTableSql(tableName: String, comment: String): String = {
+    new StringBuffer().append("COMMENT ON TABLE ")
+      .append(quoteTableName(schemaNameOpt, tableName))
+      .append(" IS '")
+      .append(comment).append("'").toString
+  }
 }
+

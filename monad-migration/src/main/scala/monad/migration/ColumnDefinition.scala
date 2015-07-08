@@ -161,6 +161,8 @@ abstract class ColumnDefinition {
       throw new UnsupportedOperationException(message)
     }
 
+    checkForComment()
+
     if (this.isInstanceOf[ColumnSupportsLimit]) {
       checkForLimit()
     }
@@ -210,6 +212,33 @@ abstract class ColumnDefinition {
           Array[AnyRef](getColumnName, default.get, value))
       }
       default = Some(value)
+    }
+  }
+
+  /**
+   * 是否设置了注释
+   */
+  private var _commentOpt:Option[String] = None
+
+  /**
+   * 得到注释
+   * @return 得到注释
+   */
+  protected def comment = _commentOpt
+
+  /**
+   * 检查是否配置了注释
+   */
+  private def checkForComment() {
+    for (option @ Comment(comment) <- options) {
+      options = options filter { _ ne option }
+
+      if (_commentOpt.isDefined && _commentOpt.get != comment) {
+        logger.warn("Redefining the comment for the '{}' column " +
+          "from '{}' to '{}'.",
+          Array[AnyRef](getColumnName, _commentOpt.get, comment))
+      }
+      _commentOpt = Some(comment)
     }
   }
 
@@ -356,6 +385,9 @@ abstract class ColumnDefinition {
   }
 
   protected def sql: String
+  final def toCommentSql:Option[String]={
+    _commentOpt.map(c=>getAdapter.commentColumnSql(getTableName,getColumnName,c))
+  }
 
   final def toSql: String = {
     val sb = new java.lang.StringBuilder(512)
@@ -412,6 +444,7 @@ abstract class ColumnDefinition {
         }
       }
     }
+
 
     // Warn for any unused options.
     if (!options.isEmpty) {

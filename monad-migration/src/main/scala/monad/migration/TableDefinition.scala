@@ -33,13 +33,14 @@
 package monad.migration
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /**
  * A builder to define a table.  Its methods add the specified type of
  * column to the table's definition.
  */
 class TableDefinition(adapter: DatabaseAdapter,
-                      tableName: String) {
+                      tableName: String,options:TableOption*) {
   private val columnDefinitions = new mutable.ListBuffer[ColumnDefinition]
 
   /**
@@ -62,6 +63,16 @@ class TableDefinition(adapter: DatabaseAdapter,
         .append(columnDefinition.toSql)
     }
     sb.toString
+  }
+  final def toCommentSql:Array[String]={
+    //table comment
+    val list = new ListBuffer[String]()
+    for (option @ Comment(comment) <- options) {
+      list.append(adapter.commentTableSql(tableName,comment))
+    }
+    list.appendAll(columnDefinitions.flatMap(_.toCommentSql))
+
+    list.toArray
   }
 
   /**

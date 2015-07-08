@@ -77,6 +77,12 @@ class MigrationTests {
   }
 
   @Test
+  def comment(): Unit ={
+    migrator.migrate(InstallAllMigrations,
+     "monad.migration.tests.comment",false)
+  }
+
+  @Test
   def vendor() {
     migrator.migrate(InstallAllMigrations,
       "monad.migration.tests.vendor",

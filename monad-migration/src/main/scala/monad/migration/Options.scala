@@ -172,6 +172,12 @@ object Default {
 }
 
 /**
+ * 注释
+ * @param comment 注释
+ */
+case class Comment(comment:String) extends ColumnOption with TableOption
+
+/**
  * A limit on the size of a column type.
  *
  * @throws IllegalArgumentException if the limit is less than zero;

@@ -81,6 +81,8 @@ object DatabaseAdapter {
  *        are unqualified
  */
 abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
+
+
   protected final val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -411,6 +413,26 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
                      indexName: String): String = {
     "DROP INDEX " +
       quoteTableName(schemaNameOpt, indexName)
+  }
+
+  /**
+   * 对某一列增加注释
+   * @param tableName 表名
+   * @param columnName  列名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  def commentColumnSql(tableName: String, columnName: String, comment: String): String = {
+    throw new UnsupportedOperationException("commentColumnSql unimplemented!")
+  }
+  /**
+   * 对表添加注释
+   * @param tableName 表名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  def commentTableSql(tableName:String,comment: String): String = {
+    throw new UnsupportedOperationException("commentColumnSql unimplemented!")
   }
 
   /**

@@ -194,9 +194,9 @@ abstract class Migration {
    *
    * @param sql the SQL to execute
    */
-  final def execute(sql: String) {
+  final def execute(sql: String*) {
     With.autoClosingStatement(connection.createStatement) { s =>
-      s.execute(sql)
+      sql.foreach(s.execute)
     }
   }
 
@@ -239,7 +239,7 @@ abstract class Migration {
 
   final def createTable(tableName: String,
                         options: TableOption*)(body: TableDefinition => Unit) {
-    val tableDefinition = new TableDefinition(adapter, tableName)
+    val tableDefinition = new TableDefinition(adapter, tableName,options:_*)
 
     body(tableDefinition)
 
@@ -251,6 +251,8 @@ abstract class Migration {
       .append(')')
       .toString
     execute(sql)
+    val commentSql = tableDefinition.toCommentSql
+    execute(commentSql:_*)
   }
 
   final def addColumn(tableName: String,
@@ -267,6 +269,30 @@ abstract class Migration {
       .append(tableDefinition.toSql)
       .toString
     execute(sql)
+    val commentSql = tableDefinition.toCommentSql
+    execute(commentSql:_*)
+  }
+
+  /**
+   * comment column
+   * @param tableName table name
+   * @param columnName column name
+   * @param comment comment
+   */
+  final def commentColumn(tableName:String,
+                          columnName:String,
+                          comment:String): Unit ={
+    execute(adapter.commentColumnSql(tableName,columnName,comment))
+  }
+
+  /**
+   * comment table
+   * @param tableName table name
+   * @param comment comment
+   */
+  final def commentTable(tableName:String,
+                          comment:String): Unit ={
+    execute(adapter.commentTableSql(tableName,comment))
   }
 
   /**
