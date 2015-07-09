@@ -40,7 +40,7 @@ trait RpcSearcherFacade {
    * @param key 键值
    * @return 数据值
    */
-  def findObject(serverId: Short, resourceName: String, key: Array[Byte]): Option[Array[Byte]]
+  def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]]
 
   /**
    * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值

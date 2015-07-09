@@ -157,7 +157,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
       case None =>
         logger.error("[{}] indexer not found",resourceName)
         val shardResult = new ShardResult
-        shardResult.results=Array[(Array[Byte],AnyVal)]()
+        shardResult.results=Array[(Int,Float)]()
         shardResult.maxDoc = 0
         shardResult.totalRecord = 0
 
@@ -175,7 +175,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
       case None =>
         logger.error("[{}] indexer not found",resourceName)
         val shardResult = new ShardResult
-        shardResult.results=Array[(Array[Byte],AnyVal)]()
+        shardResult.results=Array[(Int,Float)]()
         shardResult.maxDoc = 0
         shardResult.totalRecord = 0
 
@@ -209,7 +209,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
     }
   }
 
-  def findObject(serverId: Short, resourceName: String, key: Array[Byte]): Option[Array[Byte]] = {
+  def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]] = {
     directGetObject(resourceName) match{
       case Some(indexer) =>
         indexer.findObject(key)

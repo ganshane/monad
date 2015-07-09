@@ -12,7 +12,7 @@ import org.apache.lucene.util.LongBitSet
  */
 class ShardResult extends Serializable{
     var totalRecord:Int = 0
-    var results:Array[(Array[Byte],AnyVal)] = _
+    var results:Array[(Int,Float)] = _
     var facetArr:Array[String] = _
     var maxScore:Float = _
     var serverHash:Short = 0

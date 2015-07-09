@@ -40,7 +40,7 @@ trait ResourceIndexer
    */
   def removeIndex()
 
-  def findObject(key: Array[Byte]): Option[Array[Byte]]
+  def findObject(key: Int): Option[Array[Byte]]
 
   def findObjectId(idSeq: Int): Option[Array[Byte]]
 

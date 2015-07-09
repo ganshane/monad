@@ -2,8 +2,6 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
-import java.nio.ByteBuffer
-
 import monad.face.MonadFaceConstants
 import monad.face.model.ShardResult
 import monad.face.services.RpcSearcherFacade
@@ -44,9 +42,9 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
    * @param key 键值
    * @return 数据值
    */
-  override def findObject(serverId: Short, resourceName: String, key: Array[Byte]): Option[Array[Byte]] = {
+  override def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]] = {
     val builder = InternalFindDocRequest.newBuilder()
-    builder.setId(ByteBuffer.wrap(key).getInt)
+    builder.setId(key)
     builder.setResourceName(resourceName)
     val future = rpcClient.writeMessageWithBlocking(MonadFaceConstants.MACHINE_NODE_FORMAT.format(serverId), InternalFindDocRequest.cmd, builder.build)
     val resultCommand = future.get

@@ -299,10 +299,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  def findObject(key: Array[Byte]) = {
-    val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, DataTypeUtils.convertAsInt(key));
+  def findObject(key: Int) = {
+    val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, key)
     val value = nosqlOpt().get.Get(nosqlKey)
-    if (value != null) Some(value) else None
+    Option(value)
   }
 
   override def toString = {

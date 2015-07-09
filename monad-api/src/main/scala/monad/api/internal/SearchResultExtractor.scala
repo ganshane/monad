@@ -139,9 +139,11 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
     val json = new JsonObject
     //查询某一具体数据
     if (searchRequest.objectId != null) {
-      val serverHash: Short = DataTypeUtils.convertAsShort(searchRequest.objectId)
-      val objId = new Array[Byte](4)
-      System.arraycopy(searchRequest.objectId, 2, objId, 0, 4)
+      val buffer = ByteBuffer.wrap(searchRequest.objectId)
+      val serverHash: Short = buffer.getShort
+      //DataTypeUtils.convertAsShort(searchRequest.objectId)
+      //System.arraycopy(searchRequest.objectId, 2, objId, 0, 4)
+      val objId = buffer.getInt
 
       val row = findData(searchRequest, serverHash, objId, highlighterObj)
       row match {
@@ -190,13 +192,13 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
   }
 
   //从dfs中抓取数据
-  private def findData(searchRequest: SearchRequest, serverHash: Short, x: Array[Byte], highlighterObj: Option[ResultHighlighter] = None): Option[JsonObject] = {
+  private def findData(searchRequest: SearchRequest, serverHash: Short, x: Int, highlighterObj: Option[ResultHighlighter] = None): Option[JsonObject] = {
     val dbObj = noSQL.findObject(serverHash, searchRequest.resourceName, x)
     if (dbObj.isEmpty) {
-      logger.warn("[{}]fetch from nosql is null with key:{}", searchRequest.resource.name, objectIdCreator.objectIdToString(x))
+      logger.warn("[{}]fetch from nosql is null with key:{}", searchRequest.resource.name, x)
     } else {
       val json = jsonParser.parse(new String(dbObj.get, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
-      val bytes = ByteBuffer.allocate(6).putShort(serverHash).put(x).array()
+      val bytes = ByteBuffer.allocate(6).putShort(serverHash).putInt(x).array()
       json.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, objectIdCreator.objectIdToString(bytes))
       val extractor = searchRequest.dbObjectExtractor.getOrElse(SearchResultExtractor.DefaultDBObjectExtractor)
       return extractor.extract(searchRequest.resource, json, highlighterObj)
