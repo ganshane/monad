@@ -4,7 +4,9 @@ package monad.node.internal
 
 import java.util.concurrent.ExecutorService
 
+import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition
+import monad.face.services.DataTypeUtils
 import monad.node.internal.support.{GlobalObjectIdCache, ObjectIdCacheSupport}
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException
@@ -34,9 +36,13 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
   }
 
   def objectId(docId: Int): Array[Byte] = {
-    val reader = getSubReaderContext(docId)
-    getObjectIdCache(reader.reader().asInstanceOf[SegmentReader]).apply(docId - reader.docBaseInParent)
+    val subReaderContext= getSubReaderContext(docId)
+    val docValues = subReaderContext.reader().getNumericDocValues(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD)
+    val objectId = docValues.get(docId-subReaderContext.docBaseInParent)
+    //TODO 采用直接返回Int
+    DataTypeUtils.convertIntAsArray(objectId.asInstanceOf[Int])
 
+    //getObjectIdCache(reader.reader().asInstanceOf[SegmentReader]).apply(docId - reader.docBaseInParent)
     /*
     if (payloadLength == GlobalObjectIdCache.FULL_LENGTH){
     }else{
