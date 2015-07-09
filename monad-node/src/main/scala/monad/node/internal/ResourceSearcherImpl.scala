@@ -2,7 +2,6 @@
 // site: http://www.ganshane.com
 package monad.node.internal
 
-import java.util.Date
 import java.util.concurrent.ExecutorService
 import javax.naming.SizeLimitExceededException
 
