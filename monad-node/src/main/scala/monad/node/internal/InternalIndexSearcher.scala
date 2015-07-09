@@ -7,13 +7,11 @@ import java.util.concurrent.ExecutorService
 import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition
 import monad.face.services.DataTypeUtils
-import monad.node.internal.support.{GlobalObjectIdCache, ObjectIdCacheSupport}
+import monad.node.internal.support.GlobalObjectIdCache
 import monad.node.services.MonadNodeExceptionCode
 import monad.support.services.MonadException
 import org.apache.lucene.index.{IndexReader, LeafReaderContext, SegmentReader}
 import org.apache.lucene.search.IndexSearcher
-
-import scala.collection.JavaConversions._
 
 /**
  * 针对某一资源进行搜索,增加了id缓存的支持
@@ -21,7 +19,8 @@ import scala.collection.JavaConversions._
  */
 class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executor: ExecutorService)
   extends IndexSearcher(reader, executor)
-  with ObjectIdCacheSupport {
+  //with ObjectIdCacheSupport
+  {
   //默认只有数据的Id，为整型
   private val payloadLength = 4
   /*
@@ -31,9 +30,11 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
   }
   */
 
+  /*
   for (readerContext <- leafContexts) {
     loadObjectIdWithLocalCache(rd.name, readerContext.reader().asInstanceOf[SegmentReader])
   }
+  */
 
   def objectId(docId: Int): Array[Byte] = {
     val subReaderContext= getSubReaderContext(docId)
@@ -69,11 +70,12 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
 
   def analyticObjectId(reader: SegmentReader, docId: Int): Int = {
     if (payloadLength != GlobalObjectIdCache.FULL_LENGTH) throw new MonadException("object id must 8,", MonadNodeExceptionCode.INVALID_INDEX_PAYLOAD)
-    getObjectIdCache(reader).getAnalyticObjectId(docId)
+    //getObjectIdCache(reader).getAnalyticObjectId(docId)
+    throw new UnsupportedOperationException("analytic object id not supported!")
   }
 
   //得到payload的字节长度
-  protected override def getPayloadBytesLength = payloadLength
+  protected def getPayloadBytesLength = payloadLength
 
   private def findObjectIdColumn: Boolean = {
     val it = rd.properties.iterator()
