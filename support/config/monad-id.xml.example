@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+   Copyright 2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<monad_id>
+  <log_file>${server.home}/log/monad.sync.log</log_file>
+  <local_store_dir>${server.home}/config/local.sync</local_store_dir>
+  <rpc>
+    <bind>127.0.0.1:5559</bind>
+  </rpc>
+  <zk>
+    <address>127.0.0.1:3333</address>
+  </zk>
+  <id>
+    <nosql>
+      <!-- 数据存放路径 -->
+      <path>${server.home}/data/db-sync</path>
+      <!-- nosql 缓存大小,单位:MB -->
+      <cache_size_mb>8</cache_size_mb>
+    </nosql>
+  </id>
+</monad_id>

@@ -1,12 +1,4 @@
-package monad.
-
-rpc
-
-.
-
-protocol
-
-;
+package monad.rpc.protocol;
 
 option optimize_for = SPEED;
 
@@ -14,10 +6,16 @@ option java_package = "monad.rpc.protocol";
 
 option java_outer_classname = "CommandProto";
 
+enum CommandStatus {
+  OK = 1;
+  FAIL = 2;
+}
 message BaseCommand {
   extensions 100 to max;
 
   required int64 task_id = 1;
+  optional CommandStatus status = 2 [default = OK];
+  optional string msg = 3;
   /**
     internal_sync#SyncRequest  101
     internal_sync#SyncResponse 102
@@ -27,5 +25,9 @@ message BaseCommand {
     internal_search#InternalSearchResponse 106
     internal_find_doc#InternalFindDocRequest 107
     internal_find_doc#InternalFindDocResponse 108
+    internal_id#AddIdRequest 109
+    internal_id#AddIdResponse 110
+    internal_id#GetIdLabelRequest 111
+    internal_id#GetIdLabelResponse 112
    */
 }

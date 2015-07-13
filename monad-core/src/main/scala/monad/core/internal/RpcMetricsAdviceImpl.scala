@@ -101,6 +101,11 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
           metricsResponse.mark()
           response.writeMessage(commandRequest, extension, value)
         }
+
+        override def writeErrorMessage[T](commandRequest: BaseCommand, message: String): ChannelFuture = {
+          metricsResponse.mark()
+          response.writeErrorMessage(commandRequest,message)
+        }
       }
       invocation.setParameter(1, newResponse)
 

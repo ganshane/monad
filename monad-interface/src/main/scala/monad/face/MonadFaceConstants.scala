@@ -71,6 +71,7 @@ object MonadFaceConstants {
 
   final val MACHINE_SYNC = MonadCoreConstants.MACHINES + "/sync"
   final val MACHINE_NODES = MonadCoreConstants.MACHINES + "/nodes"
+  final val MACHINE_ID = MonadCoreConstants.MACHINES + "/id"
   final val MACHINE_NODE_FORMAT = MACHINE_NODES + "/s-%s"
 
   //http://bigtext.org/?font=smslant&text=MONAD

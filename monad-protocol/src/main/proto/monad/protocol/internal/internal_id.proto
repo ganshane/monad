@@ -1,0 +1,42 @@
+/**
+ * 查询最大文档数的接口
+ */
+package monad.protocol.internal;
+
+import "monad/rpc/protocol/command.proto";
+
+option optimize_for = SPEED;
+
+option java_package = "monad.protocol.internal";
+
+option java_outer_classname = "InternalIdProto";
+enum IdCategory{
+  person = 1;
+  car = 2;
+}
+message AddIdRequest {
+  extend monad.rpc.protocol.BaseCommand {
+    optional AddIdRequest cmd = 109;
+  }
+  required IdCategory category = 1;
+  required string label = 2;
+}
+message AddIdResponse {
+  extend monad.rpc.protocol.BaseCommand {
+    optional AddIdResponse cmd = 110;
+  }
+  required int32 ord = 2;
+}
+message GetIdLabelRequest {
+  extend monad.rpc.protocol.BaseCommand {
+    optional GetIdLabelRequest cmd = 111;
+  }
+  required IdCategory category = 1;
+  required int32 ord = 2;
+}
+message GetIdLabelResponse {
+  extend monad.rpc.protocol.BaseCommand {
+    optional GetIdLabelResponse cmd = 112;
+  }
+  required string label = 2;
+}
