@@ -186,6 +186,10 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
 
   private class CommandClientHandler extends SimpleChannelUpstreamHandler {
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
+      /**
+       *  TODO 如何统一处理command返回错误信息？？
+       *  发送的handler需要等待返回结果，如何通知handler已经返回
+       */
       val command = e.getMessage.asInstanceOf[BaseCommand]
       //针对多个任务异步执行需要merger的支持
       val task = AsyncTaskMonitor.findTask(command.getTaskId)
