@@ -39,6 +39,11 @@
   </xs:complexType>
   <xs:complexType name="idType">
     <xs:sequence>
+      <xs:element type="xs:string" name="groups_supported" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>支持的组，用半角逗号分隔</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element type="nosqlType" name="nosql" minOccurs="1" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>配置节点数据保存的策略</xs:documentation>

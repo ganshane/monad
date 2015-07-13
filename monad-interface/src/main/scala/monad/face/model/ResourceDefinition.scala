@@ -146,15 +146,12 @@ object ResourceDefinition {
     @XmlAttribute(name = "index_type")
     var indexType: IndexType = IndexType.Text
     /** 是否为主键 **/
-    @deprecated(since = "3.2.1", message = "将在4.0中删除此属性，参考 mark 属性定义")
     @XmlAttribute(name = "primary_key")
     var primaryKey: Boolean = _
     /** 是否为增量列 **/
-    @deprecated(since = "3.2.1", message = "将在4.0中删除此属性，参考 mark 属性定义")
     @XmlAttribute(name = "modify_key")
     var modifyKey: Boolean = _
     /** 是否为默认查询字段 **/
-    @deprecated(since = "3.2.1", message = "将在4.0中删除此属性，参考 mark 属性定义")
     @XmlAttribute(name = "default_query")
     var defaultQuery: Boolean = _
     /** 查询类型 **/
@@ -180,10 +177,16 @@ object ResourceDefinition {
             mark=5,那么二进制是 101 那么代表是主键字段，也是默认查询
             mark=12,那么二进制是 1100 那么代表是默认查询字段，也是身份证号码字段
       */
+    @deprecated(since = "5.1",message = "使用object_category进行代替")
     @XmlAttribute(name = "mark")
     var mark: Int = 0
     @XmlAttribute(name = "boost")
     var boost: Float = 1.0f
+    @XmlAttribute(name = "object_category")
+    var objectCategory: ObjectCategory = _
+
+
+
     //仅仅方便在数据同步时候得到设置的编码
     var resourceDefinition: ResourceDefinition = _
   }
@@ -324,4 +327,20 @@ class ResourceDefinition {
    * 加入一个动态特征资源属性
    */
   def addDynamicProperty(property: ResourceTraitProperty) = dynamicType.properties.add(property)
+  lazy val categoryProperty:Option[(Int,ResourceProperty)] = findObjectColumn()
+  //TODO cache
+  private def findObjectColumn():Option[(Int,ResourceProperty)]={
+    var ret:Option[(Int,ResourceProperty)] = None
+    val it = properties.iterator()
+    var index = 0
+    while(it.hasNext && ret.isEmpty){
+      val rp = it.next()
+      if(rp.objectCategory != null){
+        ret = Some((index,rp))
+      }
+      index += 1
+    }
+
+    ret
+  }
 }

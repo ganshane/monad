@@ -1,9 +1,10 @@
 package monad.id.internal
 
+import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
+import monad.id.config.MonadIdConfig
 import monad.id.services.IdService
 import monad.protocol.internal.InternalIdProto.{AddIdRequest, AddIdResponse, GetIdLabelRequest, GetIdLabelResponse}
-import monad.rpc.config.RpcBindSupport
 import monad.rpc.model.RpcServerLocation
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
@@ -58,13 +59,18 @@ object IdMessageFilter {
     }
   }
 }
-class IdRpcServerListener(zk: ZookeeperTemplate, rpc: RpcBindSupport) extends RpcServerListener {
+class IdRpcServerListener(zk: ZookeeperTemplate, config: MonadIdConfig) extends RpcServerListener {
   override def afterStop(): Unit = ()
 
   override def afterStart(): Unit = {
-    val rpcServerLocation = RpcServerLocation.exposeRpcLocation(rpc.rpc)
-    zk.createEphemeralPathWithStringData(
-      MonadFaceConstants.MACHINE_ID,
-      Some(rpcServerLocation.toJSON.toCompactString))
+    val rpcServerLocation = RpcServerLocation.exposeRpcLocation(config.rpc)
+    if(config.id.groups != null){
+      config.id.groups.split(",").foreach{g=>
+        zk.createEphemeralPathWithStringData(
+          MonadCoreConstants.GROUPS_PATH+"/"+g+
+            MonadFaceConstants.MACHINE_ID,
+          Some(rpcServerLocation.toJSON.toCompactString))
+      }
+    }
   }
 }

@@ -29,5 +29,7 @@ message BaseCommand {
     internal_id#AddIdResponse 110
     internal_id#GetIdLabelRequest 111
     internal_id#GetIdLabelResponse 112
+    internal_id#IdSearchRequest 113
+    internal_id#IdSearchResponse 114
    */
 }

@@ -61,6 +61,13 @@
       <xs:enumeration value="Between"/>
     </xs:restriction>
   </xs:simpleType>
+  <!-- object category type -->
+  <xs:simpleType name="categoryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Person"/>
+      <xs:enumeration value="Car"/>
+    </xs:restriction>
+  </xs:simpleType>
   <!-- 索引部分的定义 -->
   <xs:complexType name="indexType">
     <xs:sequence>
@@ -205,6 +212,11 @@
         <xs:attribute type="xs:float" name="boost" use="optional">
           <xs:annotation>
             <xs:documentation>用来调整某一字段的影响力,设置超过1，将使得改字段的影响力加重</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="categoryType" name="object_category" use="optional">
+          <xs:annotation>
+            <xs:documentation>设置对象的类别，此字段标记对象属于那种类别</xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>

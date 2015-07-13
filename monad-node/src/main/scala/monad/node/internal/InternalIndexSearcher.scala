@@ -6,10 +6,7 @@ import java.util.concurrent.ExecutorService
 
 import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition
-import monad.node.internal.support.GlobalObjectIdCache
-import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
-import org.apache.lucene.index.{IndexReader, LeafReaderContext, SegmentReader}
+import org.apache.lucene.index.{IndexReader, LeafReader, LeafReaderContext}
 import org.apache.lucene.search.IndexSearcher
 
 /**
@@ -20,8 +17,6 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
   extends IndexSearcher(reader, executor)
   //with ObjectIdCacheSupport
   {
-  //默认只有数据的Id，为整型
-  private val payloadLength = 4
   /*
   //如果分析的话，加上数据的hash值
   if (findObjectIdColumn) {
@@ -66,23 +61,13 @@ class InternalIndexSearcher(reader: IndexReader, rd: ResourceDefinition, executo
     leafContexts.get(size - 1)
   }
 
-  def analyticObjectId(reader: SegmentReader, docId: Int): Int = {
-    if (payloadLength != GlobalObjectIdCache.FULL_LENGTH) throw new MonadException("object id must 8,", MonadNodeExceptionCode.INVALID_INDEX_PAYLOAD)
-    //getObjectIdCache(reader).getAnalyticObjectId(docId)
-    throw new UnsupportedOperationException("analytic object id not supported!")
-  }
-
-  //得到payload的字节长度
-  protected def getPayloadBytesLength = payloadLength
-
-  private def findObjectIdColumn: Boolean = {
-    val it = rd.properties.iterator()
-    while (it.hasNext) {
-      if ((it.next().mark & 8) == 8) {
-        return true
-      }
+  def analyticObjectId(reader: LeafReader, docId: Int): Int = {
+    val docValues = reader.getNumericDocValues(MonadFaceConstants.OID_FILED_NAME)
+    if(docValues == null){
+     0
     }
-    false
+    else
+      docValues.get(docId).toInt
   }
 }
 

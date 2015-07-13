@@ -1,13 +1,12 @@
 // Copyright 2015 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 package monad.api.internal
+//package org.apache.lucene.util
 
 import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.util.zip.DeflaterOutputStream
 
 import monad.api.MonadApiConstants
-import monad.face.model.IdShardResultCollect
+import monad.face.model.IdShardResult
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, Response}
 
@@ -15,8 +14,8 @@ import org.apache.tapestry5.services.{ComponentEventResultProcessor, Response}
  * 针对ID搜索返回的结果进行处理
  * @author jcai
  */
-class IdShardResultCollectResultProcessor(response: Response) extends ComponentEventResultProcessor[IdShardResultCollect] {
-  def processResultValue(collect: IdShardResultCollect) {
+class IdShardResultResultProcessor(response: Response) extends ComponentEventResultProcessor[IdShardResult] {
+  def processResultValue(collect: IdShardResult) {
     var os: OutputStream = null;
 
     // The whole point is that the response is in the hands of the StreamResponse;
@@ -29,6 +28,7 @@ class IdShardResultCollectResultProcessor(response: Response) extends ComponentE
     try {
 
       response.setHeader(MonadApiConstants.HEADER_ACCESS_CONTROL_ALLOW, "*")
+      /*
       response.setHeader(MonadApiConstants.HEADER_NODE_ALL, collect.nodesAll.toString)
       response.setHeader(MonadApiConstants.HEADER_NODE_SUCCESS, collect.nodesSuccess.toString)
       if (collect.nodesSuccessInfo != null)
@@ -49,12 +49,24 @@ class IdShardResultCollectResultProcessor(response: Response) extends ComponentE
       }
       response.setHeader(MonadApiConstants.HEADER_REGIONS, regions.mkString(","))
       response.setHeader(MonadApiConstants.HEADER_STARTS, idStarts.mkString(","))
+      */
 
-      os = new DeflaterOutputStream(response.getOutputStream("application/octet-stream"))
+      os = response.getOutputStream("text/plain")
+      os.write(("size:"+collect.data.cardinality()).getBytes)
 
+      //os = new DeflaterOutputStream(response.getOutputStream("application/octet-stream"))
+      //BitSetUtils.serialize(collect.data,os)
+
+      /*
       val byteBuffer = ByteBuffer.allocate(8)
       for ((shardResult, index) <- collect.results.view.zipWithIndex) {
         val value = shardResult.data
+        val v1= value.length()
+        val v2= value.bits
+        val v3= value.indices
+        val v4= value.nonZeroLongCount
+        val v5= value.ramBytesUsed()
+        /*
         //TODO 编译错误
         val len = 0 //value.getNumWords
         val bits = value.getBits
@@ -65,7 +77,9 @@ class IdShardResultCollectResultProcessor(response: Response) extends ComponentE
           os.write(byteBuffer.array())
           //writeLong(os,bits(i))
         }
+        */
       }
+      */
 
       os.flush()
       os.close()

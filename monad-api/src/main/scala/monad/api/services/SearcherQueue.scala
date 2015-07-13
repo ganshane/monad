@@ -8,6 +8,7 @@ package monad.api.services
 
 
 import monad.api.model.SearchResult
+import monad.face.model.IdShardResult
 import monad.support.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.search.highlight.Highlighter
@@ -38,7 +39,7 @@ trait SearcherQueue extends ServiceLifecycle {
    */
   def search(q: String, start: Int, offset: Int, sortStr: String): SearchResult
 
-  //def idSearch(q: String): IdShardResult
+  def idSearch(q: String): IdShardResult
 
   /**
    * 频次分析

@@ -89,31 +89,28 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
   private def internalSearch(searchResults: ShardResult, start: Int, offset: Int): SearchResult = {
     var results: Array[ShardResult] = null
     var result: SearchResult = null
-    if (searchResults.isInstanceOf[ShardResultCollect]) {
-      //集群查询情况下读取所有的值
-      val shardResults = searchResults.asInstanceOf[ShardResultCollect]
-      results = shardResults.shardResults
-      result = SearchResult.merge(start, offset, results.filterNot(_ == null))
-      result.nodeAll = shardResults.nodesAll
-      result.nodeSuccess = shardResults.nodesSuccess
-      result.nodeSuccessInfo = shardResults.nodesSuccessInfo
-      result.nodeError = shardResults.nodesError
-    } else {
-      results = Array(searchResults)
-      result = SearchResult.merge(start, offset, results.filterNot(_ == null))
-      result.nodeAll = 1
-      result.nodeSuccess = 1
+    searchResults match {
+      case shardResults: ShardResultCollect =>
+        results = shardResults.shardResults
+        result = SearchResult.merge(start, offset, results.filterNot(_ == null))
+        result.nodeAll = shardResults.nodesAll
+        result.nodeSuccess = shardResults.nodesSuccess
+        result.nodeSuccessInfo = shardResults.nodesSuccessInfo
+        result.nodeError = shardResults.nodesError
+      case _ =>
+        results = Array(searchResults)
+        result = SearchResult.merge(start, offset, results.filterNot(_ == null))
+        result.nodeAll = 1
+        result.nodeSuccess = 1
 
     }
 
     result
   }
 
-  /*
   def idSearch(q: String) = {
     resourceSearcher.searchObjectId(rd.name, q)
   }
-  */
 
   def createHighlighter(q: String): (Highlighter, Analyzer) = {
     val parser = new MultiFieldQueryParser(this.defaultSearchFields, analyzer)

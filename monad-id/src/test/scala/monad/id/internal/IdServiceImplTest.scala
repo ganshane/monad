@@ -40,9 +40,9 @@ class IdServiceImplTest {
         println(i+ "qps:"+(i*1000.0)/(end-start))
       }
       val person = "413028198009121514"+i
-      val ordOpt = idService.getOrAddId(IdCategory.person, person)
+      val ordOpt = idService.getOrAddId(IdCategory.Person, person)
       Assert.assertTrue(ordOpt.isDefined)
-      Assert.assertEquals(person, idService.getIdLabel(IdCategory.person, ordOpt.get).get)
+      Assert.assertEquals(person, idService.getIdLabel(IdCategory.Person, ordOpt.get).get)
     }
 
     idService.shutdown()

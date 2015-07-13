@@ -11,5 +11,5 @@ import org.apache.tapestry5.ioc.annotations.EagerLoad
  */
 @EagerLoad
 class IdZookeeperTemplate(config:ZkClientConfigSupport)
-  extends ZookeeperTemplate(config.zk.address,Some(config.zk.root),config.zk.timeoutInMills){
+  extends ZookeeperTemplate(config.zk.address,None,config.zk.timeoutInMills){
 }

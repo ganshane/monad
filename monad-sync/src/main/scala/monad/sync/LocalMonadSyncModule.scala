@@ -4,7 +4,7 @@ package monad.sync
 
 import com.google.protobuf.ExtensionRegistry
 import monad.face.services.ResourceDefinitionLoaderListener
-import monad.protocol.internal.InternalSyncProto
+import monad.protocol.internal.{InternalIdProto, InternalSyncProto}
 import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.sync.internal.{ResourceImporterManagerImpl, SyncMessageFilter, SyncRpcServerListener}
 import monad.sync.services.ResourceImporterManager
@@ -42,6 +42,7 @@ object LocalMonadSyncModule {
     configuration.add(new ProtobufExtensionRegistryConfiger {
       override def config(registry: ExtensionRegistry): Unit = {
         InternalSyncProto.registerAllExtensions(registry)
+        InternalIdProto.registerAllExtensions(registry)
       }
     })
   }

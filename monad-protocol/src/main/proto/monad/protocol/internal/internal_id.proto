@@ -11,8 +11,8 @@ option java_package = "monad.protocol.internal";
 
 option java_outer_classname = "InternalIdProto";
 enum IdCategory{
-  person = 1;
-  car = 2;
+  Person = 1;
+  Car = 2;
 }
 message AddIdRequest {
   extend monad.rpc.protocol.BaseCommand {
@@ -39,4 +39,20 @@ message GetIdLabelResponse {
     optional GetIdLabelResponse cmd = 112;
   }
   required string label = 2;
+}
+
+message IdSearchRequest{
+  extend monad.rpc.protocol.BaseCommand {
+    optional IdSearchRequest cmd = 113;
+  }
+  required string resource_name = 1;
+  required string q = 2;
+}
+message IdSearchResponse{
+  extend monad.rpc.protocol.BaseCommand {
+    optional IdSearchResponse cmd = 114;
+  }
+  //该结果的分区id
+  required int32 partition_id = 1;
+  optional bytes bitset = 2;
 }

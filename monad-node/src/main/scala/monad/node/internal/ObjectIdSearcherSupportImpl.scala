@@ -5,11 +5,11 @@ package monad.node.internal
 import javax.naming.SizeLimitExceededException
 
 import monad.face.config.IndexConfigSupport
+import monad.face.internal.MonadSparseFixedBitSet
 import monad.face.model.IdShardResult
 import monad.node.internal.support.SearcherManagerSupport
-import org.apache.lucene.index.{LeafReaderContext, SegmentReader}
-import org.apache.lucene.search.{Scorer, SimpleCollector}
-import org.apache.lucene.util.LongBitSet
+import org.apache.lucene.index.LeafReaderContext
+import org.apache.lucene.search.{Collector, Scorer, SimpleCollector}
 import org.slf4j.LoggerFactory
 
 /**
@@ -38,7 +38,9 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
     doInSearcher { s =>
       originCollector = new IdSearchCollector(s)
       try {
-        val collector = new ResultLimitCollector(new TimeOutCollector(originCollector), getIndexConfig.index.queryMaxLimit)
+        var collector:Collector = new TimeOutCollector(originCollector)
+        if(getIndexConfig.index.queryMaxLimit > 0)
+          collector = new ResultLimitCollector(collector,getIndexConfig.index.queryMaxLimit)
         s.search(query, collector)
       } catch {
         case e: SizeLimitExceededException =>
@@ -49,20 +51,17 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
     val time = System.currentTimeMillis() - start
     val resultSize = originCollector.result.cardinality()
     logger.info("object id query :{},size:{} time:" + time, q, resultSize)
-    if (resultSize > 0) {
-      val idShardResult = new IdShardResult
-      idShardResult.data = originCollector.result
-      idShardResult.region = regionId
-      return idShardResult
-    }
-    else
-      return null
+    val idShardResult = new IdShardResult
+    idShardResult.data = originCollector.result
+    idShardResult.region = regionId
+
+    idShardResult
   }
 
   private class IdSearchCollector(s: InternalIndexSearcher) extends SimpleCollector {
     private var context: LeafReaderContext = _
-    //TODO 优化采用 FIXEDBITSET
-    private[internal] val result = new LongBitSet(102400)
+    //TODO 最大值从id服务器中读取
+    private[internal] val result = new MonadSparseFixedBitSet(100000)
 
 
     override def doSetNextReader(context: LeafReaderContext): Unit = {
@@ -74,13 +73,13 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
 
     def collect(doc: Int) {
       val idSeq = readObjectId(doc)
-      if (idSeq <= 0) return
       //logger.debug("doc:{} idseq:{}",doc,idSeq)
+      if (idSeq <= 0) return
       result.set(idSeq)
     }
 
     private def readObjectId(doc: Int): Int = {
-      s.analyticObjectId(this.context.reader().asInstanceOf[SegmentReader], doc)
+      s.analyticObjectId(this.context.reader(), doc)
     }
 
     override def needsScores(): Boolean = false

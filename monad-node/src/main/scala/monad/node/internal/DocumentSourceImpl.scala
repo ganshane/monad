@@ -9,8 +9,6 @@ import monad.face.model.IndexEvent
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.services.ResourceDefinitionConversions._
 import monad.face.services.{DocumentCreator, DocumentSource}
-import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
 import org.apache.lucene.document.{Document, Field, _}
 import org.slf4j.LoggerFactory
 
@@ -23,6 +21,7 @@ import scala.collection.JavaConversions._
 class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) extends DocumentSource {
   //sid field
   private val sidField = new NumericDocValuesField(MonadFaceConstants.OBJECT_ID_PAYLOAD_FIELD, 0)
+  private val oidField = new NumericDocValuesField(MonadFaceConstants.OID_FILED_NAME, 0)
   private val logger = LoggerFactory getLogger getClass
   private val cacheCreator = new ConcurrentHashMap[String, DocumentCreator]()
   private val idField = new IntField(MonadFaceConstants.OBJECT_ID_FIELD_NAME, 1, IntField.TYPE_NOT_STORED)
@@ -36,16 +35,16 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
     if (creator == null) {
       creator = cacheCreator.get(event.resource.name)
       if (creator == null) {
-        var analyticsIdSeq = -1
+        var analyticsIdSeq:Option[Int] = None
         for ((col, index) <- event.resource.properties.view.zipWithIndex) {
-          if ((col.mark & 8) == 8) {
-            if (analyticsIdSeq >= 0) {
+          if (col.objectCategory != null) {
+            if (analyticsIdSeq.isDefined) {
               logger.warn("[{}] duplicate analytics id decleared", event.resource.name)
             }
-            analyticsIdSeq = index
+            analyticsIdSeq = Some(index)
           }
         }
-        val value = new DefaultDocumentCreator(analyticsIdSeq)
+        val value = new DefaultDocumentCreator()
         creator = cacheCreator.putIfAbsent(event.resource.name, value)
         if (creator == null)
           creator = value
@@ -55,6 +54,12 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
     //设置主键字段
     idField.setIntValue(event.id)
     doc.add(idField)
+
+    if(event.row.has(MonadFaceConstants.OID_FILED_NAME)){
+      val oid = event.row.get(MonadFaceConstants.OID_FILED_NAME).getAsInt
+      oidField.setLongValue(oid)
+      doc.add(oidField)
+    }
 
     //用来快速更新
     sidField.setLongValue(event.id)
@@ -71,7 +76,7 @@ class DocumentSourceImpl(factories: java.util.Map[String, DocumentCreator]) exte
   }
 }
 
-class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
+class DefaultDocumentCreator extends DocumentCreator {
   private val cachedFields = scala.collection.mutable.Map[String, (Field,Option[Field])]()
   private var version = -1
 
@@ -80,9 +85,6 @@ class DefaultDocumentCreator(analyticsIdSeq: Int) extends DocumentCreator {
       //检查一下version
       cachedFields.clear()
       version = event.version
-    }
-    if (analyticsIdSeq >= 0 && event.objectId.isEmpty) {
-      throw new MonadException("[" + event.resource.name + "] object id is null!", MonadNodeExceptionCode.OBJECT_ID_IS_NULL);
     }
     val doc = new Document
 

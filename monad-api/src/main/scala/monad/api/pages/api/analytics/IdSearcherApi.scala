@@ -2,6 +2,8 @@
 // site: http://www.ganshane.com
 package monad.api.pages.api.analytics
 
+import java.util.Date
+
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
 import monad.face.services.ResourceDefinitionLoader
@@ -29,7 +31,6 @@ class IdSearcherApi {
   private var messages: Messages = _
 
   def onActivate() = {
-    /*
     val searchRequest = new SearchRequest
     searchRequest.includeData = false
     //search query keyword
@@ -42,8 +43,7 @@ class IdSearcherApi {
     val end = new Date().getTime
     logger.info("[" + searchRequest.resourceName + "] idsearch q:[{}],time:{}ms", q, (end - begin))
 
-    return r.asInstanceOf[IdShardResultCollect]
-    */
+    r
   }
 
   protected def initResource(searchRequest: SearchRequest) {

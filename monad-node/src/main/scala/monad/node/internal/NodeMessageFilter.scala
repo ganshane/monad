@@ -3,8 +3,9 @@
 package monad.node.internal
 
 import com.google.protobuf.ByteString
-import monad.face.services.RpcSearcherFacade
+import monad.face.services.{BitSetUtils, RpcSearcherFacade}
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
+import monad.protocol.internal.InternalIdProto.{IdSearchRequest, IdSearchResponse}
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
 import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
 import monad.rpc.protocol.CommandProto.BaseCommand
@@ -81,6 +82,24 @@ object NodeMessageFilter {
       }
 
       response.writeMessage(commandRequest, InternalFindDocResponse.cmd, findDocResponse.build())
+
+      true
+    }
+  }
+
+  class InternalIdSearchRequestMessageFilter(searcher:RpcSearcherFacade) extends RpcServerMessageFilter{
+    override def handle(commandRequest: BaseCommand, response: CommandResponse, handler: RpcServerMessageHandler): Boolean = {
+      if (!commandRequest.hasExtension(IdSearchRequest.cmd)) {
+        return handler.handle(commandRequest, response)
+      }
+
+      val request = commandRequest.getExtension(IdSearchRequest.cmd)
+      val result = searcher.searchObjectId(request.getResourceName,request.getQ)
+      val idSearchResponse = IdSearchResponse.newBuilder()
+      idSearchResponse.setPartitionId(result.region)
+      val bs = ByteString.copyFrom(BitSetUtils.serialize(result.data))
+      idSearchResponse.setBitset(bs)
+      response.writeMessage(commandRequest,IdSearchResponse.cmd,idSearchResponse.build())
 
       true
     }

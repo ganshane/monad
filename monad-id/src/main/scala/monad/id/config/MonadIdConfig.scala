@@ -31,6 +31,8 @@ class IdConfigSupport {
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdConfig")
 class IdConfig {
+  @XmlElement(name = "groups_supported")
+  var groups:String = _
   @XmlElement(name = "nosql")
   var noSql: NoSqlConfig = new NoSqlConfig
 }

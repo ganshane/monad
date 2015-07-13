@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.face.services
 
-import monad.face.model.ShardResult
+import monad.face.model.{IdShardResult, ShardResult}
 
 /**
  * nosql 的调用
@@ -30,8 +30,7 @@ trait RpcSearcherFacade {
    * @param q 搜索条件
    * @return 搜索比中结果
    */
-  //@Rpc(mode="all",merge = "IdSearchMerger",ignoreTimeout = true)
-  //def searchObjectId(resourceName:String,q:String):IdShardResult
+  def searchObjectId(resourceName:String,q:String):IdShardResult
 
   /**
    * 查找对象的详细信息

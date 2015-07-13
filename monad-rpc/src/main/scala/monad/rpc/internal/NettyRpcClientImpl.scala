@@ -117,14 +117,7 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
       val channelFutureOpt = writeMessage(s, message)
       channelFutureOpt match {
         case Some(f) =>
-          //当在客户端写入失败，则应该减少计数器,TODO 处理服务器端错误或者Channel关闭
-          f.addListener(new ChannelFutureListener {
-            override def operationComplete(channelFuture: ChannelFuture): Unit = {
-              if (!channelFuture.isSuccess) {
-                future.countDown()
-              }
-            }
-          })
+          future.monitorChannel(f)
         case None =>
           future.countDown()
       }

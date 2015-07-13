@@ -4,13 +4,18 @@ package monad.api.internal
 
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.locks.ReentrantLock
 
-import monad.face.model.{ShardResult, ShardResultCollect}
+import monad.face.internal.MonadSparseFixedBitSet
+import monad.face.model.{IdShardResult, ShardResult, ShardResultCollect}
+import monad.face.services.BitSetUtils
+import monad.protocol.internal.InternalIdProto.IdSearchResponse
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryResponse
 import monad.protocol.internal.InternalSearchProto.InternalSearchResponse
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services._
 import monad.support.services.LoggerSupport
+import org.apache.lucene.util.BitSetIterator
 import org.jboss.netty.channel.Channel
 
 import scala.collection.mutable.ListBuffer
@@ -22,6 +27,7 @@ import scala.collection.mutable.ListBuffer
  */
 object ApiMessageFilter {
   def createCollectSearchMerger(): RpcClientMerger[ShardResult] = new CollectSearchMerger
+  def createIdSearchMerger(): RpcClientMerger[IdShardResult] = new IdSearchMerger
 
 
   def createMaxdocMerger: RpcClientMerger[Long] = new MaxdocMerger
@@ -79,6 +85,39 @@ object ApiMessageFilter {
     }
 
     override def get: Long = maxdoc.get()
+  }
+
+  private class IdSearchMerger extends RpcClientMerger[IdShardResult] {
+    private var result:MonadSparseFixedBitSet = _
+    private val lock = new ReentrantLock()
+    /**
+     * 处理接受的消息
+     */
+    override def handle(commandRequest: BaseCommand, channel: Channel): Unit = {
+      try{
+        lock.lock()
+        val response = commandRequest.getExtension(IdSearchResponse.cmd)
+        val bitSet= BitSetUtils.deserialize(response.getBitset.asReadOnlyByteBuffer())
+        if(result == null){
+          result = bitSet
+        }else{
+          result.or(new BitSetIterator(bitSet,0))
+        }
+      }finally{
+        lock.unlock()
+      }
+    }
+
+    /**
+     * 得到merge之后的结果
+     * @return merge之后的结果
+     */
+    override def get: IdShardResult = {
+      val ret= new IdShardResult
+      ret.data = result
+
+      ret
+    }
   }
 
 }

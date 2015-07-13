@@ -3,9 +3,10 @@
 package monad.api.internal
 
 import monad.face.MonadFaceConstants
-import monad.face.model.ShardResult
+import monad.face.model.{IdShardResult, ShardResult}
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
+import monad.protocol.internal.InternalIdProto.IdSearchRequest
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
 import monad.rpc.services.RpcClient
@@ -28,6 +29,20 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
 
     builder.setTopN(topN)
     val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createCollectSearchMerger(), InternalSearchRequest.cmd, builder.build())
+    future.get()
+  }
+
+  /**
+   * 搜索对象
+   * @param resourceName 资源名称
+   * @param q 搜索条件
+   * @return 搜索比中结果
+   */
+  override def searchObjectId(resourceName: String, q: String): IdShardResult = {
+    val builder = IdSearchRequest.newBuilder()
+    builder.setResourceName(resourceName)
+    builder.setQ(q)
+    val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createIdSearchMerger(), IdSearchRequest.cmd, builder.build())
     future.get()
   }
 

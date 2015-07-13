@@ -49,7 +49,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
    */
   @PostConstruct
   def start(hub: RegistryShutdownHub) {
-    dbReader = Executors.newFixedThreadPool(syncConfig.sync.db_thread_num + 1, new ThreadFactory {
+    dbReader = Executors.newFixedThreadPool(syncConfig.sync.db_thread_num, new ThreadFactory {
       private val seq = new AtomicInteger(0)
 
       def newThread(p1: Runnable) = {
@@ -60,10 +60,12 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
         t
       }
     })
-    disruptor = new Disruptor[DataEvent](EVENT_FACTORY, buffer, dbReader)
+    disruptor = new Disruptor[DataEvent](EVENT_FACTORY, buffer, Executors.newCachedThreadPool())
     disruptor.handleExceptionsWith(new LogExceptionHandler)
-    disruptor.
-      handleEventsWith(objectLocator.autobuild(classOf[SaveRecordHandler]))
+    val idFindHandler = objectLocator.autobuild(classOf[IdFindHandler])
+    disruptor
+      .handleEventsWithWorkerPool(1.to(3).map(x=>idFindHandler):_*)
+      .handleEventsWith(objectLocator.autobuild(classOf[SaveRecordHandler]))
     disruptor.start()
 
     hub.addRegistryWillShutdownListener(new Runnable {
