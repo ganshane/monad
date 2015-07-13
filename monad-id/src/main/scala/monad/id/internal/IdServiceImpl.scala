@@ -63,8 +63,11 @@ class IdServiceImpl(config:MonadIdConfig) extends IdService with LoggerSupport{
   class NoSQLCategoryIdService(category:IdCategory){
     private val path = new File(config.id.noSql.path,category.toString)
     FileUtils.forceMkdir(path)
-    private val options = new NoSQLOptions()
-    private val nosql = new NoSQLSupport(path.getAbsolutePath,options)
+    private val nosqlOptions= new NoSQLOptions()
+    nosqlOptions.setCache_size_mb(config.id.noSql.cache)
+    nosqlOptions.setWrite_buffer_mb(config.id.noSql.writeBuffer)
+    nosqlOptions.setMax_open_files(config.id.noSql.maxOpenFiles)
+    private val nosql = new NoSQLSupport(path.getAbsolutePath,nosqlOptions)
     private val globalOrd = new AtomicInteger(loadMaxOrd())
     private def loadMaxOrd():Int ={
       val minOrdKey = buildOrdKey(1)

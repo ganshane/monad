@@ -63,8 +63,6 @@ class SyncConfig extends BinlogLengthConfig {
   var nodes: java.util.List[Partition] = new util.ArrayList[Partition]()
   @XmlElement(name = "nosql")
   var noSql: NoSqlConfig = new NoSqlConfig
-  @XmlElement(name = "id_nosql")
-  var idNoSql: NoSqlConfig = _
 }
 
 @XmlAccessorType(XmlAccessType.FIELD)
