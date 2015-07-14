@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 
 /*
@@ -479,134 +478,9 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
         return (i4096 << 12) | (i64 << 6) | (63 - Long.numberOfLeadingZeros(bits));
     }
 
-    /** Return the long bits at the given <code>i64</code> index. */
-    private long longBits(long index, long[] bits, int i64) {
-        if ((index & (1L << i64)) == 0) {
-            return 0L;
-        } else {
-            return bits[Long.bitCount(index & ((1L << i64) - 1))];
-        }
-    }
-
-    private void or(final int i4096, final long index, long[] bits, int nonZeroLongCount) {
-        assert Long.bitCount(index) == nonZeroLongCount;
-        final long currentIndex = indices[i4096];
-        if (currentIndex == 0) {
-            // fast path: if we currently have nothing in the block, just copy the data
-            // this especially happens all the time if you call OR on an empty set
-            indices[i4096] = index;
-            this.bits[i4096] = Arrays.copyOf(bits, nonZeroLongCount);
-            this.nonZeroLongCount += nonZeroLongCount;
-            return;
-        }
-        final long[] currentBits = this.bits[i4096];
-        final long[] newBits;
-        final long newIndex = currentIndex | index;
-        final int requiredCapacity = Long.bitCount(newIndex);
-        if (currentBits.length >= requiredCapacity) {
-            newBits = currentBits;
-        } else {
-            newBits = new long[oversize(requiredCapacity)];
-        }
-        // we iterate backwards in order to not override data we might need on the next iteration if the
-        // array is reused
-        for (int i = Long.numberOfLeadingZeros(newIndex), newO = Long.bitCount(newIndex) - 1;
-             i < 64;
-             i += 1 + Long.numberOfLeadingZeros(newIndex << (i + 1)), newO -= 1) {
-            // bitIndex is the index of a bit which is set in newIndex and newO is the number of 1 bits on its right
-            final int bitIndex = 63 - i;
-            assert newO == Long.bitCount(newIndex & ((1L << bitIndex) - 1));
-            newBits[newO] = longBits(currentIndex, currentBits, bitIndex) | longBits(index, bits, bitIndex);
-        }
-        indices[i4096] = newIndex;
-        this.bits[i4096] = newBits;
-        this.nonZeroLongCount += nonZeroLongCount - Long.bitCount(currentIndex & index);
-    }
-
-    private void or(MonadSparseFixedBitSet other) {
-        for (int i = 0; i < other.indices.length; ++i) {
-            final long index = other.indices[i];
-            if (index != 0) {
-                or(i, index, other.bits[i], Long.bitCount(index));
-            }
-        }
-    }
-
-    /**
-     * {@link #or(DocIdSetIterator)} impl that works best when <code>it</code> is dense
-     */
-    private void orDense(DocIdSetIterator it) throws IOException {
-        assertUnpositioned(it);
-        // The goal here is to try to take advantage of the ordering of documents
-        // to build the data-structure more efficiently
-        // NOTE: this heavily relies on the fact that shifts are mod 64
-        final int firstDoc = it.nextDoc();
-        if (firstDoc == DocIdSetIterator.NO_MORE_DOCS) {
-            return;
-        }
-        int i4096 = firstDoc >>> 12;
-        int i64 = firstDoc >>> 6;
-        long index = 1L << i64;
-        long currentLong = 1L << firstDoc;
-        // we store at most 64 longs per block so preallocate in order never to have to resize
-        long[] longs = new long[64];
-        int numLongs = 0;
-
-        for (int doc = it.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = it.nextDoc()) {
-            final int doc64 = doc >>> 6;
-            if (doc64 == i64) {
-                // still in the same long, just set the bit
-                currentLong |= 1L << doc;
-            } else {
-                longs[numLongs++] = currentLong;
-
-                final int doc4096 = doc >>> 12;
-                if (doc4096 == i4096) {
-                    index |= 1L << doc64;
-                } else {
-                    // we are on a new block, flush what we buffered
-                    or(i4096, index, longs, numLongs);
-                    // and reset state for the new block
-                    i4096 = doc4096;
-                    index = 1L << doc64;
-                    numLongs = 0;
-                }
-
-                // we are on a new long, reset state
-                i64 = doc64;
-                currentLong = 1L << doc;
-            }
-        }
-
-        // flush
-        longs[numLongs++] = currentLong;
-        or(i4096, index, longs, numLongs);
-    }
-
     @Override
     public void or(DocIdSetIterator it) throws IOException {
         throw new UnsupportedOperationException();
-    }
-
-    // AND and AND_NOT do not need much specialization here since this sparse set
-    // is supposed to be used on sparse data and the default AND/AND_NOT impl
-    // (leap frog) is efficient when at least one of the sets contains sparse data
-    public void and(MonadSparseFixedBitSet other) throws IOException {
-        if (other != null) {
-            // if we are merging with another SparseFixedBitSet, a quick win is
-            // to clear up some blocks by only looking at their index. Then the set
-            // is sparser and the leap-frog approach of the parent class is more
-            // efficient. Since SparseFixedBitSet is supposed to be used for sparse
-            // sets, the intersection of two SparseFixedBitSet is likely very sparse
-            final int numCommonBlocks = Math.min(indices.length, other.indices.length);
-            for (int i = 0; i < numCommonBlocks; ++i) {
-                if ((indices[i] & other.indices[i]) == 0) {
-                    this.nonZeroLongCount -= Long.bitCount(this.indices[i]);
-                    this.indices[i] = 0;
-                    this.bits[i] = null;
-                }
-            }
-        }
     }
 
     @Override
