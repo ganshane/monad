@@ -6,6 +6,45 @@
 
 namespace monad{
   const uint32_t NO_MORE_DOCS = UINT32_MAX;
+  const uint32_t MASK_4096 = (1 << 12) - 1;
+  class LeapFrogCallBack{
+  public:
+    virtual void onMatch(int doc) = 0;
+    virtual void finish() {}
+  };
+  class AndLeapFrogCallBack:public LeapFrogCallBack{
+  public:
+    AndLeapFrogCallBack(SparseBitSet* bit_set){
+      _previous = -1;
+      this->_bit_set = bit_set;
+    }
+    virtual void onMatch(int doc) {
+      _bit_set->Clear(_previous + 1, doc);
+      _previous = doc;
+    }
+    virtual void finish() {
+      if ((_previous + 1) < _bit_set->GetLength()) {
+        _bit_set->Clear(_previous + 1, _bit_set->GetLength());
+      }
+    }
+  private:
+    int32_t _previous;
+    SparseBitSet* _bit_set;
+  };
+  class NotLeapFrogCallBack:public LeapFrogCallBack{
+  public:
+    NotLeapFrogCallBack(SparseBitSet* bit_set){
+      this->_bit_set = bit_set;
+    }
+    virtual void onMatch(int doc) {
+      _bit_set->Clear(doc);
+    }
+  private:
+    SparseBitSet* _bit_set;
+  };
+  static uint64_t mask(uint32_t from, uint32_t to) {
+    return ((1ULL << (to - from) << 1) - 1) << from;
+  }
   static uint32_t numberOfTrailingZeros(uint64_t i) {
     // HD, Figure 5-14
     uint32_t x, y;
@@ -229,9 +268,51 @@ namespace monad{
     }
   }
   void SparseBitSet::operator&=(const SparseBitSet &other) {
+    // if we are merging with another SparseFixedBitSet, a quick win is
+    // to clear up some blocks by only looking at their index. Then the set
+    // is sparser and the leap-frog approach of the parent class is more
+    // efficient. Since SparseFixedBitSet is supposed to be used for sparse
+    // sets, the intersection of two SparseFixedBitSet is likely very sparse
+    uint32_t min_len = _blockCount;
+    if(min_len > other._blockCount){
+      min_len = other._blockCount;
+    }
+    for (int i = 0; i < min_len; ++i) {
+      if ((_indices[i] & other._indices[i]) == 0) {
+        _nonZeroLongCount -= bitCount(_indices[i]);
+        _indices[i] = 0;
+        if(_bits[i]){
+          delete _bits[i];
+          _bits[i] = NULL;
+        }
+      }
+    }
+    
+    AndLeapFrogCallBack callback(this);
+    leapFrog(other, callback);
+    
+  }
+  void SparseBitSet::leapFrog(const SparseBitSet& other, LeapFrogCallBack& callback){
+    uint32_t other_doc = other.NextSetBit(0);
+    uint32_t doc = 0;
+    while(true){
+      if(other_doc >= _length){
+        callback.finish();
+        return;
+      }
+      if(doc < other_doc){
+        doc =  NextSetBit(other_doc);
+      }
+      if (doc == other_doc) {
+        callback.onMatch(doc);
+        other_doc = other.NextSetBit(other_doc + 1);
+      } else {
+        other_doc = other.NextSetBit(doc);
+      }
+    }
   }
   /** Return the first document that occurs on or after the provided block index. */
-  uint32_t SparseBitSet::firstDoc(uint32_t i4096) {
+  uint32_t SparseBitSet::firstDoc(uint32_t i4096) const{
     uint64_t index = 0;
     while (i4096 < _blockCount) {
       index = _indices[i4096];
@@ -243,7 +324,10 @@ namespace monad{
     }
     return NO_MORE_DOCS;
   }
-  uint32_t SparseBitSet::NextSetBit(uint32_t i) {
+  uint32_t SparseBitSet::NextSetBit(uint32_t i) const{
+    if(i>=_length){
+      return NO_MORE_DOCS;
+    }
     assert(i < _length);
     int32_t i4096 = i >> 12;
     uint64_t index = _indices[i4096];
@@ -308,5 +392,86 @@ namespace monad{
     i64 = 63 - numberOfLeadingZeros(indexBits);
     uint64_t bits = bitArray->_data[o - 1];
     return (i4096 << 12) | (i64 << 6) | (63 - numberOfLeadingZeros(bits));
+  }
+  void SparseBitSet::removeLong(uint32_t i4096, uint32_t i64, uint64_t index, uint32_t o) {
+    index &= ~(1L << i64);
+    _indices[i4096] = index;
+    if (index == 0) {
+      // release memory, there is nothing in this block anymore
+      if(_bits[i4096])
+        delete _bits[i4096];
+      _bits[i4096] = NULL;
+    } else {
+      uint32_t length = bitCount(index);
+      Uint64Array* bitArray = _bits[i4096];
+      uint64_t* data = bitArray->_data;
+      memcpy(data+o,data+o+1,(length -o)*sizeof(uint64_t));
+      data[length] = 0LLU;
+    }
+    _nonZeroLongCount -= 1;
+  }
+  void SparseBitSet::And(uint32_t i4096, uint32_t i64, uint64_t mask) {
+    uint64_t index = _indices[i4096];
+    if ((index & (1L << i64)) != 0) {
+      // offset of the long bits we are interested in in the array
+      uint32_t o = bitCount(index & ((1L << i64) - 1));
+      uint64_t* data = _bits[i4096]->_data;
+      uint64_t bits = data[o] & mask;
+      if (bits == 0) {
+        removeLong(i4096, i64, index, o);
+      } else {
+        data[o] = bits;
+      }
+    }
+  }
+
+  void SparseBitSet::Clear(uint32_t i) {
+    assert(consistent(i));
+    uint32_t i4096 = i >> 12;
+    uint32_t i64 = i >> 6;
+    And(i4096, i64, ~(1L << i));
+  }
+  void SparseBitSet::clearWithinBlock(uint32_t i4096, uint32_t from, uint32_t to){
+    uint32_t firstLong = from >> 6;
+    uint32_t lastLong = to >> 6;
+
+    if (firstLong == lastLong) {
+      And(i4096, firstLong, ~mask(from, to));
+    } else {
+      assert(firstLong < lastLong);
+      And(i4096, lastLong, ~mask(0, to));
+      for (int i = lastLong - 1; i >= firstLong + 1; --i) {
+        And(i4096, i, 0L);
+      }
+      And(i4096, firstLong, ~mask(from, 63));
+    }
+  }
+
+  void SparseBitSet::Clear(uint32_t from, uint32_t to) {
+    assert(from >= 0);
+    assert(to <= _length);
+    if (from >= to) {
+      return;
+    }
+    uint32_t firstBlock = from >> 12;
+    uint32_t lastBlock = (to - 1) >> 12;
+    if (firstBlock == lastBlock) {
+      clearWithinBlock(firstBlock, from & MASK_4096, (to - 1) & MASK_4096);
+    } else {
+      clearWithinBlock(firstBlock, from & MASK_4096, MASK_4096);
+      for (int i = firstBlock + 1; i < lastBlock; ++i) {
+        _nonZeroLongCount -= bitCount(_indices[i]);
+        _indices[i] = 0;
+        if(_bits[i])
+          delete _bits[i];
+        _bits[i] = NULL;
+      }
+      clearWithinBlock(lastBlock, 0, (to - 1) & MASK_4096);
+    }
+  }
+
+  void SparseBitSet::operator-=(const SparseBitSet &other) {
+    NotLeapFrogCallBack callBack(this);
+    leapFrog(other,callBack);
   }
 }

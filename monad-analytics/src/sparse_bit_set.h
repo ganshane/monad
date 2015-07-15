@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 namespace monad {
+  class LeapFrogCallBack;
   class Uint64Array{
 
   public:
@@ -31,6 +32,7 @@ namespace monad {
   class SparseBitSet {
   public:
     SparseBitSet(uint32_t length);
+    uint32_t GetLength(){return _length;}
     uint32_t Cardinality();
     void Set(uint32_t i);
     bool Get(uint32_t i);
@@ -45,8 +47,11 @@ namespace monad {
     }
     void operator+=(const SparseBitSet& other);
     void operator&=(const SparseBitSet& other);
-    uint32_t NextSetBit(uint32_t i);
+    void operator-=(const SparseBitSet& other);
+    uint32_t NextSetBit(uint32_t i) const;
     uint32_t PreSetBit(uint32_t i);
+    void Clear(uint32_t i);
+    void Clear(uint32_t from, uint32_t to);
 
     virtual ~SparseBitSet();
     
@@ -62,7 +67,11 @@ namespace monad {
     void insertBlock(uint32_t i4096, uint32_t i64, uint32_t i);
     void insertLong(uint32_t i4096, uint32_t i64, uint32_t i, uint64_t index);
     void Or(uint32_t i4096, uint64_t index, Uint64Array* bits, uint32_t nonZeroLongCount);
-    uint32_t firstDoc(uint32_t i4096);
+    void leapFrog(const SparseBitSet& other, LeapFrogCallBack& callback);
+    void removeLong(uint32_t i4096, uint32_t i64, uint64_t index, uint32_t o);
+    void And(uint32_t i4096, uint32_t i64, uint64_t mask);
+    void clearWithinBlock(uint32_t i4096, uint32_t from, uint32_t to);
+    uint32_t firstDoc(uint32_t i4096) const;
     uint64_t longBits(uint64_t index, Uint64Array* bits, uint32_t i64);
     uint32_t lastDoc(uint32_t i4096);
     uint32_t _blockCount;

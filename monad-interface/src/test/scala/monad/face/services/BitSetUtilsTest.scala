@@ -1,7 +1,7 @@
 package monad.face.services
 
 import monad.face.internal.MonadSparseFixedBitSet
-import org.apache.lucene.util.SparseFixedBitSet
+import org.apache.lucene.util.{BitSetIterator, SparseFixedBitSet}
 import org.junit.{Assert, Test}
 
 /**
@@ -14,16 +14,17 @@ class BitSetUtilsTest {
   def test_bitset1: Unit = {
     val bitSet = new SparseFixedBitSet(10000)
     bitSet.set(1000)
-    bitSet.set(2000)
     bitSet.set(3000)
-    bitSet.set(4000)
-    bitSet.set(5000)
-    bitSet.set(6000)
-    bitSet.set(7000)
-    bitSet.set(8000)
-    bitSet.set(9000)
+    val bitSet2 = new SparseFixedBitSet(10000)
+    bitSet2.set(3000)
+    val bitSetIt =new BitSetIterator(bitSet2,1)
 
-    Assert.assertEquals(9000,bitSet.nextSetBit(8001))
+    bitSet.and(bitSetIt);
+
+    Assert.assertTrue(bitSet.get(3000));
+    Assert.assertFalse(bitSet.get(1000));
+
+    //Assert.assertEquals(9000,bitSet.nextSetBit(8001))
   }
   @Test
   def test_bitset: Unit ={
