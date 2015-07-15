@@ -64,7 +64,7 @@ TEST_F(OpenBitSetTest, TestGetSet) {
   ASSERT_FALSE(bit_set.FastGet(index+1));
   bit_set.EnsureCapacityWords(20);
 
-  ASSERT_EQ(4,bit_set.BitCount());
+  ASSERT_EQ(2,bit_set.BitCount());
 }
 TEST_F(OpenBitSetTest, TestRemove) {
   OpenBitSet bit_set(10);

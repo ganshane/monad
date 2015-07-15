@@ -22,6 +22,9 @@ namespace monad{
   int32_t TopBitSetWrapper::BitCount(){
     return _total_doc;
   }
+  BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>* TopBitSetWrapper::Iterator() {
+    return new BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>(this);
+  };
   void TopBitSetWrapper::Commit() {
     std::sort(_data.begin(), _data.end(), SortBitSetRegion<TopBitSet>);
     std::vector<BitSetRegion<TopBitSet>*>::iterator it = _data.begin();

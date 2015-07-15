@@ -2,10 +2,9 @@
 #include <vector>
 #include <sparse_bit_set.h>
 
+#include "bit_set_operator.h"
 #include "open_bit_set.h"
-#include "open_bit_set_operator.h"
 #include "sparse_bit_set_iterator.h"
-#include "sparse_bit_set_operator.h"
 #include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
 using namespace monad;

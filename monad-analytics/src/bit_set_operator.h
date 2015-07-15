@@ -7,6 +7,7 @@
 #include "priority_queue.h"
 #include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
+#include "sparse_bit_set.h"
 
 namespace monad{
   /**
@@ -266,5 +267,17 @@ namespace monad{
     }
     return result;
   }
+  /**
+   *
+   * 针对单一的OpenBitSet进行各种操作
+   */
+  class OpenBitSetOperator:public BitSetOperator<OpenBitSet>{
+  };
+  /**
+   *
+   * 针对单一的SparseBitSet进行各种操作
+   */
+  class SparseBitSetOperator :public BitSetOperator<SparseBitSet>{
+  };
 }
 #endif //MONAD_OPEN_BIT_SET_OPERATOR_H_

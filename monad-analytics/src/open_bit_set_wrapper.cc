@@ -2,15 +2,10 @@
 
 #include "open_bit_set_wrapper.h"
 
-#include <algorithm>
-#include <vector>
-
 #include "bit_set_region.h"
+#include "bit_set_operator.h"
 #include "bit_set_wrapper_holder.h"
 #include "bit_set_wrapper_iterator.h"
-#include "open_bit_set_iterator.h"
-#include "open_bit_set_operator.h"
-#include "top_bit_set_iterator.h"
 #include "top_bit_set_wrapper.h"
 
 namespace monad {
@@ -30,9 +25,7 @@ namespace monad {
     return new BitSetWrapperIterator<OpenBitSetWrapper, OpenBitSet>(this);
   };
 
-  BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>* TopBitSetWrapper::Iterator() {
-    return new BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>(this);
-  };
+
 
   void OpenBitSetWrapper::NewSeg(int32_t region, int32_t num_words) {
     _seg = new BitSetRegion<OpenBitSet>();

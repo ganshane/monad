@@ -22,11 +22,7 @@ namespace monad {
      */
     OpenBitSet(uint32_t num_words);
 
-    virtual ~OpenBitSet() {
-      if (_bits) {
-        free(_bits);
-      }
-    };
+    virtual ~OpenBitSet();
     /**
      * 读取一个long类型的数据
      * @param word 数据

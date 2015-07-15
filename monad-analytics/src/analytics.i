@@ -25,6 +25,12 @@ using namespace monad;
 %ignore InPlaceOr(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
 %ignore InPlaceNot(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
 
+%ignore InPlaceAnd(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
+%ignore InPlaceAndTop(BitSetWrapperHolder<SparseBitSetWrapper>& holder, int32_t min_freq);
+%ignore InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
+%ignore InPlaceOr(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
+%ignore InPlaceNot(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
+
         
 //所有的swigCMemOwn均为true,方便进行删除操作
 %typemap(javabody) SWIGTYPE %{

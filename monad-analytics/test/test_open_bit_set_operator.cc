@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 #include <vector>
 
+#include "bit_set_operator.h"
 #include "open_bit_set.h"
 #include "open_bit_set_iterator.h"
-#include "open_bit_set_operator.h"
 #include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
 using namespace monad;

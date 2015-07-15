@@ -6,6 +6,9 @@
 #include <vector>
 #include "open_bit_set.h"
 #include "top_bit_set.h"
+#include "bit_set_region.h"
+#include "sparse_bit_set.h"
+
 namespace monad {
   template<typename T>
   struct BitSetRegion;
@@ -23,6 +26,15 @@ namespace monad {
     SparseBitSetWrapper();
     virtual ~SparseBitSetWrapper();
     void NewSeg(int32_t region, int32_t num_words);
+    void ReadIndice(int32_t index,int64_t i){
+      //_seg->bit_set->Read
+    }
+    void CreateBit(uint32_t index,uint32_t size){
+      //_bits[index] = new Uint64Array(size);
+    }
+    void ReadBitBlock(uint32_t index,uint32_t block_index,uint64_t i){
+      //_bits[index]->Set(block_index,i);
+    }
     void ReadLong(int64_t data, int32_t index);
     void ReadLong(int8_t* long_byte_data, int32_t index);
     void ReadLong(int8_t* long_byte_data, int32_t from,int32_t to);
@@ -54,10 +66,10 @@ namespace monad {
     static SparseBitSetWrapper* InPlaceNot(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
   private:
     uint32_t _weight;
-    BitSetRegion<OpenBitSet>* _seg;
-    std::vector<BitSetRegion<OpenBitSet>*> _data;
-    BitSetWrapperIterator<SparseBitSetWrapper, OpenBitSet>* Iterator();
-    friend class BitSetWrapperIterator<SparseBitSetWrapper, OpenBitSet>;
+    BitSetRegion<SparseBitSet>* _seg;
+    std::vector<BitSetRegion<SparseBitSet>*> _data;
+    BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>* Iterator();
+    friend class BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>;
   };
 }//namespace monad
 #endif //MONAD_OPEN_BIT_SET_WRAPPER_H_

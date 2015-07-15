@@ -33,6 +33,11 @@ namespace monad {
     this->_weight = 1;
     this->_words_len = _num_words;//设置
   }
+  OpenBitSet::~OpenBitSet() {
+    if (_bits) {
+      free(_bits);
+    }
+  };
 
   uint64_t* OpenBitSet::AllocateMemory(uint32_t num_words) {
     assert(num_words > 0);
@@ -125,20 +130,17 @@ namespace monad {
     if (_num_words < num_words) {
       /*
       void* new_ptr = malloc(num_words * sizeof(uint64_t));
+      memset(new_ptr,0,num_words* sizeof(uint64_t));
       memcpy(new_ptr, _bits, _num_words * sizeof(uint64_t));
       free(_bits);
-      _bits = NULL;
+      _bits = (uint64_t *) new_ptr;
+      _num_words = num_words;
        */
       void* new_ptr = realloc(_bits, num_words * sizeof (uint64_t));
       if (new_ptr) {
         _bits = static_cast<uint64_t*> (new_ptr);
         //设置扩展的内存空间为0
         memset(_bits+_num_words, 0, (num_words - _num_words)*sizeof(uint64_t));
-        /*
-        for (uint32_t i = _num_words; i < num_words; i++) {
-          _bits[i] = 0L;
-        }
-        */
         _num_words = num_words;
       }else{
         free(_bits);
