@@ -318,29 +318,4 @@ class ResourceDefinition {
   @XmlElement(name = "rel")
   var relations = new util.ArrayList[Rel]()
 
-  /**
-   * 加入一个资源属性
-   */
-  def addProperty(property: ResourceProperty) = properties.add(property)
-
-  /**
-   * 加入一个动态特征资源属性
-   */
-  def addDynamicProperty(property: ResourceTraitProperty) = dynamicType.properties.add(property)
-  lazy val categoryProperty:Option[(Int,ResourceProperty)] = findObjectColumn()
-  //TODO cache
-  private def findObjectColumn():Option[(Int,ResourceProperty)]={
-    var ret:Option[(Int,ResourceProperty)] = None
-    val it = properties.iterator()
-    var index = 0
-    while(it.hasNext && ret.isEmpty){
-      val rp = it.next()
-      if(rp.objectCategory != null){
-        ret = Some((index,rp))
-      }
-      index += 1
-    }
-
-    ret
-  }
 }

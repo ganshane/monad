@@ -2,6 +2,7 @@ package monad.sync.internal
 
 import com.lmax.disruptor.WorkHandler
 import monad.face.MonadFaceConstants
+import monad.face.services.ResourceDefinitionConversions.resourceDefinitionWrapper
 import monad.protocol.internal.InternalIdProto.{AddIdRequest, AddIdResponse, IdCategory}
 import monad.rpc.services.RpcClient
 import monad.support.services.LoggerSupport
