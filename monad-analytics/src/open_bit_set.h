@@ -7,13 +7,14 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "bit_set.h"
 
 namespace monad {
 
   /**
    * 记录一个集合的数据
    */
-  class OpenBitSet {
+  class OpenBitSet :public BitSet<OpenBitSet>{
   public:
     /**
      *
@@ -80,6 +81,7 @@ namespace monad {
     void operator&=(const OpenBitSet& other);
 
     OpenBitSet* Clone();
+    BitSetIterator* ToIterator();
     
     void Remove(const OpenBitSet& other) {
       this->operator -=(other);

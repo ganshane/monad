@@ -30,6 +30,7 @@ namespace monad{
     uint32_t _total_doc;
     BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* Iterator();
     friend class OpenBitSetWrapper;
+    friend class SparseBitSetWrapper;
     friend class BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>;
   }; //class TopBitSetWrapper
 } //namespace monad

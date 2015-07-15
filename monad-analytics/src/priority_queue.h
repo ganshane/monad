@@ -4,6 +4,7 @@
 #define _MONAD_PRIORITY_QUEUE_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "config.h"
 

@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2014 Jun Tsai. All rights reserved.
 
 #include "open_bit_set.h"
+#include "open_bit_set_iterator.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -47,6 +48,10 @@ namespace monad {
     memcpy(bit_set->_bits, _bits, _words_len* sizeof (uint64_t));
     return bit_set;
   };
+
+  BitSetIterator* OpenBitSet::ToIterator() {
+    return new OpenBitSetIterator(*this);
+  }
 
   void OpenBitSet::ReadLong(int8_t* word, uint32_t index) {
     this->ReadLong(ConvertBytesToInt64(word),index);

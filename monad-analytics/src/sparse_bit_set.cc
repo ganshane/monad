@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "sparse_bit_set.h"
+#include "sparse_bit_set_iterator.h"
 
 namespace monad{
   const uint32_t NO_MORE_DOCS = UINT32_MAX;
@@ -107,6 +108,7 @@ namespace monad{
     _bits = new Uint64Array*[_blockCount];
     memset(_bits,0,sizeof(Uint64Array*)*_blockCount);
     _nonZeroLongCount = 0;
+    _weight = 1;
   }
   SparseBitSet::~SparseBitSet() {
     delete[] _indices;
@@ -259,7 +261,7 @@ namespace monad{
       return bits->_data[bitCount(index & ((1ULL << i64) - 1))];
     }
   }
-  void SparseBitSet::operator+=(const SparseBitSet &other) {
+  void SparseBitSet::Or(const SparseBitSet &other) {
     for (int i = 0; i < other._blockCount; ++i) {
       uint64_t index = other._indices[i];
       if (index != 0) {
@@ -267,7 +269,7 @@ namespace monad{
       }
     }
   }
-  void SparseBitSet::operator&=(const SparseBitSet &other) {
+  void SparseBitSet::And(const SparseBitSet &other) {
     // if we are merging with another SparseFixedBitSet, a quick win is
     // to clear up some blocks by only looking at their index. Then the set
     // is sparser and the leap-frog approach of the parent class is more
@@ -470,8 +472,30 @@ namespace monad{
     }
   }
 
-  void SparseBitSet::operator-=(const SparseBitSet &other) {
+  void SparseBitSet::Remove(const SparseBitSet &other) {
     NotLeapFrogCallBack callBack(this);
     leapFrog(other,callBack);
+  }
+  BitSetIterator* SparseBitSet::ToIterator() {
+    return new SparseBitSetIterator(this);
+  }
+
+  SparseBitSet* SparseBitSet::Clone() {
+    SparseBitSet* bit_set = new SparseBitSet(_length);
+    bit_set->_nonZeroLongCount = _nonZeroLongCount;
+    //TODO 是否copy weight?
+    memcpy(bit_set->_indices,_indices,sizeof(uint64_t)*_blockCount);
+    for(int i=0;i<_blockCount;i++){
+      if(_bits[i]){
+        bit_set->_bits[i] = _bits[i]->Clone();
+      }
+    }
+    return bit_set;
+  }
+
+  Uint64Array *Uint64Array::Clone() {
+    uint64_t * new_data = new uint64_t[_length];
+    memcpy(new_data,_data,sizeof(uint64_t)*_length);
+    return new Uint64Array(_length,new_data);
   }
 }

@@ -4,7 +4,9 @@
 
 #include "bit_set_wrapper_holder.h"
 #include "open_bit_set.h"
+#include "sparse_bit_set.h"
 #include "open_bit_set_wrapper.h"
+#include "sparse_bit_set_wrapper.h"
 #include "top_bit_set.h"
 #include "top_bit_set_wrapper.h"
 
@@ -14,7 +16,9 @@ using namespace monad;
 %include <stdint.i>
 //忽略一些在Java中不用的方法
 %ignore monad::OpenBitSetWrapper::Iterator();
+%ignore monad::SparseBitSetWrapper::Iterator();
 %ignore monad::TopBitSetWrapper::Iterator();
+
 %ignore InPlaceAnd(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
 %ignore InPlaceAndTop(BitSetWrapperHolder<OpenBitSetWrapper>& holder, int32_t min_freq);
 %ignore InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
@@ -53,6 +57,13 @@ using namespace monad;
     }
     return pointerArray;
   }
+  static long[] convertBitSetAsLongArray(SparseBitSetWrapper wrappers[]){
+    long[] pointerArray = new long[wrappers.length];
+    for(int i=0;i<wrappers.length;i++){
+      pointerArray[i]=SparseBitSetWrapper.getCPtr(wrappers[i]);
+    }
+    return pointerArray;
+  }
 %}
 //--------------- (Wrapper** WRAPPER,size_t LENGTH) begin --
 //定义OpenBitSetWrapper** 的映射
@@ -73,6 +84,26 @@ using namespace monad;
     delete[] $1;
 }
 %apply(monad::OpenBitSetWrapper** WRAPPER, size_t LENGTH) { (monad::OpenBitSetWrapper**  wrappers, size_t len) };
+//--------------- (Wrapper** WRAPPER,size_t LENGTH) end --
+//--------------- (SparseBitSetWrapper** WRAPPER,size_t LENGTH) begin --
+//定义OpenBitSetWrapper** 的映射
+%typemap(jni)     (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) "jlongArray"
+%typemap(jtype)   (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) "long[]"
+%typemap(jstype)   (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) "SparseBitSetWrapper[]"
+%typemap(javain)  (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) "$module.convertBitSetAsLongArray($javainput)"
+%typemap(in,numinputs=1)  (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) {
+  jlong* long_arr = JCALL2(GetLongArrayElements, jenv, $input,0);
+  $2 = JCALL1(GetArrayLength, jenv, $input);
+  $1 = new SparseBitSetWrapper*[$2]();
+  for(uint32_t i=0;i<$2;i++)
+    $1[i]= reinterpret_cast<monad::SparseBitSetWrapper*>(long_arr[i]);
+  if ($input) JCALL3(ReleaseLongArrayElements, jenv, $input, long_arr, 0);
+}
+%typemap(freearg) (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH){
+  if($1)
+    delete[] $1;
+}
+%apply(monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) { (monad::SparseBitSetWrapper**  wrappers, size_t len) };
 //--------------- (TopWrapper** WRAPPER,size_t LENGTH) end --
 %typemap(jni)     (monad::TopBitSetWrapper** WRAPPER, size_t LENGTH) "jlongArray"
 %typemap(jtype)   (monad::TopBitSetWrapper** WRAPPER, size_t LENGTH) "long[]"
@@ -135,6 +166,47 @@ using namespace monad;
     for(int i=0;i<temp_len;i++){
       //printf("i:%d doc:%u region:%u \n",i,$1[i]->doc,$1[i]->region);
         jobject obj = JCALL4(NewObject,jenv,
+                region_doc_class,
+                cid,
+                static_cast<jint>($1[i]->doc),
+                static_cast<jint>($1[i]->region) );
+        JCALL3(SetObjectArrayElement,jenv,$result, i, obj);
+        JCALL1(DeleteLocalRef,jenv,obj);
+    }
+    //清空内存
+    for(int i=0;i<temp_len;i++){
+      delete $1[i];
+    }
+    delete[] $1;
+  }else{
+    $result = NULL;
+  }
+}
+//------------------- monad::OpenBitSetWrapper::Top end -------
+//------------------- monad::SparseBitSetWrapper::Top begin -------
+// 去掉数据长度参数
+%typemap(in,numinputs=0,noblock=1) int32_t& data_len {
+   int temp_len=0;
+   $1 =  &temp_len;
+}
+//申明返回类型
+%typemap(jstype) monad::RegionDoc** monad::SparseBitSetWrapper::Top "monad.analytics.model.RegionDoc[]"
+%typemap(jtype)  monad::RegionDoc** monad::SparseBitSetWrapper::Top "monad.analytics.model.RegionDoc[]"
+//设置JNI操作时候的数据类型
+%typemap(jni)   monad::RegionDoc** monad::SparseBitSetWrapper::Top "jobjectArray"
+%typemap(javaout) monad::RegionDoc** monad::SparseBitSetWrapper::Top {
+  return $jnicall;
+}
+//设置C调用过程中的转换
+%typemap(out)   monad::RegionDoc** monad::SparseBitSetWrapper::Top {
+  if($1){
+    //生成Java中的数组
+    jclass region_doc_class = JCALL1(FindClass,jenv,"monad/analytics/model/RegionDoc");
+    $result = JCALL3(NewObjectArray, jenv, temp_len,region_doc_class,NULL);
+    jmethodID cid = JCALL3(GetMethodID,jenv,region_doc_class, "<init>", "(II)V");
+    for(int i=0;i<temp_len;i++){
+      //printf("i:%d doc:%u region:%u \n",i,$1[i]->doc,$1[i]->region);
+        jobject obj = JCALL4(NewObject,jenv,
                 region_doc_class, 
                 cid,
                 static_cast<jint>($1[i]->doc), 
@@ -151,7 +223,7 @@ using namespace monad;
     $result = NULL;
   }
 }
-//------------------- monad::OpenBitSetWrapper::Top end -------
+//------------------- monad::SparseBitSetWrapper::Top end -------
 
 //------------------- monad::TopBitSetWrapper::Top begin -------
 //申明返回类型
@@ -202,6 +274,7 @@ using namespace monad;
 //------------------- monad::TopBitSetWrapper::Top end -------
 
 %include "open_bit_set_wrapper.h"
+%include "sparse_bit_set_wrapper.h"
 %include "top_bit_set_wrapper.h"
 /*
 %include "bit_set_wrapper_holder.h"

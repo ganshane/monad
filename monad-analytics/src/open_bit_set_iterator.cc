@@ -42,7 +42,7 @@ namespace monad {
         0x87651, 0x87652, 0x876521, 0x87653, 0x876531, 0x876532, 0x8765321, 0x87654,
         0x876541, 0x876542, 0x8765421, 0x876543, 0x8765431, 0x8765432, 0x87654321
     };
-    const uint32_t OpenBitSetIterator::NO_MORE_DOCS = UINT32_MAX;
+    const uint32_t BitSetIterator::NO_MORE_DOCS = UINT32_MAX;
 
 
     // 64 bit shifts

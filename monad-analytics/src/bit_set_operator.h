@@ -1,22 +1,66 @@
 // Copyright (c) 2009-2014 Jun Tsai. All rights reserved.
 
-#include "open_bit_set_operator.h"
-#include <assert.h>
-#include <stdio.h>
+#ifndef MONAD_BIT_SET_OPERATOR_H_
+#define MONAD_BIT_SET_OPERATOR_H_
 
-#include "open_bit_set_iterator.h"
+#include "bit_set.h"
 #include "priority_queue.h"
 #include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
 
 namespace monad{
-
-  TopBitSet* OpenBitSetOperator::InPlaceAndTopWithPositionMerged(TopBitSet* coll[],int32_t size,int32_t min_freq){
+  /**
+   *
+   * 针对单一的BitSet进行各种操作
+   */
+  template<typename T>
+  class BitSetOperator{
+  public:
+  /**
+   * 针对集合进行And操作
+   * @param coll 集合数据集合
+   * @param size 集合的大小
+   * @return And操作后的结果集
+   */
+    static T* InPlaceAnd(T* coll[],int32_t size);
+    /**
+     * 使用InPlaceAndTop的进行操作
+     * @param coll 待操作的集合类
+     * @param size 集合的长度
+     * @param min_freq 最小频率
+     * @return 进行InPlaceAndTop操作之后的集合对象
+     */
+    static TopBitSet* InPlaceAndTop(T* coll[],int32_t size,int32_t min_freq);
+    /**
+     * 执行InPlaceAndTopWithPositionMerged算法操作
+     * @param coll 待运算的集合对象
+     * @param size 带运算的集合对象的长度
+     * @param min_freq 最小频率
+     * @return 操作之后的的集合对象
+     */
+    static TopBitSet* InPlaceAndTopWithPositionMerged(TopBitSet* coll[],int32_t size,int32_t min_freq);
+    /**
+     * 针对集合数组采用or计算
+     * @param coll 集合数组
+     * @param size 集合数组的大小
+     * @return or操作之后的结果
+     */
+    static T* InPlaceOr(T* coll[],int32_t size);
+    /**
+     * 使用数组的第一个元素删除其余的集合
+     * @param coll 集合数组
+     * @param size 集合数组大小
+     * @return not操作后的值
+     */
+    static T* InPlaceNot(T* coll[],int32_t size);
+  };
+  template<typename T>
+  TopBitSet* BitSetOperator<T>::InPlaceAndTopWithPositionMerged(TopBitSet* coll[],int32_t size,int32_t min_freq){
     //采取多路合并策略
     TopBitSetIterator** its = new TopBitSetIterator*[size];
-    uint32_t last_min = OpenBitSetIterator::NO_MORE_DOCS;
-    uint32_t next_min = OpenBitSetIterator::NO_MORE_DOCS;
-    uint32_t tmp_doc = OpenBitSetIterator::NO_MORE_DOCS;
+    uint32_t last_min = BitSetIterator::NO_MORE_DOCS;
+    uint32_t next_min = BitSetIterator::NO_MORE_DOCS;
+    uint32_t tmp_doc = BitSetIterator::NO_MORE_DOCS;
     for(int i=0;i<size;i++){
       its[i] = new TopBitSetIterator(coll[i]);
       tmp_doc = its[i]->NextDoc();
@@ -25,7 +69,7 @@ namespace monad{
       }
     }
     //说明没有数据
-    if(last_min == OpenBitSetIterator::NO_MORE_DOCS){
+    if(last_min == BitSetIterator::NO_MORE_DOCS){
       //清空内存
       for(int i=0;i<size;i++){
         delete its[i];
@@ -38,7 +82,7 @@ namespace monad{
     PriorityQueue<TopDoc> pq(1000,TopDocLessThanByFreq);
     TopDoc* doc(NULL);
     while(true){
-      next_min = OpenBitSetIterator::NO_MORE_DOCS;
+      next_min = BitSetIterator::NO_MORE_DOCS;
       if(doc)
         doc->Reset();
       else
@@ -67,7 +111,7 @@ namespace monad{
       if(doc->freq >= static_cast<uint32_t>(min_freq)){
         doc= pq.InsertWithOverflow(doc); //插入到队列
       }
-      if(next_min == OpenBitSetIterator::NO_MORE_DOCS)
+      if(next_min == BitSetIterator::NO_MORE_DOCS)
         break;
       last_min = next_min;
     }
@@ -93,21 +137,23 @@ namespace monad{
 
     return result;
   }
-  TopBitSet* OpenBitSetOperator::InPlaceAndTop(OpenBitSet* coll[],int32_t size,int32_t min_freq){
+  template<typename T>
+  TopBitSet* BitSetOperator<T>::InPlaceAndTop(T* coll[],int32_t size,int32_t min_freq){
     //采取多路合并策略
-    OpenBitSetIterator** its = new OpenBitSetIterator*[size];
-    uint32_t last_min = OpenBitSetIterator::NO_MORE_DOCS;
-    uint32_t next_min = OpenBitSetIterator::NO_MORE_DOCS;
-    uint32_t tmp_doc = OpenBitSetIterator::NO_MORE_DOCS;
+    BitSetIterator** its = new BitSetIterator*[size];
+    uint32_t last_min = BitSetIterator::NO_MORE_DOCS;
+    uint32_t next_min = BitSetIterator::NO_MORE_DOCS;
+    uint32_t tmp_doc = BitSetIterator::NO_MORE_DOCS;
     for(int i=0;i<size;i++){
-      its[i] = new OpenBitSetIterator(*coll[i]);
+      //its[i] = new BitSetIterator(*coll[i]);
+      its[i] = coll[i]->ToIterator();
       tmp_doc = its[i]->NextDoc();
       if(last_min > tmp_doc){
         last_min = tmp_doc;
       }
     }
     //说明没有数据
-    if(last_min == OpenBitSetIterator::NO_MORE_DOCS){
+    if(last_min == BitSetIterator::NO_MORE_DOCS){
       //清空内存
       for(int i=0;i<size;i++){
         delete its[i];
@@ -118,7 +164,7 @@ namespace monad{
     PriorityQueue<TopDoc> pq(1000,TopDocLessThanByFreq);
     TopDoc* doc = NULL;
     while(true){
-      next_min = OpenBitSetIterator::NO_MORE_DOCS;
+      next_min = BitSetIterator::NO_MORE_DOCS;
       if(doc)
         doc->Reset();//重复利用内存块
       else
@@ -141,7 +187,7 @@ namespace monad{
       if(doc->freq >= static_cast<uint32_t>(min_freq)){
         doc= pq.InsertWithOverflow(doc); //插入到队列
       }
-      if(next_min == OpenBitSetIterator::NO_MORE_DOCS)
+      if(next_min == BitSetIterator::NO_MORE_DOCS)
         break;
       last_min = next_min;
     }
@@ -168,7 +214,8 @@ namespace monad{
 
     return result;
   }
-  OpenBitSet* OpenBitSetOperator::InPlaceAnd(OpenBitSet* bit_coll[],int32_t size){
+  template<typename T>
+  T* BitSetOperator<T>::InPlaceAnd(T* bit_coll[],int32_t size){
     int index = -1;
     uint32_t max_words = UINT32_MAX;
     uint32_t current_num = 0;
@@ -182,14 +229,15 @@ namespace monad{
     assert(index > -1);
     //printf("index:%d\n",index);
 
-    OpenBitSet* result = bit_coll[index]->Clone();
+    T* result = bit_coll[index]->Clone();
     for(int i=0;i<size;i++){
       if(i != index)
         result->And(*bit_coll[i]);
     }
     return result;
   }
-  OpenBitSet* OpenBitSetOperator::InPlaceOr(OpenBitSet* bit_coll[],int32_t size){
+  template<typename T>
+  T* BitSetOperator<T>::InPlaceOr(T* bit_coll[],int32_t size){
     int index = -1;
     uint32_t max_words = 0;
     uint32_t current_num = 0;
@@ -203,18 +251,20 @@ namespace monad{
     assert(index > -1);
     //printf("index:%d\n",index);
 
-    OpenBitSet* result = bit_coll[index]->Clone();
+    T* result = bit_coll[index]->Clone();
     for(int i=0;i<size;i++){
       if(i != index)
         result->Or(*bit_coll[i]);
     }
     return result;
   }
-  OpenBitSet* OpenBitSetOperator::InPlaceNot(OpenBitSet* bit_coll[],int32_t size){
-    OpenBitSet* result = bit_coll[0]->Clone();
+  template<typename T>
+  T* BitSetOperator<T>::InPlaceNot(T* bit_coll[],int32_t size){
+    T* result = bit_coll[0]->Clone();
     for(int i=1;i<size;i++){
       result->Remove(*bit_coll[i]);
     }
     return result;
   }
 }
+#endif //MONAD_OPEN_BIT_SET_OPERATOR_H_

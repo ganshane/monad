@@ -2,6 +2,8 @@
 
 #ifndef MONAD_OPEN_BIT_SET_ITERATOR_H_
 #define MONAD_OPEN_BIT_SET_ITERATOR_H_
+
+#include "bit_set.h"
 #include "open_bit_set.h"
 
 namespace monad
@@ -11,7 +13,7 @@ namespace monad
    * OpenBitSet的迭代器
    * @param bit_set
    */
-  class OpenBitSetIterator{
+  class OpenBitSetIterator:public BitSetIterator{
     public :
     OpenBitSetIterator(OpenBitSet& bit_set)
     : _bits(bit_set.GetBits()), _num_words(bit_set.GetNumWords()) {
@@ -21,12 +23,13 @@ namespace monad
       _cur_doc_id = -1;
       _i = -1;
     }
+    virtual ~OpenBitSetIterator(){
+    }
     uint32_t NextDoc();
     uint32_t DocId(){
       return _cur_doc_id;
     }
     static const uint32_t BIT_LIST[];
-    static const uint32_t NO_MORE_DOCS;
 
 private:
     void Shift();
