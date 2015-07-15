@@ -2,8 +2,8 @@
 // site: http://www.ganshane.com
 package monad.face.services
 
+import java.nio.{ByteBuffer, ByteOrder}
 import java.util.Calendar
-import java.nio.{ByteOrder, ByteBuffer}
 
 /**
  * 数据类型常用类
@@ -30,12 +30,14 @@ object DataTypeUtils {
     def convertIntAsDate(minutesDiff:Int):Long ={
         (V1980InMillis + minutesDiff * ONE_MINUTE_IN_MILLIS)
     }
+    /*
     def getNowHour:Int = {
         ((System.currentTimeMillis() - V2012_MILLIS) /  HOUR_IN_MILLIS).toInt
     }
     def dateToInt(time:Long):Int = {
         ((time - V2012_MILLIS) / HOUR_IN_MILLIS).toInt
     }
+    */
     def convertAsArray(long:Long)={
         ByteBuffer.allocate(java.lang.Long.SIZE/8).order(ByteOrder.BIG_ENDIAN).putLong(long).array()
     }
