@@ -6,7 +6,6 @@
 #include "sparse_bit_set_iterator.h"
 
 namespace monad{
-  const uint32_t NO_MORE_DOCS = UINT32_MAX;
   const uint32_t MASK_4096 = (1 << 12) - 1;
   class LeapFrogCallBack{
   public:
@@ -324,11 +323,11 @@ namespace monad{
       }
       i4096 += 1;
     }
-    return NO_MORE_DOCS;
+    return BitSetIterator::NO_MORE_DOCS;
   }
   uint32_t SparseBitSet::NextSetBit(uint32_t i) const{
     if(i>=_length){
-      return NO_MORE_DOCS;
+      return BitSetIterator::NO_MORE_DOCS;
     }
     assert(i < _length);
     int32_t i4096 = i >> 12;
@@ -367,7 +366,7 @@ namespace monad{
       }
       i -= 1;
     }
-    return NO_MORE_DOCS;
+    return BitSetIterator::NO_MORE_DOCS;
   }
   uint32_t SparseBitSet::PreSetBit(uint32_t i) {
     assert(i >= 0);

@@ -87,7 +87,14 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
     public void serialize(OutputStream os) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
 
+        //length
+        byteBuffer.position(0);
+        byteBuffer.putInt(length);
+        byteBuffer.putInt(nonZeroLongCount);
+        os.write(byteBuffer.array());
+
         //indices
+        byteBuffer.position(0);
         byteBuffer.putInt(indices.length);
         os.write(byteBuffer.array(),0,4);
         for (long indice : indices) {
@@ -113,10 +120,6 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
                 os.write(byteBuffer.array());
             }
         }
-        byteBuffer.position(0);
-        byteBuffer.putInt(length);
-        byteBuffer.putInt(nonZeroLongCount);
-        os.write(byteBuffer.array());
 
         byteBuffer.position(0);
         byteBuffer.putLong(ramBytesUsed);
@@ -130,6 +133,9 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
          int nonZeroLongCount;
          long ramBytesUsed;
          */
+
+        int length = bb.getInt();
+        int nonZeroLongCount = bb.getInt();
 
         int arrayLength =  bb.getInt();
         final long[] indices = new long[arrayLength];
@@ -147,8 +153,6 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
             }
         }
 
-        int length = bb.getInt();
-        int nonZeroLongCount = bb.getInt();
         long ramBytesUsed = bb.getLong();
 
         return new MonadSparseFixedBitSet(length,indices,bits,nonZeroLongCount,ramBytesUsed);
@@ -163,6 +167,11 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
          */
 
         byte[] bytes = new byte[8];
+        is.read(bytes);
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        int length = bb.getInt();
+
+        int nonZeroLongCount = bb.getInt();
         is.read(bytes,0,4);
         int arrayLength =  ByteBuffer.wrap(bytes).getInt();
         final long[] indices = new long[arrayLength];
@@ -175,16 +184,14 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
         for(int i=0;i<arrayLength;i++){
             is.read(bytes,0,4);
             bitLength = ByteBuffer.wrap(bytes).getInt();
+            if(bitLength > 0 )
+                bits[i] = new long[bitLength];
             for(int j=0;j<bitLength;j++){
                is.read(bytes);
                bits[i][j]= ByteBuffer.wrap(bytes).getLong();
             }
         }
 
-        is.read(bytes);
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-        int length = bb.getInt();
-        int nonZeroLongCount = bb.getInt();
         is.read(bytes);
         long ramBytesUsed = ByteBuffer.wrap(bytes).getLong();
 

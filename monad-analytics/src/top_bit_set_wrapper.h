@@ -30,6 +30,7 @@ namespace monad{
     virtual ~TopBitSetWrapper();
     void Commit();
   private:
+    typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> TWI;
     std::vector<BitSetRegion<TopBitSet>*> _data;
     uint32_t _total_doc;
     BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* Iterator();

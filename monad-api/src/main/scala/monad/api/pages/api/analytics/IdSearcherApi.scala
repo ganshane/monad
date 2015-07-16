@@ -7,19 +7,17 @@ import java.util.Date
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
-import org.slf4j.LoggerFactory
 
 /**
  * 搜索人的ID
  * @author jcai
  */
-class IdSearcherApi {
-  private val logger = LoggerFactory getLogger getClass
+class IdSearcherApi extends LoggerSupport{
   //searcher facade object
   @Inject
   private var searchFacade: SearcherFacade = _
@@ -41,7 +39,7 @@ class IdSearcherApi {
     val begin = new Date().getTime
     val r = searchFacade.idSearch(searchRequest)
     val end = new Date().getTime
-    logger.info("[" + searchRequest.resourceName + "] idsearch q:[{}],time:{}ms", q, (end - begin))
+    info("[" + searchRequest.resourceName + "] idsearch q:[{}],his:{} time:{}ms ", q,r.data.cardinality(),(end - begin))
 
     r
   }

@@ -17,9 +17,9 @@ namespace monad{
   public:
     BitSetWrapperIterator(WRAPPER* wrapper);
     /**
-     * 下一个数据区域
-     * @return 区域对象，如果到达结尾，则返回NULL
-     */
+         * 下一个数据区域
+         * @return 区域对象，如果到达结尾，则返回NULL
+         */
     BitSetRegion<BIT_SET>* NextRegion();
     /**
      * 返回当前的数据区域

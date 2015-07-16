@@ -26,7 +26,6 @@ namespace monad {
   class SparseBitSetWrapper:public BitSetWrapper<SparseBitSetWrapper,SparseBitSet> {
   public:
     SparseBitSetWrapper();
-    virtual ~SparseBitSetWrapper();
     void NewSeg(int32_t region, int32_t num_words);
     void ReadIndice(int32_t index,int64_t i){
       _seg->bit_set->ReadIndice(index,i);
@@ -36,6 +35,9 @@ namespace monad {
     }
     void ReadBitBlock(int32_t index,int32_t block_index,int64_t i){
       _seg->bit_set->ReadBitBlock(index,block_index,i);
+    }
+    void ReadNonZero(uint32_t nonZero){
+      _seg->bit_set->ReadNonZero(nonZero);
     }
     void FastSet(int32_t index);
     void Set(int32_t index);
@@ -51,13 +53,10 @@ namespace monad {
      * @return 实际取到的个数
      */
     monad::RegionDoc** Top(int32_t n, int32_t& data_len);
+
   private:
-    uint32_t _weight;
-    BitSetRegion<SparseBitSet>* _seg;
-    std::vector<BitSetRegion<SparseBitSet>*> _data;
     BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>* Iterator();
-    friend class BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>;
-    friend class BitSetWrapper<SparseBitSetWrapper, SparseBitSet>;
+    friend class BitSetWrapper<SparseBitSetWrapper,SparseBitSet>;
   };
 }//namespace monad
 #endif //MONAD_OPEN_BIT_SET_WRAPPER_H_

@@ -2,17 +2,11 @@
 
 #include "open_bit_set_wrapper.h"
 
+#include <algorithm>
+
 namespace monad {
 
-  OpenBitSetWrapper::~OpenBitSetWrapper() {
-    std::vector<BitSetRegion<OpenBitSet>*>::iterator it = _data.begin();
-    for (; it != _data.end(); it++) {
-      delete *it;
-    }
-  }
-
-  OpenBitSetWrapper::OpenBitSetWrapper() 
-  : _weight(1), _seg(NULL) {
+  OpenBitSetWrapper::OpenBitSetWrapper():BitSetWrapper() {
   };
 
   BitSetWrapperIterator<OpenBitSetWrapper, OpenBitSet>* OpenBitSetWrapper::Iterator() {

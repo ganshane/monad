@@ -20,6 +20,15 @@ cp src/*.so ${ROOT}/monad-jni/src/main/resources/META-INF/native/linux64
 mkdir -p ${ROOT}/monad-jni/src/main/java/monad/jni/services/gen
 cp src/javaapi/* ${ROOT}/monad-jni/src/main/java/monad/jni/services/gen
 
+#build analytics client
+cd $ROOT
+mkdir monad-analytics/build
+cd monad-analytics/build
+rm -rf *
+CC=/opt/centos/devtoolset-1.1/root/usr/bin/cc cmake -DCMAKE_CXX_FLAGS="-I/opt/centos/devtoolset-1.1/root/usr/include -std=c++11"  -DCMAKE_BUILD_TYPE=Release ..
+make
+cp *.so /dist/
+
 #build monad gz
 cd $ROOT
 #BUILD_NUMBER=r`git log -n1 --pretty=format:"%ad" --date=iso|awk -F'[-: ]' '{ print $1$2$3$4$5$6 }'`

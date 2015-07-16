@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include <vector>
-#include <sparse_bit_set_wrapper.h>
 
 #include "bit_set_wrapper_holder.h"
+#include "sparse_bit_set_wrapper.h"
 #include "top_bit_set_wrapper.h"
 
 using namespace monad;

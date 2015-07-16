@@ -45,16 +45,21 @@ namespace monad {
     uint32_t Cardinality();
     void Set(uint32_t i);
     bool Get(uint32_t i);
+    //序列化使用
     void ReadIndice(uint32_t index,uint64_t i){
       _indices[index]=i;
     }
-    virtual BitSetIterator* ToIterator();
     void CreateBit(uint32_t index,uint32_t size){
       _bits[index] = new Uint64Array(size);
     }
     void ReadBitBlock(uint32_t index,uint32_t block_index,uint64_t i){
       _bits[index]->Set(block_index,i);
     }
+    void ReadNonZero(uint32_t nonZero){
+      _nonZeroLongCount = nonZero;
+    }
+
+    virtual BitSetIterator* ToIterator();
     uint32_t NextSetBit(uint32_t i) const;
     uint32_t PreSetBit(uint32_t i);
     void Clear(uint32_t i);

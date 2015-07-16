@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string>
+#include <string.h>
 
 namespace monad {
   //压缩结果

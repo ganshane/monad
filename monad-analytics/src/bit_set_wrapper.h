@@ -13,6 +13,13 @@ namespace monad{
   class BitSetWrapper {
 
   public:
+    BitSetWrapper():_weight(1),_seg(NULL){}
+    virtual ~BitSetWrapper() {
+      typename std::vector<BitSetRegion<BIT_SET>*>::iterator it = _data.begin();
+      for (; it != _data.end(); it++) {
+        delete *it;
+      }
+    }
     static WRAPPER* InPlaceAnd(WRAPPER** wrappers,size_t len);
     static TopBitSetWrapper* InPlaceAndTop(WRAPPER** wrappers, size_t len,int32_t min_freq);
     static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq);
@@ -25,7 +32,22 @@ namespace monad{
     static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
     static WRAPPER* InPlaceOr(BitSetWrapperHolder<WRAPPER>& holder);
     static WRAPPER* InPlaceNot(BitSetWrapperHolder<WRAPPER>& holder);
+
+  protected:
+    uint32_t _weight;
+    BitSetRegion<BIT_SET>* _seg;
+    std::vector<BitSetRegion<BIT_SET>*> _data;
+    virtual BitSetWrapperIterator<WRAPPER, BIT_SET>* Iterator() = 0;
+    friend class BitSetWrapperIterator<WRAPPER, BIT_SET>;
+    //friend class BitSetWrapper<WRAPPER, BIT_SET>;
+    //typedef BitSetWrapperIterator<WRAPPER, BIT_SET> bsi;
   };
+  /*
+  template<typename WRAPPER,typename BIT_SET>
+  BitSetWrapperIterator<WRAPPER, BIT_SET>* BitSetWrapper<WRAPPER,BIT_SET>::Iterator(){
+    return new BitSetWrapperIterator<WRAPPER,BIT_SET>(this);
+  };
+   */
   template<typename WRAPPER,typename BIT_SET>
   WRAPPER* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceAnd(BitSetWrapperHolder<WRAPPER>& holder) {
     WRAPPER** wrappers = new WRAPPER*[holder.Size()];
@@ -366,19 +388,18 @@ namespace monad{
   TopBitSetWrapper* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers,size_t coll_size, int32_t min_freq) {
     if(coll_size == 0)
       return NULL;
-    typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> BWI;
-
-    BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>** its =
-        new BWI*[coll_size];
+    typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> BSWI;
+    BSWI** its = new BSWI*[coll_size];
     uint32_t last_region = BitSetIterator::NO_MORE_DOCS;
     uint32_t next_min = BitSetIterator::NO_MORE_DOCS;
     BitSetRegion<TopBitSet>* tmp_region = NULL;
 
 //先计算出来最小区域
     for (uint32_t i = 0; i < coll_size; i++) {
-      its[i] = wrappers[i]->Iterator();
-      if (its[i]->NextRegion() != NULL) {
-        tmp_region = its[i]->Region();
+      BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* it = wrappers[i]->Iterator();
+      its[i] = it;
+      if (it->NextRegion() != NULL) {
+        tmp_region = it->Region();
         if (last_region > tmp_region->region) {
           last_region = tmp_region->region;
         }

@@ -1,6 +1,6 @@
 package monad.face.services
 
-import java.io.{ByteArrayOutputStream, OutputStream}
+import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 import java.nio.ByteBuffer
 
 import monad.face.internal.MonadSparseFixedBitSet
@@ -24,5 +24,8 @@ object BitSetUtils {
   }
   def deserialize(bytes:ByteBuffer):MonadSparseFixedBitSet={
     MonadSparseFixedBitSet.deserialize(bytes)
+  }
+  def deserialize(is:InputStream):MonadSparseFixedBitSet={
+    MonadSparseFixedBitSet.deserialize(is)
   }
 }

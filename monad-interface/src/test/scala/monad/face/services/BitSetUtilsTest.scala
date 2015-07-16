@@ -1,5 +1,7 @@
 package monad.face.services
 
+import java.io.ByteArrayInputStream
+
 import monad.face.internal.MonadSparseFixedBitSet
 import org.apache.lucene.util.{BitSetIterator, SparseFixedBitSet}
 import org.junit.{Assert, Test}
@@ -34,10 +36,26 @@ class BitSetUtilsTest {
     bitSet.set(288)
     bitSet.set(888)
     val bb = BitSetUtils.serialize(bitSet)
-    val bitSet2 = BitSetUtils.deserialize(bb)
+    val is = new ByteArrayInputStream(bb.array())
+    val bitSet2 = BitSetUtils.deserialize(is)
     Assert.assertTrue(bitSet2.get(888))
     Assert.assertTrue(bitSet2.get(188))
     Assert.assertTrue(bitSet2.get(288))
     Assert.assertFalse(bitSet2.get(388))
+  }
+  @Test
+  def test_bitset2: Unit ={
+    val bitSet = new MonadSparseFixedBitSet(10000)
+    0 until 10000 foreach{i=>
+      bitSet.set(i);
+    }
+    val bb = BitSetUtils.serialize(bitSet)
+    val is = new ByteArrayInputStream(bb.array())
+
+    val bitSet2 = BitSetUtils.deserialize(is)
+    Assert.assertTrue(bitSet2.get(888))
+    Assert.assertTrue(bitSet2.get(188))
+    Assert.assertTrue(bitSet2.get(288))
+    Assert.assertTrue(bitSet2.get(388))
   }
 }

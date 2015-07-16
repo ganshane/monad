@@ -2,25 +2,12 @@
 
 #include "sparse_bit_set_wrapper.h"
 
-#include "bit_set_operator.h"
-#include "bit_set_wrapper_holder.h"
-#include "bit_set_wrapper_iterator.h"
-#include "top_bit_set_wrapper.h"
+#include <algorithm>
 #include "sparse_bit_set_iterator.h"
 
 namespace monad {
-
-  SparseBitSetWrapper::~SparseBitSetWrapper() {
-    std::vector<BitSetRegion<SparseBitSet>*>::iterator it = _data.begin();
-    for (; it != _data.end(); it++) {
-      delete *it;
-    }
-  }
-
-  SparseBitSetWrapper::SparseBitSetWrapper() 
-  : _weight(1), _seg(NULL) {
+  SparseBitSetWrapper::SparseBitSetWrapper():BitSetWrapper(){
   };
-
   BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>* SparseBitSetWrapper::Iterator() {
     return new BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>(this);
   };

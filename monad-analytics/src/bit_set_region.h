@@ -3,6 +3,8 @@
 #ifndef MONAD_OPEN_BIT_SET_REGION_H_
 #define MONAD_OPEN_BIT_SET_REGION_H_
 
+#include <stdint.h>
+
 namespace monad{
   /**
    * 记录集合区域的结构

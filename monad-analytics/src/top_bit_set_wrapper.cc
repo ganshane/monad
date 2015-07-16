@@ -6,7 +6,6 @@
 
 #include "bit_set_wrapper_iterator.h"
 #include "priority_queue.h"
-#include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
 
 namespace monad{
@@ -23,7 +22,8 @@ namespace monad{
     return _total_doc;
   }
   BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>* TopBitSetWrapper::Iterator() {
-    return new BitSetWrapperIterator<TopBitSetWrapper, TopBitSet>(this);
+    typedef BitSetWrapperIterator<TopBitSetWrapper, TopBitSet> BSWI;
+    return new BSWI(this);
   };
   void TopBitSetWrapper::Commit() {
     std::sort(_data.begin(), _data.end(), SortBitSetRegion<TopBitSet>);
