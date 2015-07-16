@@ -4,6 +4,7 @@
 #define MONAD_OPEN_BIT_SET_REGION_H_
 
 #include <stdint.h>
+#include <cstddef>
 
 namespace monad{
   /**
