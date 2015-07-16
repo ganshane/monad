@@ -15,6 +15,7 @@ class BitSetUtilsTest {
     val bitSet = new SparseFixedBitSet(10000)
     bitSet.set(1000)
     bitSet.set(3000)
+    bitSet.set(5000)
     val bitSet2 = new SparseFixedBitSet(10000)
     bitSet2.set(3000)
     val bitSetIt =new BitSetIterator(bitSet2,1)

@@ -4,8 +4,11 @@
 #define MONAD_OPEN_BIT_SET_WRAPPER_H_
 #include <assert.h>
 #include <vector>
+
+#include "bit_set_wrapper.h"
 #include "open_bit_set.h"
 #include "top_bit_set.h"
+
 namespace monad {
   template<typename T>
   struct BitSetRegion;
@@ -18,7 +21,7 @@ namespace monad {
   template<typename T>
   class BitSetWrapperHolder;
 
-  class OpenBitSetWrapper {
+  class OpenBitSetWrapper :public BitSetWrapper<OpenBitSetWrapper,OpenBitSet>{
   public:
     OpenBitSetWrapper();
     virtual ~OpenBitSetWrapper();
@@ -40,24 +43,31 @@ namespace monad {
      * @return 实际取到的个数
      */
     monad::RegionDoc** Top(int32_t n, int32_t& data_len);
-    static OpenBitSetWrapper* InPlaceAnd(OpenBitSetWrapper** wrappers,size_t len);
+    /*
+    static OpenBitSetWrapper* InPlaceAnd(OpenBitSetWrapper** wrappers,size_t len){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceAnd(wrappers,len);
+    }
     static TopBitSetWrapper* InPlaceAndTop(OpenBitSetWrapper** wrappers, size_t len,int32_t min_freq);
     static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq);
     static OpenBitSetWrapper* InPlaceOr(OpenBitSetWrapper** wrappers, size_t len);
     static OpenBitSetWrapper* InPlaceNot(OpenBitSetWrapper** wrappers, size_t len);
 
 
-    static OpenBitSetWrapper* InPlaceAnd(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
+    static OpenBitSetWrapper* InPlaceAnd(BitSetWrapperHolder<OpenBitSetWrapper>& holder){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceAnd(holder);
+    }
     static TopBitSetWrapper* InPlaceAndTop(BitSetWrapperHolder<OpenBitSetWrapper>& holder, int32_t min_freq);
     static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
     static OpenBitSetWrapper* InPlaceOr(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
     static OpenBitSetWrapper* InPlaceNot(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
+     */
   private:
     uint32_t _weight;
     BitSetRegion<OpenBitSet>* _seg;
     std::vector<BitSetRegion<OpenBitSet>*> _data;
     BitSetWrapperIterator<OpenBitSetWrapper, OpenBitSet>* Iterator();
     friend class BitSetWrapperIterator<OpenBitSetWrapper, OpenBitSet>;
+    friend class BitSetWrapper<OpenBitSetWrapper,OpenBitSet>;
   };
 }//namespace monad
 #endif //MONAD_OPEN_BIT_SET_WRAPPER_H_

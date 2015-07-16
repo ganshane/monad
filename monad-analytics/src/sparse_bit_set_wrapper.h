@@ -3,11 +3,12 @@
 #ifndef MONAD_SPARSE_BIT_SET_WRAPPER_H_
 #define MONAD_SPARSE_BIT_SET_WRAPPER_H_
 #include <assert.h>
+
 #include <vector>
-#include "open_bit_set.h"
-#include "top_bit_set.h"
+#include "bit_set_wrapper.h"
 #include "bit_set_region.h"
 #include "sparse_bit_set.h"
+#include "top_bit_set.h"
 
 namespace monad {
   template<typename T>
@@ -16,28 +17,26 @@ namespace monad {
   template<typename WRAPPER, typename BIT_SET>
   class BitSetWrapperIterator;
 
+  class SparseBitSetWrapper;
   class TopBitSetWrapper;
 
   template<typename T>
   class BitSetWrapperHolder;
 
-  class SparseBitSetWrapper {
+  class SparseBitSetWrapper:public BitSetWrapper<SparseBitSetWrapper,SparseBitSet> {
   public:
     SparseBitSetWrapper();
     virtual ~SparseBitSetWrapper();
     void NewSeg(int32_t region, int32_t num_words);
     void ReadIndice(int32_t index,int64_t i){
-      //_seg->bit_set->Read
+      _seg->bit_set->ReadIndice(index,i);
     }
-    void CreateBit(uint32_t index,uint32_t size){
-      //_bits[index] = new Uint64Array(size);
+    void CreateBit(int32_t index,int32_t size){
+      _seg->bit_set->CreateBit(index,size);
     }
-    void ReadBitBlock(uint32_t index,uint32_t block_index,uint64_t i){
-      //_bits[index]->Set(block_index,i);
+    void ReadBitBlock(int32_t index,int32_t block_index,int64_t i){
+      _seg->bit_set->ReadBitBlock(index,block_index,i);
     }
-    void ReadLong(int64_t data, int32_t index);
-    void ReadLong(int8_t* long_byte_data, int32_t index);
-    void ReadLong(int8_t* long_byte_data, int32_t from,int32_t to);
     void FastSet(int32_t index);
     void Set(int32_t index);
     void TrimTrailingZeros();
@@ -52,24 +51,13 @@ namespace monad {
      * @return 实际取到的个数
      */
     monad::RegionDoc** Top(int32_t n, int32_t& data_len);
-    static SparseBitSetWrapper* InPlaceAnd(SparseBitSetWrapper** wrappers,size_t len);
-    static TopBitSetWrapper* InPlaceAndTop(SparseBitSetWrapper** wrappers, size_t len,int32_t min_freq);
-    static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq);
-    static SparseBitSetWrapper* InPlaceOr(SparseBitSetWrapper** wrappers, size_t len);
-    static SparseBitSetWrapper* InPlaceNot(SparseBitSetWrapper** wrappers, size_t len);
-
-
-    static SparseBitSetWrapper* InPlaceAnd(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
-    static TopBitSetWrapper* InPlaceAndTop(BitSetWrapperHolder<SparseBitSetWrapper>& holder, int32_t min_freq);
-    static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
-    static SparseBitSetWrapper* InPlaceOr(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
-    static SparseBitSetWrapper* InPlaceNot(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
   private:
     uint32_t _weight;
     BitSetRegion<SparseBitSet>* _seg;
     std::vector<BitSetRegion<SparseBitSet>*> _data;
     BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>* Iterator();
     friend class BitSetWrapperIterator<SparseBitSetWrapper, SparseBitSet>;
+    friend class BitSetWrapper<SparseBitSetWrapper, SparseBitSet>;
   };
 }//namespace monad
 #endif //MONAD_OPEN_BIT_SET_WRAPPER_H_

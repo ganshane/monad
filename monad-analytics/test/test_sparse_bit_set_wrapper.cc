@@ -18,6 +18,33 @@ class SparseBitSetWrapperTest: public ::testing::Test {
   virtual void TearDown() {
     }
 };
+TEST_F(SparseBitSetWrapperTest, TestRead) {
+  /**
+   val bitSet = new SparseFixedBitSet(10000)
+   bitSet.set(1000)
+   bitSet.set(3000)
+   bitSet.set(5000)
+   */
+  SparseBitSetWrapper wrapper;
+  wrapper.NewSeg(2,10000);
+  wrapper.ReadIndice(0,70368744210432);
+  wrapper.ReadIndice(1,16384);
+
+  wrapper.CreateBit(0, 3);
+  wrapper.ReadBitBlock(0,0,1099511627776);
+  wrapper.ReadBitBlock(0,1,72057594037927936);
+  
+  wrapper.CreateBit(1, 1);
+  wrapper.ReadBitBlock(1,0,256);
+  wrapper.FastSet(40);
+  wrapper.Commit();
+
+  ASSERT_TRUE(wrapper.FastGet(40));
+  ASSERT_TRUE(wrapper.FastGet(1000));
+  ASSERT_FALSE(wrapper.FastGet(2000));
+  ASSERT_TRUE(wrapper.FastGet(3000));
+  ASSERT_TRUE(wrapper.FastGet(5000));
+}
 TEST_F(SparseBitSetWrapperTest, TestInPlaceAndTopWithEmptyCollection) {
   BitSetWrapperHolder<SparseBitSetWrapper> holder;
   SparseBitSetWrapper wrapper;

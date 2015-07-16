@@ -25,11 +25,11 @@ using namespace monad;
 %ignore InPlaceOr(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
 %ignore InPlaceNot(BitSetWrapperHolder<OpenBitSetWrapper>& holder);
 
-%ignore InPlaceAnd(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
-%ignore InPlaceAndTop(BitSetWrapperHolder<SparseBitSetWrapper>& holder, int32_t min_freq);
-%ignore InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<TopBitSetWrapper>& holder, int32_t min_freq);
-%ignore InPlaceOr(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
-%ignore InPlaceNot(BitSetWrapperHolder<SparseBitSetWrapper>& holder);
+%ignore InPlaceAnd(BitSetWrapperHolder<WRAPPER>& holder);
+%ignore InPlaceAndTop(BitSetWrapperHolder<WRAPPER>& holder, int32_t min_freq);
+%ignore InPlaceAndTopWithPositionMerged(BitSetWrapperHolder<WRAPPER>& holder, int32_t min_freq);
+%ignore InPlaceOr(BitSetWrapperHolder<WRAPPER>& holder);
+%ignore InPlaceNot(BitSetWrapperHolder<WRAPPER>& holder);
 
         
 //所有的swigCMemOwn均为true,方便进行删除操作
@@ -279,11 +279,55 @@ using namespace monad;
 }
 //------------------- monad::TopBitSetWrapper::Top end -------
 
+%include "bit_set_wrapper.h"
 %include "open_bit_set_wrapper.h"
 %include "sparse_bit_set_wrapper.h"
 %include "top_bit_set_wrapper.h"
+
+%extend monad::OpenBitSetWrapper{
+    static OpenBitSetWrapper* InPlaceAnd(OpenBitSetWrapper** wrappers,size_t len){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceAnd(wrappers,len);
+    }
+    static TopBitSetWrapper* InPlaceAndTop(OpenBitSetWrapper** wrappers, size_t len,int32_t min_freq){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceAndTop(wrappers,len,min_freq);
+
+    }
+    static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceAndTopWithPositionMerged(wrappers,len,min_freq);
+    }
+    static OpenBitSetWrapper* InPlaceOr(OpenBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceOr(wrappers,len);
+    }
+    static OpenBitSetWrapper* InPlaceNot(OpenBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<OpenBitSetWrapper,OpenBitSet>::InPlaceNot(wrappers,len);
+    }
+ }
+
+
+%extend monad::SparseBitSetWrapper{
+    static SparseBitSetWrapper* InPlaceAnd(SparseBitSetWrapper** wrappers,size_t len){
+      return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceAnd(wrappers,len);
+    }
+    static TopBitSetWrapper* InPlaceAndTop(SparseBitSetWrapper** wrappers, size_t len,int32_t min_freq){
+      return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceAndTop(wrappers,len,min_freq);
+
+    }
+    static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq){
+      return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceAndTopWithPositionMerged(wrappers,len,min_freq);
+    }
+    static SparseBitSetWrapper* InPlaceOr(SparseBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceOr(wrappers,len);
+    }
+    static SparseBitSetWrapper* InPlaceNot(SparseBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceNot(wrappers,len);
+    }
+ }
+
+
 /*
 %include "bit_set_wrapper_holder.h"
+%template(BaseOpenBitSetWrapper) monad::BitSetWrapper<OpenBitSetWrapper,OpenBitSet>;
+%template(BaseSparseBitSetWrapper) monad::BitSetWrapper<SparseBitSetWrapper,SparseBitSet>;
 %template(OpenBitSetWrapperHolder) monad::BitSetWrapperHolder<monad::OpenBitSetWrapper>;
 %template(TopBitSetWrapperHolder) monad::BitSetWrapperHolder<monad::TopBitSetWrapper>;
 */
