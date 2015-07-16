@@ -52,6 +52,7 @@ RUN { \
  rm -rf /build/leveldb* ;\
 }
 
+VOLUME /dist
 WORKDIR /build/monad
-
 ADD compile.sh /compile.sh
+CMD ["sh","/compile.sh"]
