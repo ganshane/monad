@@ -65,10 +65,29 @@
     </dependency>
   </dependencies>
   <build>
+    <finalName>monad-id-${project.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>id</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>monad-id-${project.version}</finalName>
+              <descriptors>
+                <descriptor>support/assembly/bin-id.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

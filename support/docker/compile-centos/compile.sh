@@ -38,6 +38,7 @@ MVN_OPTS="-Xmx1g" mvn -Dmaven.test.skip=true -DskipTests=true -Darguments="-Dski
 #copy files to dist directory
 cp  -rp monad-cloud/target/*.gz /dist
 cp  -rp monad-group/target/*.gz /dist
+cp  -rp monad-id/target/*.gz /dist
 cp  -rp monad-sync/target/*.gz /dist
 cp  -rp monad-node/target/*.gz /dist
 cp  -rp monad-api/target/*.gz /dist
