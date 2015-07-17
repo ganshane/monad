@@ -25,7 +25,7 @@ cd $ROOT
 mkdir monad-analytics/build
 cd monad-analytics/build
 rm -rf *
-CC=/opt/centos/devtoolset-1.1/root/usr/bin/cc cmake -DCMAKE_CXX_FLAGS="-I/opt/centos/devtoolset-1.1/root/usr/include -std=c++11"  -DCMAKE_BUILD_TYPE=Release ..
+CC=/opt/centos/devtoolset-1.1/root/usr/bin/cc cmake -DCMAKE_CXX_FLAGS="-I/opt/centos/devtoolset-1.1/root/usr/include -std=c++11"  -DCMAKE_BUILD_TYPE=Release -DENABLE_JNI=on ..
 make
 cp *.so /dist/
 
