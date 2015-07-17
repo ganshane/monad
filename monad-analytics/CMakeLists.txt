@@ -49,17 +49,7 @@ ELSE()
   SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-Wall")
 ENDIF()
 
-# swig support
-FIND_PACKAGE(SWIG REQUIRED)
-INCLUDE(${SWIG_USE_FILE})
-INCLUDE(UseSWIG)
 
-# java jni support
-FIND_PACKAGE(Java REQUIRED)
-FIND_PACKAGE(JNI REQUIRED)
-#INCLUDE(UseJava)
-INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH})
-INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH2})
 
 # library jni
 SET(SWIG_SOURCES "")
@@ -94,29 +84,52 @@ IF(ENABLE_CSHARP)
   ADD_DEPENDENCIES(analytics4csharp analytics csharp-swig-out-dir)
 ENDIF()
 
-
 # build matcher jni library using SWIG
-SET(SWIG_I src/analytics.i)
-SET_SOURCE_FILES_PROPERTIES(${SWIG_I} PROPERTIES CPLUSPLUS ON)
-SET_SOURCE_FILES_PROPERTIES(${SWIG_I} PROPERTIES SWIG_FLAGS "-package;monad.analytics.jni")
-SET(SWIG_SOURCES  ${SWIG_I})
-SET(CMAKE_SWIG_OUTDIR javaapi)
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_SWIG_OUTDIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src
-    COMMENT "Creating target directory for analytics project JNI sources")
+OPTION(ENABLE_JNI "enable test" OFF)
+if(ENABLE_JNI)
+  # swig support
+  FIND_PACKAGE(SWIG REQUIRED)
+  INCLUDE(${SWIG_USE_FILE})
+  INCLUDE(UseSWIG)
+# java jni support
+  FIND_PACKAGE(Java REQUIRED)
+  FIND_PACKAGE(JNI REQUIRED)
+#INCLUDE(UseJava)
+  INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH})
+  INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH2})
 
-SWIG_ADD_MODULE(analytics4j JAVA ${SWIG_SOURCES})
-SWIG_LINK_LIBRARIES(analytics4j analytics)
-SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINKER_LANGUAGE CXX)
-IF(MINGW)
-  SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at")
-ELSE()
-  SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-felide-constructors")
+  SET(SWIG_I src/analytics.i)
+  SET_SOURCE_FILES_PROPERTIES(${SWIG_I} PROPERTIES CPLUSPLUS ON)
+  SET_SOURCE_FILES_PROPERTIES(${SWIG_I} PROPERTIES SWIG_FLAGS "-package;monad.analytics.jni")
+  SET(SWIG_SOURCES  ${SWIG_I})
+  SET(CMAKE_SWIG_OUTDIR javaapi)
+  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_SWIG_OUTDIR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src
+      COMMENT "Creating target directory for analytics project JNI sources")
+
+  SWIG_ADD_MODULE(analytics4j JAVA ${SWIG_SOURCES})
+  SWIG_LINK_LIBRARIES(analytics4j analytics)
+  SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINKER_LANGUAGE CXX)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at")
+  ELSE()
+    SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-felide-constructors")
+  ENDIF()
+  ADD_CUSTOM_TARGET(jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
+  ADD_DEPENDENCIES(analytics4j analytics jni-swig-out-dir)
+  INSTALL(TARGETS analytics4j
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    #    PUBLIC_HEADER DESTINATION include
+    )
 ENDIF()
-ADD_CUSTOM_TARGET(jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
-ADD_DEPENDENCIES(analytics4j analytics jni-swig-out-dir)
 
+# build pnacl
+OPTION(ENABLE_PNACL "enable pnacl" OFF)
+if(ENABLE_PNACL)
+    ADD_SUBDIRECTORY(pnacl)
+ENDIF()
 # build unit test
 # you must config gtest directory using GTEST_ROOT variable.
 OPTION(ENABLE_TEST "enable test" OFF)
@@ -128,11 +141,6 @@ if(ENABLE_TEST)
     ADD_SUBDIRECTORY(test)
 
 ENDIF()
-install(TARGETS analytics4j
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-#    PUBLIC_HEADER DESTINATION include
-    )
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_VENDOR "EGF IT Software Department")
@@ -143,5 +151,5 @@ SET(CPACK_PACKAGE_CONTACT "Jun Tsai <jcai@ganshane.com>")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Analytics Native Library")
 
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
- 
+
 INCLUDE(CPack)

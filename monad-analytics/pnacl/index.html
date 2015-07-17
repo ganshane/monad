@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>analytics</title>
+
+  <script type="text/javascript">
+    var AnalyticsModule = null;  // Global application object.
+    statusText = 'NO-STATUS';
+
+    function moduleDidLoad() {
+      AnalyticsModule = document.getElementById('analytics');
+      updateStatus('SUCCESS');
+      // Send a message to the Native Client module
+      AnalyticsModule.postMessage({cmd:'Query'});
+    }
+
+    function handleMessage(message_event) {
+      alert(message_event.data);
+    }
+
+    function pageDidLoad() {
+      if (AnalyticsModule == null) {
+        updateStatus('LOADING...');
+      } else {
+        updateStatus();
+      }
+    }
+
+    // Set the global status message.  If the element with id 'statusField'
+    // exists, then set its HTML to the status message as well.
+    // opt_message The message test.  If this is null or undefined, then
+    // attempt to set the element with id 'statusField' to the value of
+    // |statusText|.
+    function updateStatus(opt_message) {
+      if (opt_message)
+        statusText = opt_message;
+      var statusField = document.getElementById('statusField');
+      if (statusField) {
+        statusField.innerHTML = statusText;
+      }
+    }
+  </script>
+</head>
+<body onload="pageDidLoad()">
+    <div id="listener">
+      <script type="text/javascript">
+        var listener = document.getElementById('listener');
+        listener.addEventListener('load', moduleDidLoad, true);
+        listener.addEventListener('message', handleMessage, true);
+      </script>
+
+      <embed id="analytics"
+             width=0 height=0
+             src="analytics.nmf"
+             type="application/x-pnacl" />
+    </div>
+
+  <h2>Status <code id="statusField">NO-STATUS</code></h2>
+</body>
+</html>
