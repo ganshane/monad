@@ -90,14 +90,7 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
   override def findObjectId(category:String,idSeqs: Array[Int]): Array[String] = {
     val requestBuilder = GetIdLabelRequest.newBuilder()
     idSeqs.foreach(requestBuilder.addOrd)
-    category match{
-      case "Person" =>
-        requestBuilder.setCategory(IdCategory.Person)
-      case "Car" =>
-        requestBuilder.setCategory(IdCategory.Car)
-      case other =>
-        throw new UnsupportedOperationException
-    }
+    requestBuilder.setCategory(IdCategory.valueOf(category))
 
     val future = rpcClient.writeMessageWithBlocking(MonadFaceConstants.MACHINE_ID,GetIdLabelRequest.cmd,requestBuilder.build())
     val response = future.get().getExtension(GetIdLabelResponse.cmd)
