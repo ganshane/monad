@@ -43,11 +43,10 @@ trait RpcSearcherFacade {
 
   /**
    * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
-   * @param serverId 服务器ID
    * @param idSeq id序列
    * @return id的值
    */
-  //def findObjectId(@ServerId serverId:Short,idSeq:Int):Option[Array[Byte]]
+  def findObjectId(category:String,idSeqs:Array[Int]):Array[String]
   //@Rpc(mode="all",merge = "FindIdSeqMerger",ignoreTimeout = true)
   //def findObjectIdSeq(id:String):Option[IdSeqShardResult]
 }

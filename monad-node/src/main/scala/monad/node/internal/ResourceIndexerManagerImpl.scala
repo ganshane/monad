@@ -229,4 +229,13 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
   override protected def afterObjectRemoved(obj: ResourceIndexer) {
     obj.removeIndex()
   }
+
+  /**
+   * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
+   * @param idSeqs id序列
+   * @return id的值
+   */
+  override def findObjectId(category:String,idSeqs: Array[Int]): Array[String] = {
+    throw new UnsupportedOperationException
+  }
 }

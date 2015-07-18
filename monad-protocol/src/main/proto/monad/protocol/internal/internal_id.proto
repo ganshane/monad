@@ -32,13 +32,13 @@ message GetIdLabelRequest {
     optional GetIdLabelRequest cmd = 111;
   }
   required IdCategory category = 1;
-  required int32 ord = 2;
+  repeated int32 ord = 2;
 }
 message GetIdLabelResponse {
   extend monad.rpc.protocol.BaseCommand {
     optional GetIdLabelResponse cmd = 112;
   }
-  required string label = 2;
+  repeated string label = 2;
 }
 
 message IdSearchRequest{

@@ -43,15 +43,14 @@ object IdMessageFilter {
       if(commandRequest.hasExtension(GetIdLabelRequest.cmd)){
         val getIdRequest = commandRequest.getExtension(GetIdLabelRequest.cmd)
         val category = getIdRequest.getCategory
-        val ord = getIdRequest.getOrd
-        val labelOpt = idService.getIdLabel(category,ord)
-        labelOpt match {
-          case Some(label) =>
-            val getIdResponse = GetIdLabelResponse.newBuilder().setLabel(label).build()
-            response.writeMessage(commandRequest,GetIdLabelResponse.cmd,getIdResponse)
-          case None =>
-            response.writeErrorMessage(commandRequest,"label not found")
+        val ordIt= getIdRequest.getOrdList.iterator()
+        val responseBuilder = GetIdLabelResponse.newBuilder()
+        while(ordIt.hasNext){
+          val ord = ordIt.next()
+          val labelOpt = idService.getIdLabel(category,ord)
+          responseBuilder.addLabel(labelOpt.getOrElse(""))
         }
+        response.writeMessage(commandRequest,GetIdLabelResponse.cmd,responseBuilder.build())
         true
       }else{
         handler.handle(commandRequest,response)

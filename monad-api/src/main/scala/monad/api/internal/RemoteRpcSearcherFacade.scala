@@ -6,10 +6,12 @@ import monad.face.MonadFaceConstants
 import monad.face.model.{IdShardResult, ShardResult}
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
-import monad.protocol.internal.InternalIdProto.IdSearchRequest
+import monad.protocol.internal.InternalIdProto.{GetIdLabelRequest, GetIdLabelResponse, IdCategory, IdSearchRequest}
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
 import monad.rpc.services.RpcClient
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * implements rpc searcher facade
@@ -78,5 +80,30 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
     builder.setResourceName(resourceName)
     val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createMaxdocMerger, MaxdocQueryRequest.cmd, builder.build())
     future.get()
+  }
+
+  /**
+   * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
+   * @param idSeqs id序列
+   * @return id的值
+   */
+  override def findObjectId(category:String,idSeqs: Array[Int]): Array[String] = {
+    val requestBuilder = GetIdLabelRequest.newBuilder()
+    idSeqs.foreach(requestBuilder.addOrd)
+    category match{
+      case "Person" =>
+        requestBuilder.setCategory(IdCategory.Person)
+      case "Car" =>
+        requestBuilder.setCategory(IdCategory.Car)
+      case other =>
+        throw new UnsupportedOperationException
+    }
+
+    val future = rpcClient.writeMessageWithBlocking(MonadFaceConstants.MACHINE_ID,GetIdLabelRequest.cmd,requestBuilder.build())
+    val response = future.get().getExtension(GetIdLabelResponse.cmd)
+    val it = response.getLabelList.iterator()
+    val buffer = new ArrayBuffer[String]
+    while (it.hasNext) buffer += it.next()
+    buffer.toArray
   }
 }
