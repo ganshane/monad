@@ -1,7 +1,7 @@
 package monad.id
 
 import com.google.protobuf.ExtensionRegistry
-import monad.id.internal.IdMessageFilter.{InternalAddIdRequestFilter, InternalGetIdLabelRequestFilter}
+import monad.id.internal.IdMessageFilter.{InternalAddIdRequestFilter, InternalBatchAddIdRequestFilter, InternalGetIdLabelRequestFilter}
 import monad.id.internal.{IdRpcServerListener, IdServiceImpl, IdZookeeperTemplate}
 import monad.id.services.IdService
 import monad.protocol.internal.InternalIdProto
@@ -22,7 +22,9 @@ object LocalMonadIdModule {
   @Contribute(classOf[RpcServerMessageHandler])
   def provideSyncMessageHandler(configuration: OrderedConfiguration[RpcServerMessageFilter]) {
     configuration.addInstance("AddIdRequest", classOf[InternalAddIdRequestFilter])
+    configuration.addInstance("BatchAddIdRequest", classOf[InternalBatchAddIdRequestFilter])
     configuration.addInstance("GetIdLabelRequest", classOf[InternalGetIdLabelRequestFilter])
+
   }
 
   @Contribute(classOf[RpcServerListener])

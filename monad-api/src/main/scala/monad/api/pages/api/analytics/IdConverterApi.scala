@@ -5,7 +5,7 @@ package monad.api.pages.api.analytics
 import javax.inject.Inject
 
 import monad.api.MonadApiConstants
-import monad.face.services.RpcSearcherFacade
+import monad.face.services.IdFacade
 import org.apache.tapestry5.services.{Request, Response}
 import org.apache.tapestry5.util.TextStreamResponse
 
@@ -19,7 +19,7 @@ class IdConverterApi {
   @Inject
   private var response: Response = _
   @Inject
-  private var idFacade: RpcSearcherFacade = _
+  private var idFacade: IdFacade = _
 
   def onActivate() = {
     val ids = request.getParameter("q").split(",").map(_.toInt)

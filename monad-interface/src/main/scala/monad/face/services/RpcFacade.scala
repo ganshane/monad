@@ -9,9 +9,13 @@ import monad.face.model.{IdShardResult, ShardResult}
  * @author jcai
  */
 trait IdFacade {
-  def putIfAbsent(id: Array[Byte]): Array[Byte]
-
-  def get(id: Array[Byte]): Option[Array[Byte]]
+  /**
+   * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
+   * @return id的值
+   */
+  def findObjectId(category:String,ids:Array[Int]):Array[String]
+  def batchAddId(category:String,labels:Array[String]):Array[Int]
+  def putIfAbsent(category:String,label:String):Int
 }
 
 trait RpcSearcherFacade {
@@ -41,12 +45,4 @@ trait RpcSearcherFacade {
    */
   def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]]
 
-  /**
-   * 通过服务器的ID和资源名称，以及id序列，来查找对象的ID值
-   * @param idSeq id序列
-   * @return id的值
-   */
-  def findObjectId(category:String,idSeqs:Array[Int]):Array[String]
-  //@Rpc(mode="all",merge = "FindIdSeqMerger",ignoreTimeout = true)
-  //def findObjectIdSeq(id:String):Option[IdSeqShardResult]
 }

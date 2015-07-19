@@ -4,7 +4,10 @@ package monad.api.pages.api.analytics
 
 import javax.inject.Inject
 
-import monad.face.services.RpcSearcherFacade
+import monad.face.MonadFaceConstants
+import monad.face.internal.MonadSparseFixedBitSet
+import monad.face.model.IdShardResult
+import monad.face.services.IdFacade
 import org.apache.tapestry5.services.Request
 
 /**
@@ -15,42 +18,18 @@ class ImportIdCardsApi {
   @Inject
   private var request: Request = _
   @Inject
-  private var idFacade: RpcSearcherFacade = _
+  private var idFacade: IdFacade = _
 
-  def onActivate() = {
-    /*
-    val ids = request.getParameter("q").split(",")
-    val bitSet = new OpenBitSet(10240)
-    //TODO 并行
-    val map = mutable.Map[Short, OpenBitSet]()
-    ids.foreach { id =>
-      if (!id.isEmpty) {
-        val i = idFacade.findObjectIdSeq(id)
-        if (i.isDefined) {
-          val shard = i.get
-          map.get(shard.region) match {
-            case Some(regionBitSet) =>
-              regionBitSet.set(shard.seq)
-            case None =>
-              val regionBitSet = new OpenBitSet(10240)
-              regionBitSet.set(shard.seq)
-              map.put(shard.region, regionBitSet)
-          }
-        }
-      }
-    }
+  def onActivate():IdShardResult = {
+    val category = request.getParameter("c");
+    val labels = request.getParameter("q").split(",")
+    val bitSet = new MonadSparseFixedBitSet(labels.length)
+    val ids = idFacade.batchAddId(category,labels)
+    ids.foreach(x=> if(x!=MonadFaceConstants.UNKNOWN_ID_SEQ) bitSet.set(x))
 
-    val allShard = map.map {
-      case (region, regionBitSet) =>
-        val result = new IdShardResult
-        result.data = regionBitSet
-        result.region = region
-        result
-    }.toArray
-    val collect = new IdShardResultCollect()
-    collect.results = allShard
+    val collect = new IdShardResult()
+    collect.data = bitSet
 
-    return collect
-      */
+    collect
   }
 }

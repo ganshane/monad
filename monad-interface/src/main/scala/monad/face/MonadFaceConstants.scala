@@ -76,6 +76,9 @@ object MonadFaceConstants {
   final val MACHINE_ID = MonadCoreConstants.MACHINES + "/id"
   final val MACHINE_NODE_FORMAT = MACHINE_NODES + "/s-%s"
 
+  /* 未查找到对象的默认序列 */
+  final val UNKNOWN_ID_SEQ= -1
+
   //http://bigtext.org/?font=smslant&text=MONAD
   final val MONAD_TEXT_LOGO = "@|green " + """
    __  _______  _  _____   ___

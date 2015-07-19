@@ -15,6 +15,7 @@ trait IdService {
    * @return 对象的序列
    */
   def getOrAddId(category: IdCategory,idLabel:String):Option[Int]
+  def get(category: IdCategory,idLabel:String):Option[Int]
 
   /**
    * 通过给定的序列得到对应的对象字符串

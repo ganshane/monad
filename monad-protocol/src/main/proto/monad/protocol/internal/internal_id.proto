@@ -25,8 +25,9 @@ message AddIdResponse {
   extend monad.rpc.protocol.BaseCommand {
     optional AddIdResponse cmd = 110;
   }
-  required int32 ord = 2;
+  required int32 ord = 1;
 }
+
 message GetIdLabelRequest {
   extend monad.rpc.protocol.BaseCommand {
     optional GetIdLabelRequest cmd = 111;
@@ -55,4 +56,17 @@ message IdSearchResponse{
   //该结果的分区id
   required int32 partition_id = 1;
   optional bytes bitset = 2;
+}
+message BatchAddIdRequest {
+  extend monad.rpc.protocol.BaseCommand {
+    optional BatchAddIdRequest cmd = 115;
+  }
+  required IdCategory category = 1;
+  repeated string label = 2;
+}
+message BatchAddIdResponse {
+  extend monad.rpc.protocol.BaseCommand {
+    optional BatchAddIdResponse cmd = 116;
+  }
+  repeated int32 ord = 1;
 }

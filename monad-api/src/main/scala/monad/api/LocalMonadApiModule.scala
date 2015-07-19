@@ -11,8 +11,9 @@ import com.google.protobuf.ExtensionRegistry
 import monad.api.internal._
 import monad.api.services._
 import monad.face.config.ApiConfigSupport
+import monad.face.internal.RemoteIdFacade
 import monad.face.model.{IdShardResult, OpenBitSetWithNodes}
-import monad.face.services.{ResourceDefinitionLoaderListener, RpcSearcherFacade}
+import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
 import monad.protocol.internal.{InternalFindDocProto, InternalIdProto, InternalMaxdocQueryProto, InternalSearchProto}
 import monad.rpc.services.ProtobufExtensionRegistryConfiger
 import org.apache.tapestry5.ioc._
@@ -38,6 +39,7 @@ object LocalMonadApiModule {
       scope(ScopeConstants.PERTHREAD).
       withId("ResourceRequest")
     binder.bind(classOf[RpcSearcherFacade], classOf[RemoteRpcSearcherFacade]).withId("RpcSearcherFacade")
+    binder.bind(classOf[IdFacade], classOf[RemoteIdFacade]).withId("RemoteIdFacade")
   }
 
   def buildMemcachedClient(apiConfigSupport: ApiConfigSupport) = {

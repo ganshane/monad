@@ -27,6 +27,7 @@ TEST_F(SparseBitSetWrapperTest, TestRead) {
    */
   SparseBitSetWrapper wrapper;
   wrapper.NewSeg(2,10000);
+  wrapper.ReadNonZero(3);
   wrapper.ReadIndice(0,70368744210432);
   wrapper.ReadIndice(1,16384);
 

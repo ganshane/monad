@@ -52,6 +52,11 @@ class IdServiceImpl(config:MonadIdConfig) extends IdService with LoggerSupport{
   override def getOrAddId(category: IdCategory, idLabel: String): Option[Int] =
     ids.get(category).map(_.getOrAddId(idLabel))
 
+
+  override def get(category: IdCategory, idLabel: String): Option[Int] = {
+    ids.get(category).flatMap(_.getId(idLabel))
+  }
+
   /**
    * 通过给定的序列得到对应的对象字符串
    * @param idOrd 对象序列
@@ -98,6 +103,11 @@ class IdServiceImpl(config:MonadIdConfig) extends IdService with LoggerSupport{
 
         ord
       }
+    }
+    def getId(idLabel:String):Option[Int]={
+      val labelKey = buildLabelKey(idLabel)
+      val ordBytes = nosql.Get(labelKey)
+      if(ordBytes != null) Some(ByteBuffer.wrap(ordBytes).getInt) else None
     }
     def getIdLabel(idOrd: Int): Option[String] = {
       val labelBytes = nosql.Get(buildOrdKey(idOrd))

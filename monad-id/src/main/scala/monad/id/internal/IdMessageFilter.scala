@@ -4,7 +4,7 @@ import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
 import monad.id.config.MonadIdConfig
 import monad.id.services.IdService
-import monad.protocol.internal.InternalIdProto.{AddIdRequest, AddIdResponse, GetIdLabelRequest, GetIdLabelResponse}
+import monad.protocol.internal.InternalIdProto._
 import monad.rpc.model.RpcServerLocation
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
@@ -51,6 +51,24 @@ object IdMessageFilter {
           responseBuilder.addLabel(labelOpt.getOrElse(""))
         }
         response.writeMessage(commandRequest,GetIdLabelResponse.cmd,responseBuilder.build())
+        true
+      }else{
+        handler.handle(commandRequest,response)
+      }
+    }
+  }
+  class InternalBatchAddIdRequestFilter(idService:IdService) extends RpcServerMessageFilter{
+    override def handle(commandRequest: BaseCommand, response: CommandResponse, handler: RpcServerMessageHandler): Boolean = {
+      if(commandRequest.hasExtension(BatchAddIdRequest.cmd)){
+        val addIdRequest = commandRequest.getExtension(BatchAddIdRequest.cmd)
+        val category = addIdRequest.getCategory
+        val it = addIdRequest.getLabelList.iterator()
+        val responseBuilder = BatchAddIdResponse.newBuilder()
+        while(it.hasNext){
+          val ordOpt = idService.getOrAddId(category,it.next())
+          responseBuilder.addOrd(ordOpt.getOrElse(MonadFaceConstants.UNKNOWN_ID_SEQ))
+        }
+        response.writeMessage(commandRequest,BatchAddIdResponse.cmd,responseBuilder.build())
         true
       }else{
         handler.handle(commandRequest,response)
