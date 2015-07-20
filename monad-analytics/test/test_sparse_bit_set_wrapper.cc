@@ -28,7 +28,7 @@ TEST_F(SparseBitSetWrapperTest, TestBitCount) {
   printf("c:%d \n",wrapper.BitCount());
   for(int i=0;i<length;i++){
     wrapper.FastSet(i);
-    printf("c:%d \n",wrapper.BitCount());
+    //printf("c:%d \n",wrapper.BitCount());
   }
   printf("c:%d \n",wrapper.BitCount());
 }

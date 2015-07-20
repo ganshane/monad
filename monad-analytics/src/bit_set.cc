@@ -16,6 +16,6 @@ namespace monad{
     x = x + UnsignedShift(x, (int64_t)8);
     x = x + UnsignedShift(x, (int64_t)16);
     x = x + UnsignedShift(x, (int64_t)32);
-    return (int32_t)x & 0x7f;
+    return (uint32_t) ((int32_t)x & 0x7f);
   }
 }
