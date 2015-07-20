@@ -18,6 +18,21 @@ class SparseBitSetWrapperTest: public ::testing::Test {
   virtual void TearDown() {
     }
 };
+
+TEST_F(SparseBitSetWrapperTest, TestBitCount) {
+
+  uint32_t length;
+  monad::SparseBitSetWrapper wrapper;
+  length = 100;
+  wrapper.NewSeg(1,length);
+  printf("c:%d \n",wrapper.BitCount());
+  for(int i=0;i<length;i++){
+    wrapper.FastSet(i);
+    printf("c:%d \n",wrapper.BitCount());
+  }
+  printf("c:%d \n",wrapper.BitCount());
+}
+
 TEST_F(SparseBitSetWrapperTest, TestRead) {
   /**
    val bitSet = new SparseFixedBitSet(10000)

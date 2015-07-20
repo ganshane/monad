@@ -16,7 +16,34 @@ class SparseBitSetTest: public ::testing::Test {
   virtual void TearDown() {
     }
 };
+static uint32_t bitCount(uint64_t x)
+{
+  x = x - ((x >> 1ULL) & 0x5555555555555555ULL);
+  x = (x & 0x3333333333333333ULL) + ((x >>2ULL) & 0x3333333333333333ULL);
+  x = (x + (x >> 4ULL)) & 0x0f0f0f0f0f0f0f0fULL;
+  x = x + (x >> 8ULL);
+  x = x + (x >> 16ULL);
+  x = x + (x >> 32ULL);
+  return (uint32_t)x & 0x7f;
+}
+TEST_F(SparseBitSetTest, TestBitCount) {
+  uint64_t num = 1 << 2;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 4;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 8;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 10;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 22;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 32;
+  printf("count1 %d \n",bitCount(num));
+  num |= 1LL << 42;
+  printf("count1 %d \n",bitCount(num));
+}
 TEST_F(SparseBitSetTest, TestGetSet) {
+
   SparseBitSet bit_set(5000);
   /*
   bit_set.ReadLong(1<< 10,0);

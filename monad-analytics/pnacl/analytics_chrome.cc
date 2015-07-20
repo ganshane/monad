@@ -11,7 +11,7 @@ namespace monad {
   /** set id search api url **/
   const char* const kSetUrlCommand= "SetUrl";
   const char* const kQueryCommand="Query";
-  const char* const kReplyString = "hello wellfrom find NaCl";
+  const char* const kReplyString = "hello wellf 中文 rom find NaCl";
   class AnalyticsInstance : public pp::Instance {
   public:
     explicit AnalyticsInstance(PP_Instance instance)
@@ -34,8 +34,8 @@ namespace monad {
         PostMessage(var_reply);
       }else if(command == kQueryCommand){
         SparseBitSetWrapper wrapper;
-        wrapper.NewSeg(1,10000);
-        for(int i=0;i<10000;i++){
+        wrapper.NewSeg(1,1000000);
+        for(int i=0;i<1000000;i++){
           wrapper.FastSet(i);
         }
         pp::Var var_reply(wrapper.BitCount());

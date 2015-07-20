@@ -125,6 +125,11 @@ if(ENABLE_JNI)
     )
 ENDIF()
 
+# build em
+OPTION(ENABLE_EM "enable em" OFF)
+if(ENABLE_EM)
+    ADD_SUBDIRECTORY(em)
+ENDIF()
 # build pnacl
 OPTION(ENABLE_PNACL "enable pnacl" OFF)
 if(ENABLE_PNACL)

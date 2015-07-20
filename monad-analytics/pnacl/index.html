@@ -14,6 +14,11 @@
       // Send a message to the Native Client module
       AnalyticsModule.postMessage({cmd:'Query'});
     }
+   function sayHello(){
+      AnalyticsModule = document.getElementById('analytics');
+      // Send a message to the Native Client module
+      AnalyticsModule.postMessage({cmd:'SetUrl'});
+   }
 
     function handleMessage(message_event) {
       alert(message_event.data);
@@ -57,5 +62,6 @@
     </div>
 
   <h2>Status <code id="statusField">NO-STATUS</code></h2>
+  <button onClick="javascript:sayHello()">Hello</button>
 </body>
 </html>

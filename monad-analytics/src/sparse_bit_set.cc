@@ -73,13 +73,7 @@ namespace monad{
   }
   static uint32_t bitCount(uint64_t x)
   {
-    x = x - ((x >> 1ULL) & 0x5555555555555555ULL);
-    x = (x & 0x3333333333333333ULL) + ((x >>2ULL) & 0x3333333333333333ULL);
-    x = (x + (x >> 4ULL)) & 0x0f0f0f0f0f0f0f0fULL;
-    x = x + (x >> 8ULL);
-    x = x + (x >> 16ULL);
-    x = x + (x >> 32ULL);
-    return (uint32_t)x & 0x7f;
+    return BitSetUtils::BitCount(x);
   }
   static uint32_t calBlockCount(uint32_t length) {
     uint32_t blockCount = length >> 12;
@@ -156,6 +150,7 @@ namespace monad{
         //System.arraycopy(bitArray, o, bitArray, o + 1, bitArray.length - o - 1);
         data[o] = (uint64_t) (1ULL << i);
       } else {
+        printf("resize i:%d \n",i);
         // we don't have extra space so we need to resize to insert the new long
         uint32_t new_size = oversize(bitArray->_length + 1);
         uint64_t *new_data = new uint64_t[new_size];
