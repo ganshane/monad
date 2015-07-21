@@ -12,6 +12,9 @@ namespace monad{
     virtual void onMatch(int doc) = 0;
     virtual void finish() {}
   };
+  inline static uint64_t LeftShift(uint64_t i,uint32_t shift){
+    return  i << (shift & 63);
+  }
   class AndLeapFrogCallBack:public LeapFrogCallBack{
   public:
     AndLeapFrogCallBack(SparseBitSet* bit_set){
@@ -43,7 +46,7 @@ namespace monad{
     SparseBitSet* _bit_set;
   };
   static uint64_t mask(uint32_t from, uint32_t to) {
-    return ((1ULL << (to - from) << 1) - 1) << from;
+    return ((LeftShift(1ULL , (to - from)) << 1) - 1) << from;
   }
   static uint32_t numberOfTrailingZeros(uint64_t i) {
     // HD, Figure 5-14
@@ -135,18 +138,18 @@ namespace monad{
   }
 
   void SparseBitSet::insertBlock(uint32_t i4096, uint32_t i64, uint32_t i) {
-    _indices[i4096] = (uint64_t) (1ULL << i64); // shifts are mod 64 in java
+    _indices[i4096] = (uint64_t) LeftShift(1ULL,i64); // shifts are mod 64 in java
     assert(_bits[i4096] == NULL);
     _bits[i4096] = new Uint64Array(1);
-    _bits[i4096]->Set(0,(uint64_t) (1ULL << i)); // shifts are mod 64 in java
+    _bits[i4096]->Set(0,(uint64_t) LeftShift(1ULL,i)); // shifts are mod 64 in java
 
     ++_nonZeroLongCount;
   }
   void SparseBitSet::insertLong(uint32_t i4096, uint32_t i64, uint32_t i, uint64_t index) {
-    _indices[i4096] |= 1ULL << i64; // shifts are mod 64 in java
+    _indices[i4096] |= LeftShift(1ULL , i64); // shifts are mod 64 in java
     // we count the number of bits that are set on the right of i64
     // this gives us the index at which to perform the insertion
-    uint32_t o = bitCount(index & ((1ULL << i64) - 1));
+    uint32_t o = bitCount(index & (LeftShift(1ULL , i64) - 1));
     Uint64Array* bitArray = _bits[i4096];
     uint64_t* data = bitArray->_data;
       if (data[bitArray->_length - 1] == 0) {
@@ -154,7 +157,7 @@ namespace monad{
         // that we alreay have extra space, make use of it
         memcpy(data+o+1,data+o,(bitArray->_length -o - 1)*sizeof(uint64_t));
         //System.arraycopy(bitArray, o, bitArray, o + 1, bitArray.length - o - 1);
-        data[o] = (uint64_t) (1ULL << i);
+        data[o] = (uint64_t) LeftShift(1ULL , i);
         //data[o] = (uint64_t) BitSetUtils::UnsignedShift(1ULL, i);
       } else {
         // we don't have extra space so we need to resize to insert the new long
@@ -162,7 +165,7 @@ namespace monad{
         uint64_t *new_data = new uint64_t[new_size];
         memset(new_data,0, sizeof(uint64_t)*new_size);
         memcpy(new_data, data, o*sizeof(uint64_t));
-        new_data[o] = (uint64_t) (1ULL << i);
+        new_data[o] = (uint64_t) LeftShift(1ULL , i);
         memcpy(new_data, data + o, (bitArray->_length - o)*sizeof(uint64_t));
         bitArray->_length = new_size;
         bitArray->_data = new_data;
@@ -175,11 +178,11 @@ namespace monad{
     uint32_t i4096 = i >> 12;
     uint64_t index = _indices[i4096];
     uint32_t i64 = i >> 6;
-    if ((index & (1ULL << i64)) != 0) {
+    if ((index & LeftShift(1ULL , i64)) != 0) {
       // in that case the sub 64-bits block we are interested in already exists,
       // we just need to set a bit in an existing long: the number of ones on
       // the right of i64 gives us the index of the long we need to update
-      _bits[i4096]->_data[bitCount(index & ((1ULL << i64) - 1))] |= 1ULL << i; // shifts are mod 64 in java
+      _bits[i4096]->_data[bitCount(index & (LeftShift(1ULL , i64) - 1))] |= LeftShift(1ULL , i); // shifts are mod 64 in java
     } else if (index == 0) {
       // if the index is 0, it means that we just found a block of 4096 bits
       // that has no bit that is set yet. So let's initialize a new block:
@@ -198,15 +201,15 @@ namespace monad{
     uint32_t i64 = i >> 6;
     // first check the index, if the i64-th bit is not set, then i is not set
     // note: this relies on the fact that shifts are mod 64 in java
-    if ((index & (1ULL << i64)) == 0) {
+    if ((index & LeftShift(1ULL , i64)) == 0) {
       return false;
     }
 
     // if it is set, then we count the number of bits that are set on the right
     // of i64, and that gives us the index of the long that stores the bits we
     // are interested in
-    uint64_t bits = _bits[i4096]->_data[bitCount(index & ((1ULL << i64) - 1))];
-    return (bits & (1ULL << i)) != 0;
+    uint64_t bits = _bits[i4096]->_data[bitCount(index & (LeftShift(1ULL , i64) - 1))];
+    return (bits & LeftShift(1ULL , i)) != 0;
   }
 
   void SparseBitSet::Or(uint32_t i4096, uint64_t index, Uint64Array* bits, uint32_t nonZeroLongCount){
@@ -255,10 +258,10 @@ namespace monad{
   }
   /** Return the long bits at the given <code>i64</code> index. */
   uint64_t SparseBitSet::longBits(uint64_t index, Uint64Array* bits, uint32_t i64) {
-    if ((index & (1ULL << i64)) == 0) {
+    if ((index & LeftShift(1ULL , i64)) == 0) {
       return 0L;
     } else {
-      return bits->_data[bitCount(index & ((1ULL << i64) - 1))];
+      return bits->_data[bitCount(index & (LeftShift(1ULL , i64) - 1))];
     }
   }
   void SparseBitSet::Or(const SparseBitSet &other) {
@@ -335,8 +338,8 @@ namespace monad{
     uint64_t index = _indices[i4096];
     Uint64Array* bitArray = _bits[i4096];
     uint32_t i64 = i >> 6;
-    uint32_t o = bitCount(index & ((1ULL << i64) - 1));
-    if ((index & (1ULL << i64)) != 0) {
+    uint32_t o = bitCount(index & (LeftShift(1ULL , i64) - 1));
+    if ((index & LeftShift(1ULL , i64)) != 0) {
       // There is at least one bit that is set in the current uint64_t, check if
       // one of them is after i
       uint64_t bits = bitArray->_data[o] >> i; // shifts are mod 64
@@ -375,12 +378,12 @@ namespace monad{
     uint64_t index = _indices[i4096];
     Uint64Array* bitArray = _bits[i4096];
     uint32_t i64 = i >> 6;
-    uint64_t indexBits = index & ((1L << i64) - 1);
+    uint64_t indexBits = index & (LeftShift(1ULL , i64) - 1);
     uint32_t o = bitCount(indexBits);
-    if ((index & (1L << i64)) != 0) {
+    if ((index & LeftShift(1ULL , i64)) != 0) {
       // There is at least one bit that is set in the same long, check if there
       // is one bit that is set that is lower than i
-      uint64_t bits = bitArray->_data[o] & ((1L << i << 1) - 1);
+      uint64_t bits = bitArray->_data[o] & ((LeftShift(1L, i) << 1) - 1);
       if (bits != 0) {
         return (i64 << 6) | (63 - numberOfLeadingZeros(bits));
       }
@@ -396,7 +399,7 @@ namespace monad{
     return (i4096 << 12) | (i64 << 6) | (63 - numberOfLeadingZeros(bits));
   }
   void SparseBitSet::removeLong(uint32_t i4096, uint32_t i64, uint64_t index, uint32_t o) {
-    index &= ~(1L << i64);
+    index &= ~LeftShift(1L , i64);
     _indices[i4096] = index;
     if (index == 0) {
       // release memory, there is nothing in this block anymore
@@ -414,9 +417,9 @@ namespace monad{
   }
   void SparseBitSet::And(uint32_t i4096, uint32_t i64, uint64_t mask) {
     uint64_t index = _indices[i4096];
-    if ((index & (1L << i64)) != 0) {
+    if ((index & LeftShift(1L , i64)) != 0) {
       // offset of the long bits we are interested in in the array
-      uint32_t o = bitCount(index & ((1L << i64) - 1));
+      uint32_t o = bitCount(index & (LeftShift(1L , i64) - 1));
       uint64_t* data = _bits[i4096]->_data;
       uint64_t bits = data[o] & mask;
       if (bits == 0) {
@@ -431,7 +434,7 @@ namespace monad{
     assert(consistent(i));
     uint32_t i4096 = i >> 12;
     uint32_t i64 = i >> 6;
-    And(i4096, i64, ~(1L << i));
+    And(i4096, i64, ~LeftShift(1L , i));
   }
   void SparseBitSet::clearWithinBlock(uint32_t i4096, uint32_t from, uint32_t to){
     uint32_t firstLong = from >> 6;
