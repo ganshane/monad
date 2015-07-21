@@ -66,6 +66,10 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="Person"/>
       <xs:enumeration value="Car"/>
+      <xs:enumeration value="Mobile"/>
+      <xs:enumeration value="Mac"/>
+      <xs:enumeration value="QQ"/>
+      <xs:enumeration value="WeiXin"/>
     </xs:restriction>
   </xs:simpleType>
   <!-- 索引部分的定义 -->

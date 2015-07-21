@@ -13,6 +13,10 @@ option java_outer_classname = "InternalIdProto";
 enum IdCategory{
   Person = 1;
   Car = 2;
+  Mobile = 3;
+  Mac = 4;
+  QQ = 5;
+  WeiXin = 6;
 }
 message AddIdRequest {
   extend monad.rpc.protocol.BaseCommand {

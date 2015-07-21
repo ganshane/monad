@@ -6,5 +6,5 @@ package monad.face.model;
  * @since 2015-07-13
  */
 public enum ObjectCategory {
-    Person,Car
+    Person,Car,Mobile,Mac,QQ,Weixin;
 }
