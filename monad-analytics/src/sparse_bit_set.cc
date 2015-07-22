@@ -12,6 +12,9 @@ namespace monad{
     virtual void onMatch(int doc) = 0;
     virtual void finish() {}
   };
+  inline static uint64_t RightShift(uint64_t i,uint32_t shift){
+    return  i >> (shift & 63);
+  }
   inline static uint64_t LeftShift(uint64_t i,uint32_t shift){
     return  i << (shift & 63);
   }
@@ -46,7 +49,7 @@ namespace monad{
     SparseBitSet* _bit_set;
   };
   static uint64_t mask(uint32_t from, uint32_t to) {
-    return ((LeftShift(1ULL , (to - from)) << 1) - 1) << from;
+    return LeftShift(((LeftShift(1ULL , (to - from)) << 1) - 1) , from);
   }
   static uint32_t numberOfTrailingZeros(uint64_t i) {
     // HD, Figure 5-14
@@ -125,7 +128,7 @@ namespace monad{
     assert(index >= 0 && index < _length);
     return true;
   }
-  uint32_t SparseBitSet::Cardinality() {
+  uint32_t SparseBitSet::Cardinality() const{
     uint32_t cardinality = 0;
     for(int i=0;i< _blockCount;i++){
       if(_bits[i]){
@@ -244,10 +247,10 @@ namespace monad{
     // array is reused
     for (int i = numberOfLeadingZeros(newIndex), newO = bitCount(newIndex) - 1;
          i < 64;
-         i += 1 + numberOfLeadingZeros(newIndex << (i + 1)), newO -= 1) {
+         i += 1 + numberOfLeadingZeros(LeftShift(newIndex , (i + 1))), newO -= 1) {
       // bitIndex is the index of a bit which is set in newIndex and newO is the number of 1 bits on its right
       uint32_t bitIndex = 63 - i;
-      assert(newO == bitCount(newIndex & ((1ULL << bitIndex) - 1)));
+      assert(newO == bitCount(newIndex & (LeftShift(1ULL , bitIndex) - 1)));
       new_bits->Set(newO,longBits(currentIndex, current_bits, bitIndex) | longBits(index, bits, bitIndex));
     }
     _indices[i4096] = newIndex;
@@ -278,6 +281,7 @@ namespace monad{
     // is sparser and the leap-frog approach of the parent class is more
     // efficient. Since SparseFixedBitSet is supposed to be used for sparse
     // sets, the intersection of two SparseFixedBitSet is likely very sparse
+    //printf("self:%d other:%d \n",Cardinality(),other.Cardinality());
     uint32_t min_len = _blockCount;
     if(min_len > other._blockCount){
       min_len = other._blockCount;
@@ -292,10 +296,13 @@ namespace monad{
         }
       }
     }
-    
+
     AndLeapFrogCallBack callback(this);
     leapFrog(other, callback);
-    
+
+
+    //printf("self:%d other:%d \n",Cardinality(),other.Cardinality());
+
   }
   void SparseBitSet::leapFrog(const SparseBitSet& other, LeapFrogCallBack& callback){
     uint32_t other_doc = other.NextSetBit(0);
@@ -342,13 +349,13 @@ namespace monad{
     if ((index & LeftShift(1ULL , i64)) != 0) {
       // There is at least one bit that is set in the current uint64_t, check if
       // one of them is after i
-      uint64_t bits = bitArray->_data[o] >> i; // shifts are mod 64
+      uint64_t bits = RightShift(bitArray->_data[o] , i); // shifts are mod 64
       if (bits != 0) {
         return i + numberOfTrailingZeros(bits);
       }
       o += 1;
     }
-    uint64_t indexBits = index >> i64 >> 1;
+    uint64_t indexBits = RightShift(index , i64 )>> 1;
     if (indexBits == 0) {
       // no more bits are set in the current block of 4096 bits, go to the next one
       return firstDoc(i4096 + 1);

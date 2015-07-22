@@ -42,7 +42,7 @@ namespace monad {
   public:
     SparseBitSet(uint32_t length);
     uint32_t GetLength(){return _length;}
-    uint32_t Cardinality();
+    uint32_t Cardinality() const;
     void Set(uint32_t i);
     bool Get(uint32_t i);
     //序列化使用
