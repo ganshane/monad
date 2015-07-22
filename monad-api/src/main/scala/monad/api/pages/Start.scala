@@ -11,7 +11,7 @@ import monad.face.model.{ResourceDefinition, ResourceType}
 import monad.face.services.ResourceDefinitionLoader
 import org.apache.tapestry5.annotations.{Cached, Property}
 import org.apache.tapestry5.ioc.annotations.Inject
-import org.apache.tapestry5.services.Request
+import org.apache.tapestry5.services.{Request, Response}
 import org.apache.tapestry5.util.TextStreamResponse
 
 import scala.collection.JavaConversions._
@@ -36,9 +36,12 @@ class Start {
   @Property
   var indexDef: ResourceDefinition = _
   @Inject
+  var response:Response = _
+  @Inject
   private var request: Request = _
 
   def onActivate(): Object = {
+    response.setHeader("Access-Control-Allow-Origin","*");
     println(request.getPath);
     if (request.getPath.contains("crossdomain.xml")) {
       return new TextStreamResponse("text/xml", XML)
