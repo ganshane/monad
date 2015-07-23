@@ -18,9 +18,28 @@ using namespace emscripten;
 namespace monad {
   //api url
   static std::string api_url;
+  struct ValComp {
+    //bool operator() (const char& lhs, const char& rhs) const
+    bool operator()(const val &lhs, const val &rhs) const {
+      std::string ltype(lhs.typeof().as<std::string>());
+      std::string rtype(rhs.typeof().as<std::string>());
+      if (ltype != rtype) {
+        return ltype < rtype;
+      }
+      if (ltype == "string") {
+        return lhs.as<std::string>() < rhs.as<std::string>();
+      } else if (ltype == "number") {
+        return lhs.as<int>() < rhs.as<int>();
+      } else {
+        return false;
+      }
+    }
+  };
   //记录SparseBitSetWrapper的容器
-  static std::map<uint32_t,SparseBitSetWrapper*> container;
-  static std::map<uint32_t,TopBitSetWrapper*> top_container;
+  typedef ValComp KEY;
+  static std::map<val,SparseBitSetWrapper*,KEY> container;
+  static std::map<val,TopBitSetWrapper*,KEY> top_container;
+
   //操作SparseBitSetWrapper的函数
   typedef SparseBitSetWrapper* (*Action)(SparseBitSetWrapper**,size_t);
 
@@ -41,9 +60,9 @@ namespace monad {
     return  (hi << 32) | lo;
   }
   template<typename T>
-  inline static T* FindWrapper(std::map<uint32_t,T*>& map, uint32_t key){
-    typename std::map<uint32_t ,T*>::iterator it;
-    printf("find wrapper by key:%d container size:%d \n",key,map.size());
+  inline static T* FindWrapper(std::map<val,T*,KEY>& map, const val& key){
+    typename std::map<val ,T*>::iterator it;
+    printf("find wrapper container size:%d \n",map.size());
     it = map.find(key);
     if(it == map.end()){
       return NULL;
@@ -52,13 +71,13 @@ namespace monad {
     }
   }
   template<typename T>
-  inline static void CleanrContainer(std::map<uint32_t,T*>& map){
-    typename std::map<uint32_t ,T*>::iterator it;
+  inline static void CleanrContainer(std::map<val,T*,KEY>& map){
+    typename std::map<val ,T*>::iterator it;
     it = map.begin();
     map.erase(it,map.end());
   }
   template<typename T>
-  inline static void RemoveWrapper(std::map<uint32_t,T*>& map, uint32_t key){
+  inline static void RemoveWrapper(std::map<val,T*,KEY>& map, const val& key){
     T* wrapper = FindWrapper(map,key);
     if(wrapper){
       map.erase(key);
@@ -66,18 +85,18 @@ namespace monad {
     }
   }
   template<typename T>
-  inline static void CallJavascriptFunction(std::map<uint32_t,T*>& map,void* args,T* wrapper){
+  inline static void CallJavascriptFunction(std::map<val,T*,KEY>& map,void* args,T* wrapper){
     std::vector<val> args_ = *(std::vector<val>*)args;
 
-    uint32_t id = args_[0].as<uint32_t>();
+    val id = args_[0];
     T* old_wrapper = FindWrapper(map,id);
     if(old_wrapper){
       map.erase(id);
-      printf("old wrapper exsists with key :%d! \n",id);
+      //printf("old wrapper exsists with key :%d! \n",id);
       delete old_wrapper;
     }
-    map.insert(std::pair<uint32_t,T*>(id,wrapper));
-    printf("insert wrapper id %d \n",id);
+    map.insert(std::pair<val,T*>(id,wrapper));
+    //printf("insert wrapper id %d \n",id);
 
     val json=val::object();
     json.set("key",val(id));
@@ -93,17 +112,17 @@ namespace monad {
     delete (std::vector<val>*)args;
   }
   template<typename T>
-  static T** CreateWrapperCollection(std::map<uint32_t,T*>& map,val v,std::vector<val>* args,uint32_t* len){
-    unsigned length = v["length"].as<unsigned>();
+  static T** CreateWrapperCollection(std::map<val,T*,KEY>& map,const val& keys,std::vector<val>* args,uint32_t* len){
+    unsigned length = keys["length"].as<unsigned>();
     T** collections = new T*[length];
     //printf("length:%d \n",length);
     T* wrapper;
     for(unsigned i=0;i<length;i++){
-      uint32_t key = v[i].as<uint32_t>();
+      val key = keys[i];
       wrapper = FindWrapper(map,key);
       if(wrapper == NULL){
         char message[100];
-        sprintf(message,"collection not found by key :%d",key);
+        //sprintf(message,"collection not found by key :%d",key);
         OnFail(0,args,51,message);
         return NULL;
       }
@@ -220,11 +239,11 @@ namespace monad {
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
-  void Top(const uint32_t key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail) {
+  void Top(const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail) {
     TopBitSetWrapper* wrapper=FindWrapper(top_container,key);
     if(wrapper == NULL){
         char message[100];
-        sprintf(message,"collection not found by key :%d",key);
+        sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
         ((val)on_fail)(val(std::string(message)));
         return;
     }
@@ -261,11 +280,11 @@ namespace monad {
     CleanrContainer(container);
     CleanrContainer(top_container);
   }
-  void ClearCollection(const uint32_t key){
+  void ClearCollection(const val& key){
     RemoveWrapper(container,key);
     RemoveWrapper(top_container,key);
   }
-  val GetCollectionProperties(const uint32_t key){
+  val GetCollectionProperties(const val& key){
     SparseBitSetWrapper* wrapper = FindWrapper(container,key);
     val result = val::object();
     if(wrapper){
