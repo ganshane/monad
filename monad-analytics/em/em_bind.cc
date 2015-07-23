@@ -52,6 +52,20 @@ namespace monad {
     }
   }
   template<typename T>
+  inline static void CleanrContainer(std::map<uint32_t,T*>& map){
+    typename std::map<uint32_t ,T*>::iterator it;
+    it = map.begin();
+    map.erase(it,map.end());
+  }
+  template<typename T>
+  inline static void RemoveWrapper(std::map<uint32_t,T*>& map, uint32_t key){
+    T* wrapper = FindWrapper(map,key);
+    if(wrapper){
+      map.erase(key);
+      delete wrapper;
+    }
+  }
+  template<typename T>
   inline static void CallJavascriptFunction(std::map<uint32_t,T*>& map,void* args,T* wrapper){
     std::vector<val> args_ = *(std::vector<val>*)args;
 
@@ -243,6 +257,30 @@ namespace monad {
       delete docs[i];
     delete [] docs;
   }
+  void ClearAllCollection(){
+    CleanrContainer(container);
+    CleanrContainer(top_container);
+  }
+  void ClearCollection(const uint32_t key){
+    RemoveWrapper(container,key);
+    RemoveWrapper(top_container,key);
+  }
+  val GetCollectionProperties(const uint32_t key){
+    SparseBitSetWrapper* wrapper = FindWrapper(container,key);
+    val result = val::object();
+    if(wrapper){
+      result.set("count",val(wrapper->BitCount()));
+      result.set("key",val(key));
+      result.set("is_top",val(false));
+    }
+    TopBitSetWrapper* top_wrapper = FindWrapper(top_container,key);
+    if(top_wrapper){
+      result.set("count",val(top_wrapper->BitCount()));
+      result.set("key",val(key));
+      result.set("is_top",val(true));
+    }
+    return result;
+  }
 
 
   // Binding code
@@ -256,6 +294,10 @@ namespace monad {
       function("inPlaceAndTop", &InPlaceAndTop);
       function("inPlaceAndTopWithPositionMerged", &InPlaceAndTopWithPositionMerged);
       function("top", &Top);
+      function("clearAllCollection", &ClearAllCollection);
+      function("clearCollection", &ClearCollection);
+      function("getCollectionProperties", &GetCollectionProperties);
+
       class_<SparseBitSetWrapper>("BitSetWrapper")
           .constructor()
           .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
