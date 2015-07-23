@@ -61,7 +61,8 @@ abstract class ObjectIdSearcherSupportImpl(regionId: Short)
   private class IdSearchCollector(s: InternalIndexSearcher) extends SimpleCollector {
     private var context: LeafReaderContext = _
     //TODO 最大值从id服务器中读取
-    private[internal] val result = new MonadSparseFixedBitSet(100000)
+    private val max = 100000000
+    private[internal] val result = new MonadSparseFixedBitSet(max)
 
 
     override def doSetNextReader(context: LeafReaderContext): Unit = {

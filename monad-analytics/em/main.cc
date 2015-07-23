@@ -6,6 +6,11 @@
 
 
 int main(){
+  EM_ASM(
+             if (analytics_onready){
+               analytics_onready();
+             }
+        );
   //char url[]="http://127.0.0.1:9081";
   //emscripten_async_wget2_data(url,"POST","",NULL,true,&onload,NULL,NULL);
  // val xhr = val::global("XMLHttpRequest").new_();

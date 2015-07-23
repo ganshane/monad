@@ -260,56 +260,84 @@ namespace monad {
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
   void Top(const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail) {
-    TopBitSetWrapper* wrapper=FindWrapper(top_container,key);
-    if(wrapper == NULL){
-        char message[100];
-        sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
-        ((val)on_fail)(val(std::string(message)));
-        return;
-    }
-
     int32_t len=0;
     uint32_t query_topN = topN + offset;
-    RegionTopDoc** docs = wrapper->Top(query_topN,len);
-    printf("top len:%d \n",len);
     val data=val::array();
-    std::stringstream p;
-    p <<"q=";
+    std::stringstream parameter;
 
-    for(int i=offset;i<len;i++){
-      TopDoc* top_doc=docs[i]->top_doc;
-      val obj = val::object();
-      obj.set("id",val(top_doc->doc));
-      p << top_doc->doc << ",";
-      obj.set("count",val(top_doc->freq));
-      val p = val::array();
-      for(int j=0;j<top_doc->position_len;j++){
-        p[j*2]=val((uint32_t)(top_doc->position[j] >> 32));
-        p[j*2+1] = val((uint32_t)(top_doc->position[j] & 0x00000000fffffffL));
+    parameter <<"q=";
+
+    //TOP
+    TopBitSetWrapper* wrapper=FindWrapper(top_container,key);
+
+    if(wrapper != NULL) {
+      RegionTopDoc** docs = wrapper->Top(query_topN,len);
+      printf("top len:%d \n",len);
+      for (int i = offset; i < len; i++) {
+        TopDoc *top_doc = docs[i]->top_doc;
+        val obj = val::object();
+        obj.set("id", val(top_doc->doc));
+        parameter << top_doc->doc << ",";
+        obj.set("count", val(top_doc->freq));
+        val p = val::array();
+        for (int j = 0; j < top_doc->position_len; j++) {
+          p[j * 2] = val((uint32_t) (top_doc->position[j] >> 32));
+          p[j * 2 + 1] = val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL));
+        }
+
+        obj.set("p", val(top_doc->freq));
+        printf("obj id:%d \n", top_doc->doc);
+
+        data.set(i - offset, obj);
       }
 
-      obj.set("p",val(top_doc->freq));
-      printf("obj id:%d \n",top_doc->doc);
 
-      data.set(i-offset,obj);
+      //clear
+      for (int i = 0; i < len; i++)
+        delete docs[i];
+      delete[] docs;
     }
 
-    std::vector<val>* args = new std::vector<val>();
-    args->push_back(key);
-    args->push_back(callback);
-    args->push_back(on_fail);
-    args->push_back(data);
+    SparseBitSetWrapper* sparse_wrapper = FindWrapper(container,key);
+    if(sparse_wrapper != NULL){
+      RegionDoc** docs = sparse_wrapper->Top(query_topN,len);
+      printf("sparse len :%d \n",len);
+      for (int i = offset; i < len; i++) {
+        uint32_t doc = docs[i]->doc;
+        val obj = val::object();
+        obj.set("id",val(doc));
+        parameter << doc << ",";
+        data.set(i - offset, obj);
+      }
+      //clear
+      for (int i = 0; i < len; i++)
+        delete docs[i];
+      delete[] docs;
+    }
 
-    p <<"&c=Person";
-    std::string query_api(api_url);
-    query_api.append("/analytics/IdConverterApi");
-    emscripten_async_wget2_data(query_api.c_str(),"POST",p.str().c_str(),(void*)args,true,&OnLoadIdLable,&OnFail,NULL);
+    if(sparse_wrapper == NULL && wrapper == NULL) {
+      char message[100];
+      sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
+      ((val)on_fail)(val(std::string(message)));
+    }else if(len > offset) {
+      parameter << "&c=Person";
+      std::vector<val> *args = new std::vector<val>();
+      args->push_back(key);
+      args->push_back(callback);
+      args->push_back(on_fail);
+      args->push_back(data);
 
-
-    //clear
-    for(int i=0;i<len;i++)
-      delete docs[i];
-    delete [] docs;
+      std::string query_api(api_url);
+      query_api.append("/analytics/IdConverterApi");
+      emscripten_async_wget2_data(query_api.c_str(),
+                                  "POST",
+                                  parameter.str().c_str(),
+                                  (void *) args, true,
+                                  &OnLoadIdLable,
+                                  &OnFail, NULL);
+    }else{
+      ((val)callback)(data,key);
+    }
   }
   void ClearAllCollection(){
     CleanrContainer(container);
