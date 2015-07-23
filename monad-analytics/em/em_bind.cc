@@ -18,8 +18,10 @@ using namespace emscripten;
 namespace monad {
   //api url
   static std::string api_url;
+  /**
+   * val作为map的key,此对象作为key的比较函数
+   */
   struct ValComp {
-    //bool operator() (const char& lhs, const char& rhs) const
     bool operator()(const val &lhs, const val &rhs) const {
       std::string ltype(lhs.typeof().as<std::string>());
       std::string rtype(rhs.typeof().as<std::string>());
@@ -35,14 +37,18 @@ namespace monad {
       }
     }
   };
-  //记录SparseBitSetWrapper的容器
   typedef ValComp KEY;
+  //记录SparseBitSetWrapper的容器
   static std::map<val,SparseBitSetWrapper*,KEY> container;
+  //记录TopBitSetWrapper的容器
   static std::map<val,TopBitSetWrapper*,KEY> top_container;
 
-  //操作SparseBitSetWrapper的函数
+  //操作SparseBitSetWrapper的函数对象
   typedef SparseBitSetWrapper* (*Action)(SparseBitSetWrapper**,size_t);
 
+  /**
+   * 从buffer中读取一个32bit的整数
+   */
   inline static uint32_t ReadUint32(uint8_t** buffer){
     uint8_t* bb = *buffer;
     uint32_t i = 0;
@@ -54,11 +60,17 @@ namespace monad {
 
     return i;
   }
+  /**
+   * 从buffer重读取一个64bit的数
+   */
   inline static uint64_t ReadUint64(uint8_t** buffer){
     uint64_t hi = ReadUint32(buffer);
     uint64_t lo = ReadUint32(buffer);
     return  (hi << 32) | lo;
   }
+  /**
+   * 查找map中的wrapper对象
+   */
   template<typename T>
   inline static T* FindWrapper(std::map<val,T*,KEY>& map, const val& key){
     typename std::map<val ,T*>::iterator it;
@@ -70,12 +82,21 @@ namespace monad {
       return it->second;
     }
   }
+  /**
+   * 清空某一个容器
+   */
   template<typename T>
-  inline static void CleanrContainer(std::map<val,T*,KEY>& map){
+  inline static void ClearContainer(std::map<val,T*,KEY>& map){
+    for (typename std::map<val,T*>::iterator it=map.begin(); it!=map.end(); ++it){
+      delete it->second;
+    }
     typename std::map<val ,T*>::iterator it;
     it = map.begin();
     map.erase(it,map.end());
   }
+  /**
+   * 通过给定的key,删除某一个wrapper
+   */
   template<typename T>
   inline static void RemoveWrapper(std::map<val,T*,KEY>& map, const val& key){
     T* wrapper = FindWrapper(map,key);
@@ -84,6 +105,9 @@ namespace monad {
       delete wrapper;
     }
   }
+  /**
+   * 回调javascript中函数
+   */
   template<typename T>
   inline static void CallJavascriptFunction(std::map<val,T*,KEY>& map,void* args,T* wrapper){
     std::vector<val> args_ = *(std::vector<val>*)args;
@@ -131,6 +155,9 @@ namespace monad {
 
     args_[1](data,args_[0]);
   }
+  /**
+   * 通过给定的key来构造一个wrapper集合
+   */
   template<typename T>
   static T** CreateWrapperCollection(std::map<val,T*,KEY>& map,const val& keys,std::vector<val>* args,uint32_t* len){
     unsigned length = keys["length"].as<unsigned>();
@@ -141,6 +168,7 @@ namespace monad {
       val key = keys[i];
       wrapper = FindWrapper(map,key);
       if(wrapper == NULL){
+        delete [] collections;
         char message[100];
         //sprintf(message,"collection not found by key :%d",key);
         OnFail(0,args,51,message);
@@ -171,11 +199,15 @@ namespace monad {
 
     //SparseBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceOr(collections,length);
     SparseBitSetWrapper* wrapper= action(collections,length);
+    delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     CallJavascriptFunction<SparseBitSetWrapper>(container,args,wrapper);
   }
 
-  void OnLoadSparseBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
+  /**
+   * 从http传输过来的buffer中解析出来SparseBitSetWrapper
+   */
+  static void OnLoadSparseBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
     uint8_t** bb = (uint8_t**) &buffer;
     uint32_t offset = 0;
 
@@ -206,10 +238,12 @@ namespace monad {
 
     CallJavascriptFunction(container,arg,wrapper);
   }
+  /**
+   * 设置全局的API_URL
+   */
   void SetApiUrl(const std::string& api){
     api_url.assign(api);
   }
-
 
   void Query(const val& parameter,const val& new_key,const val& callback,const val& on_fail){
     std::vector<val> *arg = CreateCallArgs(new_key,callback, on_fail);
@@ -245,6 +279,7 @@ namespace monad {
 
     TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTop(collections,length,min_freq);
     //printf("or result bitCount:%d \n",wrapper->BitCount());
+    delete [] collections;
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
   void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail){
@@ -256,6 +291,7 @@ namespace monad {
       return;
 
     TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTopWithPositionMerged(collections,length,min_freq);
+    delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
@@ -280,13 +316,14 @@ namespace monad {
         parameter << top_doc->doc << ",";
         obj.set("count", val(top_doc->freq));
         val p = val::array();
+        //js中不能直接保存64bit的对象,拆分成两个int
         for (int j = 0; j < top_doc->position_len; j++) {
           p[j * 2] = val((uint32_t) (top_doc->position[j] >> 32));
           p[j * 2 + 1] = val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL));
         }
 
         obj.set("p", val(top_doc->freq));
-        printf("obj id:%d \n", top_doc->doc);
+        //printf("obj id:%d \n", top_doc->doc);
 
         data.set(i - offset, obj);
       }
@@ -319,7 +356,7 @@ namespace monad {
       char message[100];
       sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
       ((val)on_fail)(val(std::string(message)));
-    }else if(len > offset) {
+    }else if(len > offset) { //查到数据
       parameter << "&c=Person";
       std::vector<val> *args = new std::vector<val>();
       args->push_back(key);
@@ -339,14 +376,23 @@ namespace monad {
       ((val)callback)(data,key);
     }
   }
+  /**
+   * 清空所有的集合
+   */
   void ClearAllCollection(){
-    CleanrContainer(container);
-    CleanrContainer(top_container);
+    ClearContainer(container);
+    ClearContainer(top_container);
   }
+  /**
+   * 清空某一个集合
+   */
   void ClearCollection(const val& key){
     RemoveWrapper(container,key);
     RemoveWrapper(top_container,key);
   }
+  /**
+   * 得到某一个集合的属性
+   */
   val GetCollectionProperties(const val& key){
     SparseBitSetWrapper* wrapper = FindWrapper(container,key);
     val result = val::object();

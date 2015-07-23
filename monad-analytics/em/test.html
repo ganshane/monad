@@ -70,6 +70,11 @@
             str+=r.count;
             onMessage(str);
         }
+        function testClear(){
+            var k= document.getElementById("clear").value;
+            var r = Module.clearCollection(k);
+            onMessage("cleared");
+        }
         function onTop(obj,key){
             onMessage(obj);
         }
@@ -92,7 +97,7 @@
         }
     </script>
 </head>
-<body>
+<br>
 <div id="msg" style="border:1px solid green"></div>
 <div>
     <h3>api:query</h3><br/> q:<input type="text" id="q" value="test"/>,resource:<input type="text" id="i" value="test_10000"/>,save key:<input type="text" id="qk" value="1"/>
@@ -111,6 +116,9 @@
 <br/>
 <input type="text" id="k9"/>
 <input type="button" onClick="javascript:testGetCollectionProperties();" value="getCollectionProperties"/>
-</br>
+<br/>
+<input type="text" id="clear"/>
+<input type="button" onClick="javascript:testClear();" value="ClearCollection"/>
+<br/>
 </body>
 </html>
