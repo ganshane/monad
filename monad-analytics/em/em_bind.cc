@@ -111,6 +111,26 @@ namespace monad {
     args_[2](val(message.str()));
     delete (std::vector<val>*)args;
   }
+  /**
+   * 当加载id的具体数据时候执行的操作
+   */
+  void OnLoadIdLable(unsigned task_id,void* args,void* buffer,size_t size){
+    std::vector<val> args_ = *(std::vector<val>*)args;
+    val data=args_[3];
+    std::string result((char*)buffer,size);
+    std::stringstream ss(result);
+    std::string item;
+    int i = 0;
+    int len = data["length"].as<int>();
+    while (std::getline(ss, item, ',')) {
+      data[i].set("id",val(item));
+      if(++i >= len){
+        break;
+      }
+    }
+
+    args_[1](data,args_[0]);
+  }
   template<typename T>
   static T** CreateWrapperCollection(std::map<val,T*,KEY>& map,const val& keys,std::vector<val>* args,uint32_t* len){
     unsigned length = keys["length"].as<unsigned>();
@@ -253,10 +273,14 @@ namespace monad {
     RegionTopDoc** docs = wrapper->Top(query_topN,len);
     printf("top len:%d \n",len);
     val data=val::array();
+    std::stringstream p;
+    p <<"q=";
+
     for(int i=offset;i<len;i++){
       TopDoc* top_doc=docs[i]->top_doc;
       val obj = val::object();
       obj.set("id",val(top_doc->doc));
+      p << top_doc->doc << ",";
       obj.set("count",val(top_doc->freq));
       val p = val::array();
       for(int j=0;j<top_doc->position_len;j++){
@@ -269,7 +293,18 @@ namespace monad {
 
       data.set(i-offset,obj);
     }
-    ((val)callback)(data,val(key));
+
+    std::vector<val>* args = new std::vector<val>();
+    args->push_back(key);
+    args->push_back(callback);
+    args->push_back(on_fail);
+    args->push_back(data);
+
+    p <<"&c=Person";
+    std::string query_api(api_url);
+    query_api.append("/analytics/IdConverterApi");
+    emscripten_async_wget2_data(query_api.c_str(),"POST",p.str().c_str(),(void*)args,true,&OnLoadIdLable,&OnFail,NULL);
+
 
     //clear
     for(int i=0;i<len;i++)
@@ -317,6 +352,7 @@ namespace monad {
       function("clearCollection", &ClearCollection);
       function("getCollectionProperties", &GetCollectionProperties);
 
+      /*
       class_<SparseBitSetWrapper>("BitSetWrapper")
           .constructor()
           .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
@@ -332,6 +368,7 @@ namespace monad {
           .function("BitCount", &monad::SparseBitSetWrapper::BitCount)
           //.class_function("InPlaceAnd",method, allow_raw_pointers());
           .class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
+       */
   };
 }
 
