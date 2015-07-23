@@ -16,7 +16,15 @@
 
 using namespace emscripten;
 namespace monad {
-  static uint32_t ReadUint32(uint8_t** buffer){
+  //api url
+  static std::string api_url;
+  //记录SparseBitSetWrapper的容器
+  static std::map<uint32_t,SparseBitSetWrapper*> container;
+  static std::map<uint32_t,TopBitSetWrapper*> top_container;
+  //操作SparseBitSetWrapper的函数
+  typedef SparseBitSetWrapper* (*Action)(SparseBitSetWrapper**,size_t);
+
+  inline static uint32_t ReadUint32(uint8_t** buffer){
     uint8_t* bb = *buffer;
     uint32_t i = 0;
     i |= bb[0] << 24;
@@ -27,29 +35,93 @@ namespace monad {
 
     return i;
   }
-  static uint64_t ReadUint64(uint8_t** buffer){
+  inline static uint64_t ReadUint64(uint8_t** buffer){
     uint64_t hi = ReadUint32(buffer);
     uint64_t lo = ReadUint32(buffer);
     return  (hi << 32) | lo;
   }
-  static void CallJavascriptFunction(void* args,uint32_t key,SparseBitSetWrapper* wrapper){
-    if(args) {
-      std::vector<std::string> args_ = *(std::vector<std::string>*)args;
-      std::stringstream data;
-      data << args_[0] << "(";
-      data << "{key:" << key << ",count:" << wrapper->BitCount() << "}";
-      data << ")";
-      std::string js = data.str();
-      //printf("js function:%s \n", js.c_str());
-      emscripten_run_script(js.c_str());
-      free(args);
+  template<typename T>
+  inline static T* FindWrapper(std::map<uint32_t,T*>& map, uint32_t key){
+    typename std::map<uint32_t ,T*>::iterator it;
+    printf("find wrapper by key:%d container size:%d \n",key,map.size());
+    it = map.find(key);
+    if(it == map.end()){
+      return NULL;
+    }else{
+      return it->second;
     }
   }
+  template<typename T>
+  inline static void CallJavascriptFunction(std::map<uint32_t,T*>& map,void* args,T* wrapper){
+    std::vector<val> args_ = *(std::vector<val>*)args;
 
-  //记录所有的wrapper
-  static uint32_t seq(0);
-  static std::map<uint32_t,SparseBitSetWrapper*> container;
-  static std::string api_url;
+    uint32_t id = args_[0].as<uint32_t>();
+    T* old_wrapper = FindWrapper(map,id);
+    if(old_wrapper){
+      map.erase(id);
+      printf("old wrapper exsists with key :%d! \n",id);
+      delete old_wrapper;
+    }
+    map.insert(std::pair<uint32_t,T*>(id,wrapper));
+    printf("insert wrapper id %d \n",id);
+
+    val json=val::object();
+    json.set("key",val(id));
+    json.set("count",val(wrapper->BitCount()));
+    args_[1](json);
+    delete (std::vector<val>*)args;
+  }
+  void OnFail(unsigned task_id,void* args,int32_t code,const char* msg){
+    std::vector<val> args_ = *(std::vector<val>*)args;
+    std::stringstream message;
+    message << " code:" << code <<",msg:"<<msg;
+    args_[2](val(message.str()));
+    delete (std::vector<val>*)args;
+  }
+  template<typename T>
+  static T** CreateWrapperCollection(std::map<uint32_t,T*>& map,val v,std::vector<val>* args,uint32_t* len){
+    unsigned length = v["length"].as<unsigned>();
+    T** collections = new T*[length];
+    //printf("length:%d \n",length);
+    T* wrapper;
+    for(unsigned i=0;i<length;i++){
+      uint32_t key = v[i].as<uint32_t>();
+      wrapper = FindWrapper(map,key);
+      if(wrapper == NULL){
+        char message[100];
+        sprintf(message,"collection not found by key :%d",key);
+        OnFail(0,args,51,message);
+        return NULL;
+      }
+      collections[i]=wrapper;
+      //printf("key:%d bitCount:%d \n",key,collections[i]->BitCount());
+    }
+    *len = length;
+
+    return collections;
+  }
+
+  std::vector<val> *CreateCallArgs(const val& key,const val& callback, const val& on_fail) {
+    std::vector<val>* arg = new std::vector<val>();
+    arg->push_back(key);
+    arg->push_back(callback);
+    arg->push_back(on_fail);
+    return arg;
+  };
+  void DoOperator(const Action action,const val& keys,const val& new_key,const val& callback,const val& on_fail){
+    std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
+
+    uint32_t length=0;
+    SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
+    if(collections == NULL)
+      return;
+
+    //SparseBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceOr(collections,length);
+    SparseBitSetWrapper* wrapper= action(collections,length);
+    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    CallJavascriptFunction<SparseBitSetWrapper>(container,args,wrapper);
+  }
+
   void OnLoadSparseBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
     uint8_t** bb = (uint8_t**) &buffer;
     uint32_t offset = 0;
@@ -57,8 +129,6 @@ namespace monad {
     int length = ReadUint32(bb);
     int nonZeroLongCount = ReadUint32(bb);
     SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
-    uint32_t id = seq ++;
-    container.insert(std::pair<uint32_t,SparseBitSetWrapper*>(id,wrapper));
 
     wrapper->NewSeg(1,length);
     wrapper->ReadNonZero(nonZeroLongCount);
@@ -81,27 +151,15 @@ namespace monad {
     uint64_t ramBytesUsed = ReadUint64(bb);
     //printf("bitCount:%d\n",wrapper->BitCount());
 
-    CallJavascriptFunction(arg,id,wrapper);
+    CallJavascriptFunction(container,arg,wrapper);
   }
   void SetApiUrl(const std::string& api){
     api_url.assign(api);
   }
-  void OnFail(unsigned task_id,void* args,int32_t code,const char* msg){
-    if(args){
-      std::vector<std::string> args_ = *(std::vector<std::string>*)args;
-      std::stringstream data;
-      data << args_[1] <<"(\" code:" << code <<",msg:"<<msg<<"\")";
-      std::string js = data.str();
-      //printf("js function:%s \n", js.c_str());
-      emscripten_run_script(js.c_str());
-      free(args);
-    }
-  }
 
-  std::vector<std::string> *CreateCallArgs(const std::string &callback, const std::string &on_fail);
 
-  void Query(val parameter,const std::string& callback,const std::string& on_fail){
-    std::vector<std::string> *arg = CreateCallArgs(callback, on_fail);
+  void Query(const val& parameter,const val& new_key,const val& callback,const val& on_fail){
+    std::vector<val> *arg = CreateCallArgs(new_key,callback, on_fail);
 
     std::string p;
     p.append("i=").append(parameter["i"].as<std::string>());
@@ -112,80 +170,92 @@ namespace monad {
     emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadSparseBitSetBuffer,&OnFail,NULL);
   }
 
-  std::vector<std::string> *CreateCallArgs(const std::string &callback, const std::string &on_fail) {
-    std::vector<std::string>* arg = new std::vector<std::string>();
-    arg->push_back(callback);
-    arg->push_back(on_fail);
-    return arg;
-  };
   uint32_t ContainerSize(){
     return container.size();
   }
-  SparseBitSetWrapper* FindWrapper(uint32_t key){
-    std::map<uint32_t ,SparseBitSetWrapper*>::iterator it;
-    it = container.find(key);
-    if(it == container.end()){
-      return NULL;
-    }else{
-      return it->second;
-    }
+  void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail){
+    DoOperator(&SparseBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail);
   }
-  static SparseBitSetWrapper** CreateWrapperCollection(val v,std::vector<std::string>* args,uint32_t* len){
-    unsigned length = v["length"].as<unsigned>();
-    SparseBitSetWrapper** collections = new SparseBitSetWrapper*[length];
-    //printf("length:%d \n",length);
-    SparseBitSetWrapper* wrapper;
-    for(unsigned i=0;i<length;i++){
-      uint32_t key = v[i].as<uint32_t>();
-      wrapper = FindWrapper(key);
-      if(wrapper == NULL){
+  void InPlaceOr(const val& keys,const val& new_key,const val& callback,const val& on_fail){
+    DoOperator(&SparseBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail);
+  }
+  void AndNot(const val& keys,const val& new_key,const val& callback,const val& on_fail){
+    DoOperator(&SparseBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail);
+  }
+  void InPlaceAndTop(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail){
+    std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
+
+    uint32_t length=0;
+    SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
+    if(collections == NULL)
+      return;
+
+    TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTop(collections,length,min_freq);
+    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
+  }
+  void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail){
+    std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
+
+    uint32_t length=0;
+    TopBitSetWrapper** collections = CreateWrapperCollection<TopBitSetWrapper>(top_container,keys,args,&length);
+    if(collections == NULL)
+      return;
+
+    TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTopWithPositionMerged(collections,length,min_freq);
+    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
+  }
+  void Top(const uint32_t key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail) {
+    TopBitSetWrapper* wrapper=FindWrapper(top_container,key);
+    if(wrapper == NULL){
         char message[100];
         sprintf(message,"collection not found by key :%d",key);
-        OnFail(0,args,51,message);
-        return NULL;
-      }
-      collections[i]=wrapper;
-      //printf("key:%d bitCount:%d \n",key,collections[i]->BitCount());
+        ((val)on_fail)(val(std::string(message)));
+        return;
     }
-    *len = length;
 
-    return collections;
+    int32_t len=0;
+    uint32_t query_topN = topN + offset;
+    RegionTopDoc** docs = wrapper->Top(query_topN,len);
+    printf("top len:%d \n",len);
+    val data=val::array();
+    for(int i=offset;i<len;i++){
+      TopDoc* top_doc=docs[i]->top_doc;
+      val obj = val::object();
+      obj.set("id",val(top_doc->doc));
+      obj.set("count",val(top_doc->freq));
+      val p = val::array();
+      for(int j=0;j<top_doc->position_len;j++){
+        p[j*2]=val((uint32_t)(top_doc->position[j] >> 32));
+        p[j*2+1] = val((uint32_t)(top_doc->position[j] & 0x00000000fffffffL));
+      }
+
+      obj.set("p",val(top_doc->freq));
+      printf("obj id:%d \n",top_doc->doc);
+
+      data.set(i-offset,obj);
+    }
+    ((val)callback)(data,val(key));
+
+    //clear
+    for(int i=0;i<len;i++)
+      delete docs[i];
+    delete [] docs;
   }
-  void InPlaceAnd(val v,const std::string& callback,const std::string& on_fail){
-    std::vector<std::string> *args = CreateCallArgs(callback, on_fail);
-    uint32_t length=0;
-    SparseBitSetWrapper** collections = CreateWrapperCollection(v,args,&length);
-    if(collections == NULL)
-      return;
 
-    uint32_t id = seq ++;
-    SparseBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAnd(collections,length);
-    delete [] collections;
-    container.insert(std::pair<uint32_t,SparseBitSetWrapper*>(id,wrapper));
-    //printf("or result bitCount:%d \n",wrapper->BitCount());
-    CallJavascriptFunction(args,id,wrapper);
-  }
-  void InPlaceOr(val v,const std::string& callback,const std::string& on_fail){
-    std::vector<std::string> *args = CreateCallArgs(callback, on_fail);
 
-    uint32_t length=0;
-    SparseBitSetWrapper** collections = CreateWrapperCollection(v,args,&length);
-    if(collections == NULL)
-      return;
-
-    uint32_t id = seq ++;
-    SparseBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceOr(collections,length);
-    container.insert(std::pair<uint32_t,SparseBitSetWrapper*>(id,wrapper));
-    //printf("or result bitCount:%d \n",wrapper->BitCount());
-    CallJavascriptFunction(args,id,wrapper);
-  }
   // Binding code
   EMSCRIPTEN_BINDINGS(analytics) {
       function("SetApiUrl", &SetApiUrl);
       function("query", &Query);
       function("ContainerSize", &ContainerSize);
       function("inPlaceAnd", &InPlaceAnd);
-      function("inPlaceOr", &InPlaceAnd);
+      function("inPlaceOr", &InPlaceOr);
+      function("andNot", &AndNot);
+      function("inPlaceAndTop", &InPlaceAndTop);
+      function("inPlaceAndTopWithPositionMerged", &InPlaceAndTopWithPositionMerged);
+      function("top", &Top);
       class_<SparseBitSetWrapper>("BitSetWrapper")
           .constructor()
           .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
