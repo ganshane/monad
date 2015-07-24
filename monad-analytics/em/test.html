@@ -76,7 +76,11 @@
             onMessage("cleared");
         }
         function onTop(obj,key){
-            onMessage(obj);
+            var str="len:"+obj.length;
+            for(var i=0;i<obj.length;i++){
+                str+=obj[i].id+","
+            }
+            onMessage(str);
         }
         function onMessage(str){
             var el = document.createElement("div");
