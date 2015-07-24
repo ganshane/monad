@@ -192,7 +192,7 @@ namespace monad {
   }
   template<typename HEAD,typename... VAL>
   void InternalCreateCallArgs(std::vector<HEAD>* data,const HEAD& head,VAL& ... args) {
-    data->push_back(head);
+    InternalCreateCallArgs(data,head);
     InternalCreateCallArgs(data,args...);
   }
   /**
