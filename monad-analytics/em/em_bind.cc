@@ -18,6 +18,15 @@ using namespace emscripten;
 namespace monad {
   //api url
   static std::string api_url;
+  enum class IdCategory {
+    Person,
+    Car,
+    Mobile,
+    Mac,
+    QQ,
+    WeiXin
+  };
+
   /**
    * val作为map的key,此对象作为key的比较函数
    */
@@ -327,7 +336,7 @@ namespace monad {
     ReportProgressOnOperation(on_progress,"call callback function...");
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
-  void Top(const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail,const val& on_progress) {
+  void Top(const IdCategory category,const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail,const val& on_progress) {
     int32_t len=0;
     uint32_t query_topN = topN + offset;
     val data=val::array();
@@ -389,7 +398,28 @@ namespace monad {
       sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
       ((val)on_fail)(val(std::string(message)));
     }else if(len > offset) { //查到数据
-      parameter << "&c=Person";
+      switch(category){
+        case (IdCategory::Person):
+          parameter << "&c=Person";
+          break;
+        case (IdCategory::Car):
+          parameter << "&c=Car";
+          break;
+        case (IdCategory::Mobile):
+          parameter << "&c=Mobile";
+          break;
+        case (IdCategory::Mac):
+          parameter << "&c=Mac";
+          break;
+        case (IdCategory::QQ):
+          parameter << "&c=QQ";
+          break;
+        case (IdCategory::WeiXin):
+          parameter << "&c=WeiXin";
+          break;
+        default:
+          break;
+      }
 
       std::vector<val> *args = CreateCallArgs(key,callback,on_fail,on_progress,data);
 
@@ -442,6 +472,13 @@ namespace monad {
 
   // Binding code
   EMSCRIPTEN_BINDINGS(analytics) {
+      enum_<IdCategory>("IdCategory")
+          .value("Person", IdCategory::Person)
+          .value("Mobile",IdCategory::Mobile)
+          .value("Mac",IdCategory::Mac)
+          .value("QQ",IdCategory::QQ)
+          .value("WeiXin",IdCategory::WeiXin)
+          .value("Car", IdCategory::Car);
       function("SetApiUrl", &SetApiUrl);
       function("query", &Query);
       function("ContainerSize", &ContainerSize);
