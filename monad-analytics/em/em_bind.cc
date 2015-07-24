@@ -19,12 +19,12 @@ namespace monad {
   //api url
   static std::string api_url;
   enum class IdCategory {
-    Person,
-    Car,
-    Mobile,
-    Mac,
-    QQ,
-    WeiXin
+    Person =1,
+    Car =2 ,
+    Mobile =3 ,
+    Mac = 4,
+    QQ = 5,
+    WeiXin =6
   };
 
   /**
@@ -418,8 +418,13 @@ namespace monad {
           parameter << "&c=WeiXin";
           break;
         default:
-          break;
+          char message[100];
+          sprintf(message,"category not found by :%d",category);
+          ((val)on_fail)(val(std::string(message)));
+          return;
       }
+      printf(" paramter %s \n",parameter.str().c_str());
+
 
       std::vector<val> *args = CreateCallArgs(key,callback,on_fail,on_progress,data);
 
