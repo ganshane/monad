@@ -45,6 +45,7 @@ namespace monad {
 
   //操作SparseBitSetWrapper的函数对象
   typedef SparseBitSetWrapper* (*Action)(SparseBitSetWrapper**,size_t);
+  void ClearCollection(const val& key);
 
   /**
    * 从buffer中读取一个32bit的整数
@@ -113,12 +114,8 @@ namespace monad {
     std::vector<val> args_ = *(std::vector<val>*)args;
 
     val id = args_[0];
-    T* old_wrapper = FindWrapper(map,id);
-    if(old_wrapper){
-      map.erase(id);
-      //printf("old wrapper exsists with key :%d! \n",id);
-      delete old_wrapper;
-    }
+    //先删除同key的集合
+    ClearCollection(id);
     map.insert(std::pair<val,T*>(id,wrapper));
     //printf("insert wrapper id %d \n",id);
 
@@ -135,12 +132,19 @@ namespace monad {
     args_[2](val(message.str()));
     delete (std::vector<val>*)args;
   }
+  static void OnProgress(unsigned int , void * args,int progress, int){
+    std::vector<val> args_ = *(std::vector<val>*)args;
+    std::stringstream message;
+    message <<  "loading ..." << progress ;
+
+    args_[3](val(message.str()));
+  }
   /**
    * 当加载id的具体数据时候执行的操作
    */
   void OnLoadIdLable(unsigned task_id,void* args,void* buffer,size_t size){
     std::vector<val> args_ = *(std::vector<val>*)args;
-    val data=args_[3];
+    val data=args_[4];
     std::string result((char*)buffer,size);
     std::stringstream ss(result);
     std::string item;
@@ -170,7 +174,7 @@ namespace monad {
       if(wrapper == NULL){
         delete [] collections;
         char message[100];
-        //sprintf(message,"collection not found by key :%d",key);
+        sprintf(message,"collection not found by key :%s", key.as<std::string>().c_str());
         OnFail(0,args,51,message);
         return NULL;
       }
@@ -182,25 +186,45 @@ namespace monad {
     return collections;
   }
 
-  std::vector<val> *CreateCallArgs(const val& key,const val& callback, const val& on_fail) {
+  template<typename HEAD>
+  void InternalCreateCallArgs(std::vector<HEAD>* data,const HEAD& head) {
+    data->push_back(head);
+  }
+  template<typename HEAD,typename... VAL>
+  void InternalCreateCallArgs(std::vector<HEAD>* data,const HEAD& head,VAL& ... args) {
+    data->push_back(head);
+    InternalCreateCallArgs(data,args...);
+  }
+  /**
+   * 创建回调使用的参数,正常情况下
+   * 0: key
+   * 1: callback
+   * 2: onFail
+   * 3: onProgress http 请求时刻需要
+   */
+  template<typename... VAL>
+  std::vector<val> *CreateCallArgs(const VAL& ... args) {
     std::vector<val>* arg = new std::vector<val>();
-    arg->push_back(key);
-    arg->push_back(callback);
-    arg->push_back(on_fail);
+    InternalCreateCallArgs(arg,args...);
     return arg;
   };
-  void DoOperator(const Action action,const val& keys,const val& new_key,const val& callback,const val& on_fail){
+  static void ReportProgressOnOperation(const val& on_progress,const std::string& message){
+    ((val)on_progress)(val(message));
+  }
+  void DoOperator(const Action action,const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
 
     uint32_t length=0;
+    ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
     if(collections == NULL)
       return;
 
-    //SparseBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceOr(collections,length);
+    ReportProgressOnOperation(on_progress,"execute ...");
     SparseBitSetWrapper* wrapper= action(collections,length);
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
+    ReportProgressOnOperation(on_progress,"call callback function");
     CallJavascriptFunction<SparseBitSetWrapper>(container,args,wrapper);
   }
 
@@ -235,6 +259,9 @@ namespace monad {
 
     uint64_t ramBytesUsed = ReadUint64(bb);
     //printf("bitCount:%d\n",wrapper->BitCount());
+    std::vector<val> args_ = *(std::vector<val>*)arg;
+    uint32_t weight = args_[4].as<uint32_t>();
+    wrapper->SetWeight(weight);
 
     CallJavascriptFunction(container,arg,wrapper);
   }
@@ -245,8 +272,8 @@ namespace monad {
     api_url.assign(api);
   }
 
-  void Query(const val& parameter,const val& new_key,const val& callback,const val& on_fail){
-    std::vector<val> *arg = CreateCallArgs(new_key,callback, on_fail);
+  void Query(const val& parameter,const val& new_key,const val& callback,const val& on_fail,const val& on_progress,const uint32_t weight){
+    std::vector<val> *arg = CreateCallArgs(new_key,callback, on_fail,on_progress,val(weight));
 
     std::string p;
     p.append("i=").append(parameter["i"].as<std::string>());
@@ -254,48 +281,53 @@ namespace monad {
     p.append("q=").append(parameter["q"].as<std::string>());
     std::string query_api(api_url);
     query_api.append("/analytics/IdSearcher");
-    emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadSparseBitSetBuffer,&OnFail,NULL);
+    emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadSparseBitSetBuffer,&OnFail,&OnProgress);
   }
 
   uint32_t ContainerSize(){
     return container.size();
   }
-  void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail){
-    DoOperator(&SparseBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail);
+  void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
+    DoOperator(&SparseBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
   }
-  void InPlaceOr(const val& keys,const val& new_key,const val& callback,const val& on_fail){
-    DoOperator(&SparseBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail);
+  void InPlaceOr(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
+    DoOperator(&SparseBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail,on_progress);
   }
-  void AndNot(const val& keys,const val& new_key,const val& callback,const val& on_fail){
-    DoOperator(&SparseBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail);
+  void AndNot(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
+    DoOperator(&SparseBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail,on_progress);
   }
-  void InPlaceAndTop(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail){
+  void InPlaceAndTop(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
 
+    ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
     SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
     if(collections == NULL)
       return;
 
+    ReportProgressOnOperation(on_progress,"executing...");
     TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTop(collections,length,min_freq);
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     delete [] collections;
+    ReportProgressOnOperation(on_progress,"call callback function...");
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
-  void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail){
-    std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
+  void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
+    std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail,on_progress);
 
+    ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
     TopBitSetWrapper** collections = CreateWrapperCollection<TopBitSetWrapper>(top_container,keys,args,&length);
     if(collections == NULL)
       return;
-
+    ReportProgressOnOperation(on_progress,"executing...");
     TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTopWithPositionMerged(collections,length,min_freq);
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
+    ReportProgressOnOperation(on_progress,"call callback function...");
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
   }
-  void Top(const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail) {
+  void Top(const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail,const val& on_progress) {
     int32_t len=0;
     uint32_t query_topN = topN + offset;
     val data=val::array();
@@ -358,11 +390,8 @@ namespace monad {
       ((val)on_fail)(val(std::string(message)));
     }else if(len > offset) { //查到数据
       parameter << "&c=Person";
-      std::vector<val> *args = new std::vector<val>();
-      args->push_back(key);
-      args->push_back(callback);
-      args->push_back(on_fail);
-      args->push_back(data);
+
+      std::vector<val> *args = CreateCallArgs(key,callback,on_fail,on_progress,data);
 
       std::string query_api(api_url);
       query_api.append("/analytics/IdConverterApi");
@@ -371,7 +400,7 @@ namespace monad {
                                   parameter.str().c_str(),
                                   (void *) args, true,
                                   &OnLoadIdLable,
-                                  &OnFail, NULL);
+                                  &OnFail, &OnProgress);
     }else{
       ((val)callback)(data,key);
     }

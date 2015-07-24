@@ -32,36 +32,36 @@
         function testQuery(){
             var json = {i:f('i'),q:f('q')}
             var k = f('qk');
-            Module.query(json,k,onData,onFail);
+            Module.query(json,k,onData,onFail,onProgress,1);
         }
         function testAnd(){
             var keys = f('keys').split(',');
             var k = f('keySaved');
-            Module.inPlaceAnd(keys,k,onData,onFail);
+            Module.inPlaceAnd(keys,k,onData,onFail,onProgress);
         }
         function testAndTop(){
             var keys = f('keys').split(',');
             var k = f('keySaved');
-            Module.inPlaceAndTop(keys,k,onData,1,onFail);
+            Module.inPlaceAndTop(keys,k,onData,1,onFail,onProgress);
         }
         function testAndTopWithPositionMerged(){
             var keys = f('keys').split(',');
             var k = f('keySaved');
-            Module.inPlaceAndTopWithPositionMerged(keys,k,onData,1,onFail);
+            Module.inPlaceAndTopWithPositionMerged(keys,k,onData,1,onFail,onProgress);
         }
         function testAndNot(){
             var keys = f('keys').split(',');
             var k = f('keySaved');
-            Module.andNot(keys,k,onData,onFail);
+            Module.andNot(keys,k,onData,onFail,onProgress);
         }
         function testOr(){
             var keys = f('keys').split(',');
             var k = f('keySaved');
-            Module.inPlaceOr(keys,k,onData,onFail);
+            Module.inPlaceOr(keys,k,onData,onFail,onProgress);
         }
         function testTop(){
             var topk = document.getElementById("topK").value;
-            Module.top(topk,100,onTop,0,onFail);
+            Module.top(topk,100,onTop,0,onFail,onProgress);
         }
         function testGetCollectionProperties(){
             var k= document.getElementById("k9").value;
