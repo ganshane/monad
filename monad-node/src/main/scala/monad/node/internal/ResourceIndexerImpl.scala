@@ -183,6 +183,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     destryNoSQL(rd)
   }
 
+
+  /**
+   * 增加索引的等待数
+   */
+  override def incIndexActionRef(): Unit = {
+    indexRef.incrementAndGet()
+  }
+
+  /**
+   * 减少索引的等待数
+   */
+  override def decIndexActionRef(): Unit = {
+    indexRef.decrementAndGet()
+  }
+
   def index(): Unit = {
     val waiting = indexRef.get()
     if(waiting == 0){

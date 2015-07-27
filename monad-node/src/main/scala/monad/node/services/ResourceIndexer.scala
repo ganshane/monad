@@ -24,6 +24,16 @@ trait ResourceIndexer
   def deleteDocument(id: Int, dataVersion: Int)
 
   /**
+   * 增加索引的等待数
+   */
+  def incIndexActionRef()
+
+  /**
+   * 减少索引的等待数
+   */
+  def decIndexActionRef()
+
+  /**
    * submit操作
    * @param logSeq 版本号
    */

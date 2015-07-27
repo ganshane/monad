@@ -10,6 +10,7 @@ import monad.face.model.IndexEvent
 import monad.face.services.DocumentSource
 import monad.jni.services.gen.DataCommandType
 import monad.node.services.ResourceIndexerManager
+import org.apache.lucene.document.Document
 import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
@@ -41,12 +42,22 @@ class CreateDocumentHandler(resourceIndexerManager: ResourceIndexerManager, docu
         try {
           val rowId = event.id
           val command = DataCommandType.swigToEnum(event.command)
+          def createDocument: Document = {
+            try {
+              documentSource.newDocument(event)
+            } catch {
+              case e: Throwable =>
+                //FIXES #92 避免创建document失败导致一直在等待
+                indexer.decIndexActionRef()
+                throw e
+            }
+          }
           command match {
             case DataCommandType.PUT =>
-              val doc = documentSource.newDocument(event)
+              val doc = createDocument
               indexer.indexDocument(doc, event.version)
             case DataCommandType.UPDATE =>
-              val doc = documentSource.newDocument(event)
+              val doc = createDocument
               indexer.updateDocument(rowId, doc, event.version)
             case DataCommandType.DEL =>
               indexer.deleteDocument(rowId, event.version)
