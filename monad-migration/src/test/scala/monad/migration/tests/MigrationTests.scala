@@ -77,6 +77,11 @@ class MigrationTests {
   }
 
   @Test
+  def clob(): Unit ={
+    migrator.migrate(InstallAllMigrations,
+      "monad.migration.tests.clob",false)
+  }
+  @Test
   def comment(): Unit ={
     migrator.migrate(InstallAllMigrations,
      "monad.migration.tests.comment",false)

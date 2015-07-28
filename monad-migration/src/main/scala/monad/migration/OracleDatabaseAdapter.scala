@@ -199,6 +199,8 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
         new OracleBigintColumnDefinition
       case BlobType =>
         new DefaultBlobColumnDefinition
+      case ClobType =>
+        new DefaultClobColumnDefinition
       case BooleanType => {
         val message = "Oracle does not support a boolean type, you must " +
           "choose a mapping your self."

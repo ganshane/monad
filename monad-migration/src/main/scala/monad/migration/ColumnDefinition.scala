@@ -542,6 +542,10 @@ class DefaultBlobColumnDefinition
     extends ColumnDefinition {
   override protected def sql = "BLOB"
 }
+class DefaultClobColumnDefinition
+  extends ColumnDefinition {
+  override protected def sql = "CLOB"
+}
 
 class DefaultBooleanColumnDefinition
     extends ColumnDefinition

@@ -84,6 +84,8 @@ class H2DatabaseAdapter(override val schemaNameOpt: Option[String])
         new H2BigintColumnDefinition
       case BlobType =>
         new DefaultBlobColumnDefinition
+      case ClobType =>
+        new DefaultClobColumnDefinition
       case BooleanType =>
         new DefaultBooleanColumnDefinition
       case CharType =>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Sony Pictures Imageworks Inc.
+ * Copyright (c) 2011 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
  *
@@ -30,22 +30,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package monad.migration
+package monad.migration.tests.clob
 
-/**
- * Sealed abstract base class for the case objects that represent the
- * supported SQL types.
- */
-sealed abstract class SqlType
+import monad.migration._
 
-case object BigintType extends SqlType
-case object BlobType extends SqlType
-case object ClobType extends SqlType
-case object BooleanType extends SqlType
-case object CharType extends SqlType
-case object DecimalType extends SqlType
-case object IntegerType extends SqlType
-case object SmallintType extends SqlType
-case object TimestampType extends SqlType
-case object VarbinaryType extends SqlType
-case object VarcharType extends SqlType
+class Migrate_20150728221947_Clob
+    extends Migration {
+  val tableName = "scala_migrations_clob"
+
+  def up() {
+    createTable(tableName,Comment("表1")) { t =>
+      t.varchar("name", Unique, Limit(127), NotNull,Comment("列1"))
+      t.clob("clob_field")
+    }
+
+    commentTable(tableName,"修改表1")
+    commentColumn(tableName,"name","列1的注释")
+
+    alterColumn(tableName,"name",BigintType,Comment("修改列1的注释"))
+  }
+
+  def down() {
+    dropTable(tableName)
+  }
+}
