@@ -160,7 +160,7 @@ case class CharacterSet(name: CharacterSetName,
  */
 case class Default(value: String)
   extends ColumnOption{
-  override def toTypeString: String = s"Default(\"${value}\")"
+  override def toTypeString: String = s"""Default(\"${value}\")"""
 }
 
 /**
@@ -182,7 +182,7 @@ object Default {
  * @param comment 注释
  */
 case class Comment(comment:String) extends ColumnOption with TableOption{
-  override def toTypeString: String = s"Comment(\"${comment}\"")
+  override def toTypeString: String = s"""Comment(\"${comment}\""""
 }
 
 /**
@@ -206,7 +206,7 @@ case class Limit(expr: String)
     case _: NumberFormatException =>
   }
 
-  override def toTypeString: String = s"Limit(\"${expr}\")"
+  override def toTypeString: String = s"""Limit(${expr})"""
 }
 
 /**
@@ -241,7 +241,7 @@ case class Name(name: String)
  */
 case class Check(expr: String)
   extends ColumnOption{
-  override def toTypeString: String = s"Check(\"${expr}\")"
+  override def toTypeString: String = s"""Check(\"${expr}\")"""
 }
 
 /**
@@ -252,7 +252,7 @@ case class NamedCheck(name: String, expr: String)
   // NamedCheck cannot inherit from Check, it causes a compiler error.
   //   http://lampsvn.epfl.ch/trac/scala/ticket/425
   // & http://lampsvn.epfl.ch/trac/scala/ticket/816
-  override def toTypeString: String = s"NamedCheck(\"${name}\",\"${expr}\""
+  override def toTypeString: String = s"""NamedCheck(\"${name}\",\"${expr}\")"""
 }
 
 /**
@@ -296,7 +296,7 @@ case class Precision(value: Int)
     throw new IllegalArgumentException(message)
   }
 
-  override def toTypeString: String = s"Precision(${value})"
+  override def toTypeString: String = s"""Precision(${value})"""
 }
 
 /**
@@ -317,7 +317,7 @@ case class Scale(value: Int)
     throw new IllegalArgumentException(message)
   }
 
-  override def toTypeString: String = s"Scale(${value})"
+  override def toTypeString: String = s"""Scale(${value})"""
 }
 
 /**

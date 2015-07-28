@@ -1,8 +1,6 @@
 package monad.migration
 
-import java.sql.{DatabaseMetaData, Connection, ResultSet}
-
-import com.apple.jobjc.appkit.NSBitmapImageRep
+import java.sql.{Connection, DatabaseMetaData, DriverManager, ResultSet}
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -28,7 +26,7 @@ object SchemaDumper {
   private final val TABLES_TABLE_TYPE = 4
 
   def tables()(implicit connection:Connection,options:DumpOption):Seq[String]={
-    val metaData = connection.getMetaData;
+    val metaData = connection.getMetaData
     val tablesSet:ResultSet = metaData.getTables(options.catalog, options.schemaPattern, options.tablePattern, options.tableTypes);
     With.autoClosingResultSet(tablesSet){rs=>
       var buffer  = new ListBuffer[String]()
@@ -40,8 +38,10 @@ object SchemaDumper {
     }
   }
   //列定义
-  case class Column(name:String,sqlType:SqlType,options:Array[ColumnOption]){
+  case class Column(name:String,sqlType:SqlType,options:Array[ColumnOption]) extends Ordered[Column]{
+    override def compare(that: Column): Int = name.compareTo(that.name)
   }
+
 
   protected val COLUMN_NAME = 4
   protected val DATA_TYPE = 5
@@ -53,7 +53,7 @@ object SchemaDumper {
 
   protected def typeFromResultSet(resultSet:ResultSet):SqlType ={
     resultSet.getString(TYPE_NAME) match{
-      case "BIGINT"=> //TODO oracle numberic
+      case "BIGINT"=>
         BigintType
       case "BLOB"|"LONGBLOB"|"BYTEA" =>
         BlobType
@@ -69,6 +69,8 @@ object SchemaDumper {
         SmallintType
       case "TIMESTAMP" =>
         TimestampType
+      case "DATE" => //TODO oracle
+        TimestampType
       case "VARBINARY"|"VARCHAR FOR BIT DATA"|"RAW" =>
         VarbinaryType
       case "VARCHAR"|"VARCHAR2" =>
@@ -81,9 +83,14 @@ object SchemaDumper {
           IntegerType
         else
           BigintType
+      case "LONG" =>
+        throw new UnsupportedColumnTypeException("LONG")
+      case "CLOB"|"TIMESTAMP(6)" =>
+        //TODO FIXEME
+        VarcharType
 
       case other=>
-        throw new UnsupportedColumnTypeException()
+        throw new UnsupportedColumnTypeException(other)
     }
   }
   protected def intFromResultSet(resultSet:ResultSet, column:Int):Int = {
@@ -104,6 +111,8 @@ object SchemaDumper {
           columnOptions += Default(defaultValue)
 
         val sqlType = typeFromResultSet(rs)
+        if(sqlType == null)
+          throw new RuntimeException("tableName:"+table+" columnName:"+name)
 
         val precision = intFromResultSet(rs, COLUMN_SIZE);
         val scale = intFromResultSet(rs, DECIMAL_DIGITS);
@@ -129,15 +138,16 @@ object SchemaDumper {
       buffer.sorted.toSeq
     }
   }
-  def table(table:String)(implicit connection:Connection,sb:StringBuilder): Unit ={
-    sb.append(s"createTable(\"${table}\"){t=> \n")
+  def table(table:String)(implicit connection:Connection,sb:StringBuilder,options:DumpOption): Unit ={
+    sb.append(s"""createTable(\"${table}\"){t=> \n""")
     columns(table).foreach { c =>
-      sb.append(s"t.column(\"${c.name}\",${c.sqlType}")
+      sb.append(s"""  t.column(\"${c.name}\",${c.sqlType}""")
       c.options.foreach{o=>
-        sb.append(",").append(o.toTypeString())
+        sb.append(",").append(o.toTypeString)
       }
+      sb.append(")\n")
     }
-    sb.append("}")
+    sb.append("}\n")
   }
   private def findPrimayKeys(metaData:DatabaseMetaData , tableName:String)(implicit options:DumpOption): Seq[String]={
     val resultSet = metaData.getPrimaryKeys(options.catalog,options.schemaPattern,tableName)
@@ -150,8 +160,12 @@ object SchemaDumper {
     }
   }
   def main(args:Array[String]): Unit ={
-    implicit val conn:Connection = null
+    Class.forName("oracle.jdbc.driver.OracleDriver")
+    implicit val conn:Connection = DriverManager.getConnection("jdbc:oracle:thin:gafis_gz/gafis@10.1.7.151:1521:GAFISNEW7","gafis_gz","gafis")
     implicit val options = new DumpOption
-    tables()
+    options.schemaPattern="GAFIS_GZ"
+    implicit val sb = new StringBuilder
+    tables().foreach(table)
+    println(sb)
   }
 }
