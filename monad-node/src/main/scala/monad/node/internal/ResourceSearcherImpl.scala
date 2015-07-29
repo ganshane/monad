@@ -73,16 +73,21 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     InternalUtils.close(searcherManager)
   }
 
-  def collectSearch(query: String, sort: String, topN: Int) = {
-    //TODO 增加version
-    val sb = new java.lang.StringBuilder(rd.name)
-    sb.append(query)
-    sb.append(sort)
-    sb.append(topN)
+  def collectSearch(query: String, sort: String, topN: Int):ShardResult = {
+    val result:ShardResult =
+      if(config.index.queryCacheSupported){
+        //TODO 增加version
+        val sb = new java.lang.StringBuilder(rd.name)
+        sb.append(query)
+        sb.append(sort)
+        sb.append(topN)
 
-    val result = SearchResultCache.getOrPut[ShardResult](sb.toString) {
-      search(query, sort, topN)
-    }
+        SearchResultCache.getOrPut[ShardResult](sb.toString) {
+          search(query, sort, topN)
+        }
+      }else{
+        search(query, sort, topN)
+      }
 
     result.maxDoc = maxDoc
     result.serverHash = regionId

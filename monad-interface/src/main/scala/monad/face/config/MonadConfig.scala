@@ -125,6 +125,9 @@ class IndexConfig extends BinlogLengthConfig {
   var queryThread = 1
   @XmlElement(name = "query_max_limit")
   var queryMaxLimit = -1
+  @XmlElement(name = "query_cache_supported")
+  var queryCacheSupported= true
+
   //保存id
   //@XmlElement(name = "id_nosql")
   //var idNoSql: NoSqlConfig = _
