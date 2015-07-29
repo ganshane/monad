@@ -329,5 +329,13 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
       .append(" IS '")
       .append(comment).append("'").toString
   }
+
+  override def fetchTableCommentSql(tableName: String): String = {
+    s"SELECT COMMENTS FROM USER_TAB_COMMENTS where TABLE_NAME='${tableName}'"
+  }
+
+  override def fetchColumnCommentSql(tableName: String, columnName: String): String = {
+    s"SELECT COMMENTS FROM USER_COL_COMMENTS where TABLE_NAME='${tableName}' AND COLUMN_NAME='${columnName}'"
+  }
 }
 

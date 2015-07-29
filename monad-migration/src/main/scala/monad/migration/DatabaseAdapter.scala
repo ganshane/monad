@@ -440,6 +440,12 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
   def commentTableSql(tableName:String,comment: String): String = {
     throw new UnsupportedOperationException("commentColumnSql unimplemented!")
   }
+  def fetchTableCommentSql(tableName:String):String={
+    throw new UnsupportedOperationException("fetchTableCommentSql unimplemented!")
+  }
+  def fetchColumnCommentSql(tableName:String,columnName:String):String={
+    throw new UnsupportedOperationException("fetchColumnCommentSql unimplemented!")
+  }
 
   /**
    * Different databases require different SQL to drop an index.

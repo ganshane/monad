@@ -182,7 +182,7 @@ object Default {
  * @param comment 注释
  */
 case class Comment(comment:String) extends ColumnOption with TableOption{
-  override def toTypeString: String = s"""Comment(\"${comment}\""""
+  override def toTypeString: String = s"""Comment(\"${comment}\")"""
 }
 
 /**
