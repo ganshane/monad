@@ -32,13 +32,9 @@
  */
 package monad.migration
 
-import org.slf4j.LoggerFactory
+import java.sql.{Connection, PreparedStatement, ResultSet}
 
-import java.sql.{
-  Connection,
-  PreparedStatement,
-  ResultSet
-}
+import org.slf4j.LoggerFactory
 
 /**
  * Due to the JVM erasure, the scala.Predef.ArrowAssoc.->
@@ -293,6 +289,22 @@ abstract class Migration {
   final def commentTable(tableName:String,
                           comment:String): Unit ={
     execute(adapter.commentTableSql(tableName,comment))
+  }
+
+  /**
+   * 创建序列
+   * @param name 序列名称
+   */
+  final def sequence(name:String):Unit={
+    execute(adapter.sequenceSql(name))
+  }
+
+  /**
+   * 删除序列
+   * @param name 序列的名称
+   */
+  final def dropSequence(name:String):Unit={
+    execute(adapter.dropSequenceSql(name))
   }
 
   /**

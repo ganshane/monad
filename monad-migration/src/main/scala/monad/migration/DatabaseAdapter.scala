@@ -742,4 +742,12 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
       case None => ""
     }
   }
+ def sequenceSql(name: String): String = {
+   val nameWithSchema = quoteTableName(name)
+    s"""CREATE SEQUENCE ${nameWithSchema}"""
+  }
+  def dropSequenceSql(name: String): String = {
+    val nameWithSchema = quoteTableName(name)
+    s"""DROP SEQUENCE ${nameWithSchema}"""
+  }
 }
