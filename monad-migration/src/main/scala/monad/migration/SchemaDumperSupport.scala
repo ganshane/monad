@@ -265,23 +265,24 @@ trait SchemaDumperSupport {
       }
     }
   }
+  protected val PRIMARY_KEYS_COLUMN_NAME = 4
   private def findPrimaryKeys(metaData:DatabaseMetaData , schemaPattern:String, tableName:String): Seq[String]={
     val resultSet = metaData.getPrimaryKeys(null,schemaPattern,tableName)
     With.autoClosingResultSet(resultSet){rs=>
       val buf = new ListBuffer[String]()
       while(rs.next()){
-        buf += rs.getString(COLUMN_NAME)
+        buf += rs.getString(PRIMARY_KEYS_COLUMN_NAME)
       }
       buf.toSeq
     }
   }
   def dumpHead()(implicit sb:mutable.StringBuilder): Unit ={
 
-    val dateStr = new SimpleDateFormat("YYMMddHHmmss").format(new Date())
+    val dateStr = new SimpleDateFormat("YYYYMMddHHmmss").format(new Date())
     sb.append(s"""
 import monad.migration._
 
-class Migrate_${dateStr}_CreateSequence
+class Migrate_${dateStr}_Init
   extends Migration {
 
   def up(): Unit = {

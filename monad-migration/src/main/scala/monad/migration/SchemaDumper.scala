@@ -3,6 +3,8 @@ package monad.migration
 /**
  * schema dumper
  * 支持表、主键、索引、注释、序列的导出
+ * 尚不能支持
+ * 存储过程、触发器
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-07-28
  */
