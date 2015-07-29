@@ -60,9 +60,6 @@ object Vendor {
    *         scala.MatchError if an appropriate vendor cannot be found
    */
   def forDriver(driverClassName: String): Vendor = {
-    //load jdbc driver
-    Class.forName(driverClassName)
-
     driverClassName match {
       case "com.mysql.jdbc.Driver" =>
         Mysql

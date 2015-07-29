@@ -16,6 +16,7 @@ object SchemaDumper {
     val pass = System.getProperty("dump.jdbc.pass")
     val schema = System.getProperty("dump.jdbc.schema")
 
+    Class.forName(driver)
     val vendor = Vendor.forDriver(driver)
     val connectionBuilder = new ConnectionBuilder(url, user, pass)
     val databaseAdapter = DatabaseAdapter.forVendor(vendor,Option(schema))
