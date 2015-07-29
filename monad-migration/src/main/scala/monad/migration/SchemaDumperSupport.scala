@@ -2,6 +2,7 @@ package monad.migration
 
 import java.sql.{DatabaseMetaData, ResultSet}
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -24,6 +25,7 @@ trait SchemaDumperSupport {
   private case class Column(name:String,sqlType:SqlType,options:Array[ColumnOption]) extends Ordered[Column]{
     override def compare(that: Column): Int = name.compareTo(that.name)
   }
+  private case class Index(name:String,columns:ArrayBuffer[String],isUnique:Boolean)
 
   /**
    * 得到所有的表名
@@ -67,6 +69,60 @@ trait SchemaDumperSupport {
       case None =>
         Seq()
     }
+
+  }
+  // NOTE: metaData.getIndexInfo row mappings :
+  protected val INDEX_INFO_TABLE_NAME = 3
+  protected val INDEX_INFO_NON_UNIQUE = 4
+  protected val INDEX_INFO_NAME = 6
+  protected val INDEX_INFO_COLUMN_NAME = 9
+
+  private def indexes(table:String): Seq[Index] ={
+    withLoggingConnection(AutoCommit){connection=>
+      val metaData = connection.getMetaData
+      val schemaPattern = adapter.schemaNameOpt match {
+        case Some(n) => adapter.unquotedNameConverter(n)
+        case None => null
+      }
+
+      val primaryKeys = findPrimaryKeys(metaData,schemaPattern,table)
+
+      @tailrec
+      def fetchIndexInfo(rs:ResultSet,
+                         currentIndexName:String,
+                         indexColumns:ArrayBuffer[String],
+                         buf:ListBuffer[Index]): Unit ={
+        var columns = indexColumns
+        if(rs.next()){
+          val indexName = rs.getString(INDEX_INFO_NAME)
+          val columnName = rs.getString(INDEX_INFO_COLUMN_NAME)
+          if(indexName != null){
+            if(!primaryKeys.contains(columnName)){//非主键字段
+              if(indexName != currentIndexName){//新的
+                columns = new ArrayBuffer[String]()
+                buf += Index(indexName,columns,!rs.getBoolean(INDEX_INFO_NON_UNIQUE))
+              }
+              columns += columnName
+            }
+          }
+          fetchIndexInfo(rs,indexName,columns,buf)
+        }
+      }
+      val indexInfoSet = metaData.getIndexInfo(null, schemaPattern, table, false, true);
+      With.autoClosingResultSet(indexInfoSet){rs=>
+        val buf = new ListBuffer[Index]()
+        fetchIndexInfo(rs,null,new ArrayBuffer[String](),buf)
+        buf.toSeq
+      }
+    }
+  }
+  private def dumpIndex(tableName:String,index:Index)(implicit sb:mutable.StringBuilder): Unit ={
+    sb.append(s"""addIndex(\"${tableName}\",${index.name},""")
+    index.columns.foreach(x=>sb.append("Array[String](\"").append(x).append("\")"))
+    if(index.isUnique)
+      sb.append(",Unique")
+
+    sb.append(")\n")
 
   }
   def dumpSequence(sequence:String)(implicit sb:mutable.StringBuilder): Unit ={
@@ -188,6 +244,8 @@ trait SchemaDumperSupport {
       sb.append(")\n")
     }
     sb.append("}\n")
+
+    indexes(table).foreach(x=>dumpIndex(table,x))
   }
   private def fetchSingleResult(sql:String): Option[String]={
     withLoggingConnection(AutoCommit) { connection =>

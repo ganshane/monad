@@ -18,7 +18,9 @@ object SchemaDumper {
     val databaseAdapter = DatabaseAdapter.forVendor(vendor,Option(schema))
     implicit val sb = new StringBuilder
     val migrator = new Migrator(connectionBuilder,databaseAdapter)
-    migrator.tables().take(10).foreach(migrator.dumpTable)
+    migrator.tables()
+      .filter{x=> x equals "GAFIS_GATHER_FINGER"}
+      .take(2).foreach{x=>println(x);migrator.dumpTable(x)}
     migrator.sequences().foreach(migrator.dumpSequence)
     println(sb)
   }
