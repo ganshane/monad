@@ -337,5 +337,9 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
   override def fetchColumnCommentSql(tableName: String, columnName: String): String = {
     s"SELECT COMMENTS FROM USER_COL_COMMENTS where TABLE_NAME='${tableName}' AND COLUMN_NAME='${columnName}'"
   }
+
+  override def findSequencesSql(): Option[String] = {
+    Some("SELECT SEQUENCE_NAME FROM USER_SEQUENCES")
+  }
 }
 

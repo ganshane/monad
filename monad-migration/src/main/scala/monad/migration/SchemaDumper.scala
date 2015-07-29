@@ -19,6 +19,7 @@ object SchemaDumper {
     implicit val sb = new StringBuilder
     val migrator = new Migrator(connectionBuilder,databaseAdapter)
     migrator.tables().take(10).foreach(migrator.dumpTable)
+    migrator.sequences().foreach(migrator.dumpSequence)
     println(sb)
   }
 }

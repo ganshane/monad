@@ -82,7 +82,6 @@ object DatabaseAdapter {
  */
 abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
 
-
   protected final val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -750,4 +749,5 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
     val nameWithSchema = quoteTableName(name)
     s"""DROP SEQUENCE ${nameWithSchema}"""
   }
+  def findSequencesSql():Option[String] = None
 }

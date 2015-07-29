@@ -48,6 +48,30 @@ trait SchemaDumperSupport {
       }
     }
   }
+  def sequences():Seq[String]={
+    adapter.findSequencesSql() match {
+      case Some(sql) =>
+        withLoggingConnection(AutoCommit) { connection =>
+          val stmt = connection.createStatement()
+          With.autoClosingStatement(stmt) { s =>
+            val resultSet = s.executeQuery(sql)
+            val buffer = new ListBuffer[String]()
+            With.autoClosingResultSet(resultSet){rs=>
+              while(rs.next())
+                buffer += rs.getString(1)
+            }
+
+            buffer.toSeq
+          }
+        }
+      case None =>
+        Seq()
+    }
+
+  }
+  def dumpSequence(sequence:String)(implicit sb:mutable.StringBuilder): Unit ={
+    sb.append(s"""sequence(\"${sequence}\")\n""")
+  }
   private val timestampReg = "TIMESTAMP([\\(\\d+\\)]*)".r
   protected def typeFromResultSet(resultSet:ResultSet):SqlType ={
     resultSet.getString(TYPE_NAME) match{
@@ -135,7 +159,7 @@ trait SchemaDumperSupport {
 
           //列注释
           val colCommentSql = adapter.fetchColumnCommentSql(table, name)
-          val commentOpt = fetchComment(colCommentSql)
+          val commentOpt = fetchSingleResult(colCommentSql)
           commentOpt.foreach(x => columnOptions += Comment(x))
 
           //是否为主键
@@ -151,7 +175,7 @@ trait SchemaDumperSupport {
   }
   def dumpTable(table:String)(implicit sb:mutable.StringBuilder):Unit = {
     val tableCommentSql= adapter.fetchTableCommentSql(table)
-    val commentOpt = fetchComment(tableCommentSql)
+    val commentOpt = fetchSingleResult(tableCommentSql)
 
     sb.append(s"""createTable(\"${table}\"""")
     commentOpt.foreach(x=>sb.append(",").append(Comment(x).toTypeString))
@@ -165,7 +189,7 @@ trait SchemaDumperSupport {
     }
     sb.append("}\n")
   }
-  private def fetchComment(sql:String): Option[String]={
+  private def fetchSingleResult(sql:String): Option[String]={
     withLoggingConnection(AutoCommit) { connection =>
       val stmt = connection.createStatement();
       With.autoClosingStatement(stmt) { s =>
