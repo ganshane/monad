@@ -1,6 +1,8 @@
 package monad.migration
 
 import java.sql.{DatabaseMetaData, ResultSet}
+import java.text.SimpleDateFormat
+import java.util.Date
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -13,7 +15,8 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
  */
 trait SchemaDumperSupport {
   this:Migrator =>
-  private final val TABLE_TYPES =Array[String] ( "TABLE", "VIEW", "SYNONYM" )
+  //private final val TABLE_TYPES =Array[String] ( "TABLE", "VIEW", "SYNONYM" )
+  private final val TABLE_TYPE =Array[String] ( "TABLE")
   protected val COLUMN_NAME = 4
   protected val DATA_TYPE = 5
   protected val TYPE_NAME = 6
@@ -41,7 +44,7 @@ trait SchemaDumperSupport {
       With.autoClosingResultSet(metadata.getTables(null,
         schemaPattern,
         null,
-        TABLE_TYPES)) { rs =>
+        TABLE_TYPE)) { rs =>
         val buffer  = new ListBuffer[String]()
         while (rs.next()) {
           buffer += rs.getString(3)
@@ -117,16 +120,17 @@ trait SchemaDumperSupport {
     }
   }
   private def dumpIndex(tableName:String,index:Index)(implicit sb:mutable.StringBuilder): Unit ={
-    sb.append(s"""addIndex(\"${tableName}\",${index.name},""")
+    sb.append(s"""    addIndex(\"${tableName}\",""")
     index.columns.foreach(x=>sb.append("Array[String](\"").append(x).append("\")"))
     if(index.isUnique)
       sb.append(",Unique")
-
-    sb.append(")\n")
-
+    sb.append(s""",Name(\"${index.name}\"))\n""")
   }
   def dumpSequence(sequence:String)(implicit sb:mutable.StringBuilder): Unit ={
-    sb.append(s"""sequence(\"${sequence}\")\n""")
+    sb.append(s"""    sequence(\"${sequence}\")\n""")
+  }
+  def dumpDropSequence(sequence:String)(implicit sb:mutable.StringBuilder): Unit ={
+    sb.append(s"""    dropSequence(\"${sequence}\")\n""")
   }
   private val timestampReg = "TIMESTAMP([\\(\\d+\\)]*)".r
   protected def typeFromResultSet(resultSet:ResultSet):SqlType ={
@@ -225,7 +229,7 @@ trait SchemaDumperSupport {
 
           buffer += Column(name, sqlType, columnOptions.toArray)
         }
-        buffer.sorted.toSeq
+        buffer.toSeq
       }
     }
   }
@@ -233,19 +237,22 @@ trait SchemaDumperSupport {
     val tableCommentSql= adapter.fetchTableCommentSql(table)
     val commentOpt = fetchSingleResult(tableCommentSql)
 
-    sb.append(s"""createTable(\"${table}\"""")
+    sb.append(s"""    createTable(\"${table}\"""")
     commentOpt.foreach(x=>sb.append(",").append(Comment(x).toTypeString))
     sb.append("){ t=> \n")
     columns(table).foreach { c =>
-      sb.append(s"""  t.column(\"${c.name}\",${c.sqlType}""")
+      sb.append(s"""      t.column(\"${c.name}\",${c.sqlType}""")
       c.options.foreach{o=>
         sb.append(",").append(o.toTypeString)
       }
       sb.append(")\n")
     }
-    sb.append("}\n")
+    sb.append("    }\n")
 
     indexes(table).foreach(x=>dumpIndex(table,x))
+  }
+  def dumpDropTable(table:String)(implicit sb:mutable.StringBuilder): Unit ={
+    sb.append(s"""    dropTable("${table}")""").append("\n")
   }
   private def fetchSingleResult(sql:String): Option[String]={
     withLoggingConnection(AutoCommit) { connection =>
@@ -267,5 +274,30 @@ trait SchemaDumperSupport {
       }
       buf.toSeq
     }
+  }
+  def dumpHead()(implicit sb:mutable.StringBuilder): Unit ={
+
+    val dateStr = new SimpleDateFormat("YYMMddHHmmss").format(new Date())
+    sb.append(s"""
+import monad.migration._
+
+class Migrate_${dateStr}_CreateSequence
+  extends Migration {
+
+  def up(): Unit = {
+""".stripMargin)
+  }
+  def dumpMiddle()(implicit sb:mutable.StringBuilder): Unit = {
+    sb.append("""
+  }
+
+  def down() {
+    """.stripMargin)
+  }
+  def dumpFooter()(implicit sb:mutable.StringBuilder): Unit ={
+    sb.append("""
+      | }
+      |}
+    """.stripMargin)
   }
 }

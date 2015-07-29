@@ -160,7 +160,10 @@ case class CharacterSet(name: CharacterSetName,
  */
 case class Default(value: String)
   extends ColumnOption{
-  override def toTypeString: String = s"""Default(\"${value}\")"""
+  override def toTypeString: String = {
+    val valueEscaped = value.replaceAll("\"","\\\\\"")
+    s"""Default(\"${valueEscaped}\")"""
+  }
 }
 
 /**

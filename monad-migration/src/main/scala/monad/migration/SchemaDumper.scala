@@ -2,6 +2,7 @@ package monad.migration
 
 /**
  * schema dumper
+ * 支持表、主键、索引、注释、序列的导出
  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-07-28
  */
@@ -18,10 +19,19 @@ object SchemaDumper {
     val databaseAdapter = DatabaseAdapter.forVendor(vendor,Option(schema))
     implicit val sb = new StringBuilder
     val migrator = new Migrator(connectionBuilder,databaseAdapter)
+    migrator.dumpHead()
+
     migrator.tables()
-      .filter{x=> x equals "GAFIS_GATHER_FINGER"}
-      .take(2).foreach{x=>println(x);migrator.dumpTable(x)}
+      .foreach(migrator.dumpTable)
     migrator.sequences().foreach(migrator.dumpSequence)
+
+    migrator.dumpMiddle()
+
+    migrator.tables().reverse.foreach(migrator.dumpDropTable)
+    migrator.sequences().reverse.foreach(migrator.dumpDropSequence)
+
+    migrator.dumpFooter()
+
     println(sb)
   }
 }
