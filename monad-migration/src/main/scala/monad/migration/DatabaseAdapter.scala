@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2010 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.

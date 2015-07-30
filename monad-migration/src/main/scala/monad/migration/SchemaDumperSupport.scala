@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
+ */
 package monad.migration
 
 import java.sql.{DatabaseMetaData, ResultSet}
