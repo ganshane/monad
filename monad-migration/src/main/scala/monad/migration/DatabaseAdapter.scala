@@ -117,7 +117,7 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
    * while MySQL uses
    *
    *   ALTER TABLE child DROP FOREIGN KEY idx_child_pk_parent;
-   *                          ^^^^^^^^^^^
+   *                          ^^^^^^^^^^
    */
   val alterTableDropForeignKeyConstraintPhrase: String
 
@@ -755,7 +755,7 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
   def createTriggerSql(tableName: String,
                                 triggerName: String,
                                 timingPointOpt: Option[TriggerTimingPoint],
-                                triggerFiringOpt: Option[TriggerFiring],
+                                triggerFiringOpt: List[TriggerFiring],
                                 forEachRowOpt: Option[ForEachRow.type],
                                 whenOpt: Option[When])
                                (f: =>String):String= {

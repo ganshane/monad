@@ -345,13 +345,16 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
   override def createTriggerSql(tableName: String,
                                 triggerName: String,
                                 timingPointOpt: Option[TriggerTimingPoint],
-                                triggerFiringOpt: Option[TriggerFiring],
+                                triggerFiringOpt: List[TriggerFiring],
                                 forEachRowOpt: Option[ForEachRow.type],
                                 whenOpt: Option[When])
                                (f: =>String):String= {
     val tableNameQuoted = quoteTableName(tableName)
     val sb = new StringBuilder
-    sb.append(s"CREATE TRIGGER ${triggerName} ${timingPointOpt.get} ${triggerFiringOpt.get} ON ${tableNameQuoted} ")
+    sb.append(s"CREATE TRIGGER ${triggerName} ${timingPointOpt.get} ")
+    sb.append(triggerFiringOpt.mkString(" OR "))
+
+    sb.append(s" ON ${tableNameQuoted} ")
     forEachRowOpt.foreach(x=>sb.append(" FOR EACH ROW "))
     whenOpt.foreach(x=>sb.append(s" ${x} "))
     sb.append(" BEGIN ")

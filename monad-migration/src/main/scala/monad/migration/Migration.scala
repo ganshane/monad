@@ -1037,22 +1037,33 @@ abstract class Migration {
           var newCurrent = current
           head match {
             case x: T =>
-              if (current.isDefined) throw new DuplicateTriggerException("duplicate " + current + " definition")
               opts = opts filterNot (x ==)
-              newCurrent = Some(x)
+              if(x.isInstanceOf[TriggerFiring]){ //TriggerFiring 允许有多个值
+                return Some(x)
+              }else {
+                if (current.isDefined)
+                  throw new DuplicateTriggerException("duplicate " + current.get + " and " + x + " definition")
+
+                newCurrent = Some(x)
+              }
             case _ =>
           }
+
           checkOption(tail,newCurrent)
         case Nil =>
           current
       }
     }
+    def findMultiTriggerObjectOption[T <: TriggerOption: Manifest](objects:T*):List[T]={
+      objects.foldLeft(List[T]()){ (last,currentObject) =>
+        checkOption[T](opts,Option.empty[T]).foldLeft(last)( _ :+ _)
+      }
+    }
     def findTriggerObjectOption[T <: TriggerOption: Manifest](objects:T*):Option[T]={
       objects.foldLeft(Option.empty[T]){ (last,currentObject) =>
         val current = checkOption[T](opts,Option.empty[T])
-        if(current.isDefined && last.isDefined) throw new ConflictingTriggerException(current+" conflict "+last)
-
-        if(current.isDefined) current else last
+        if(current.isDefined && last.nonEmpty) throw new ConflictingTriggerException(current+" conflict "+last)
+        if(current.isDefined)  current else last
       }
     }
     def findTriggerValueOption[T <: TriggerOption: Manifest]:Option[T]={
@@ -1062,10 +1073,9 @@ abstract class Migration {
     val timingPointOpt = findTriggerObjectOption[TriggerTimingPoint](Before,After,INSTEAD_OF)
     if(timingPointOpt.isEmpty) throw new MissingTriggerOptionException("missing timing point definition")
 
-    val triggerFiringOpt = findTriggerObjectOption[TriggerFiring](Update,Insert,Delete)
+    val triggerFiringOpt = findMultiTriggerObjectOption[TriggerFiring](Update,Insert,Delete)
     if(triggerFiringOpt.isEmpty) throw new MissingTriggerOptionException("missing trigger firing definition")
 
-    val tableNameQuoted = adapter.quoteTableName(tableName)
 
     val forEachRowOpt = findTriggerObjectOption(ForEachRow)
     val whenOpt = findTriggerValueOption[When]
