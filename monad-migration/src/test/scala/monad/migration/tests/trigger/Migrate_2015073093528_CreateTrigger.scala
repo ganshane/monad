@@ -29,6 +29,7 @@ class Migrate_2015073093528_CreateTrigger
     databaseVendor match{
       case Oracle =>
         dropTrigger("test_trigger")
+      case other=>
     }
     dropTable(tableName)
   }

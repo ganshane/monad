@@ -1083,11 +1083,14 @@ abstract class Migration {
     val triggerFiringOpt = findMultiTriggerObjectOption[TriggerFiring](Update,Insert,Delete)
     if(triggerFiringOpt.isEmpty) throw new MissingTriggerOptionException("missing trigger firing definition")
 
+    val referencingOpt = findTriggerValueOption[Referencing]
+
 
     val forEachRowOpt = findTriggerObjectOption(ForEachRow)
     val whenOpt = findTriggerValueOption[When]
 
-    val sql = adapter.createTriggerSql(tableName,triggerName,timingPointOpt,triggerFiringOpt,forEachRowOpt,whenOpt)(f)
+    val sql = adapter.createTriggerSql(tableName,triggerName,
+      timingPointOpt,triggerFiringOpt,referencingOpt,forEachRowOpt,whenOpt)(f)
 
     execute(sql)
 

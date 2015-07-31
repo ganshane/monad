@@ -756,6 +756,7 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
                                 triggerName: String,
                                 timingPointOpt: Option[TriggerTimingPoint],
                                 triggerFiringOpt: List[TriggerFiring],
+                                referencingOpt:Option[Referencing],
                                 forEachRowOpt: Option[ForEachRow.type],
                                 whenOpt: Option[When])
                                (f: =>String):String= {

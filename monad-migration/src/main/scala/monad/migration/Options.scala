@@ -484,6 +484,7 @@ case object Update extends TriggerFiring
 case object Delete extends TriggerFiring
 case class UpdateOf(columns:String*) extends TriggerFiring
 
+case class Referencing(expr:String) extends TriggerFiring
 /**
  * trigger condition
  */
