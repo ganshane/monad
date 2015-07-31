@@ -19,13 +19,17 @@ class Migrate_2015073093528_CreateTrigger
     databaseVendor match {
       case Oracle =>
         addTrigger(tableName,"test_trigger",Before,Update,When("NEW.User_ID is NULL")){
-          "asdf"
+          "NULL"
         }
       case other=>
     }
   }
 
   def down(): Unit = {
+    databaseVendor match{
+      case Oracle =>
+        dropTrigger("test_trigger")
+    }
     dropTable(tableName)
   }
 }

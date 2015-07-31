@@ -1026,6 +1026,13 @@ abstract class Migration {
   }
 
   /**
+   * droper some trigger
+   * @param triggerName trigger name
+   */
+  def dropTrigger(triggerName:String): Unit ={
+    execute(s"DROP TRIGGER ${triggerName}")
+  }
+  /**
    * add trigger
    */
   def addTrigger(tableName:String,triggerName:String,options:TriggerOption*)(f: => String): Unit ={
