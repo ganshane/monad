@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@gashane.com>
  * Copyright (c) 2009 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -48,4 +49,10 @@ class MissingMigrationClass(message: String)
   extends MigrationException(message)
 
 class UnsupportedColumnTypeException(message: String)
+  extends MigrationException(message)
+class DuplicateTriggerException(message:String)
+  extends MigrationException(message)
+class ConflictingTriggerException(message:String)
+  extends MigrationException(message)
+class MissingTriggerOptionException(message:String)
   extends MigrationException(message)

@@ -341,5 +341,24 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
   override def findSequencesSql(): Option[String] = {
     Some("SELECT SEQUENCE_NAME FROM USER_SEQUENCES")
   }
+
+  override def createTriggerSql(tableName: String,
+                                triggerName: String,
+                                timingPointOpt: Option[TriggerTimingPoint],
+                                triggerFiringOpt: Option[TriggerFiring],
+                                forEachRowOpt: Option[ForEachRow.type],
+                                whenOpt: Option[When])
+                               (f: =>String):String= {
+    val tableNameQuoted = quoteTableName(tableName)
+    val sb = new StringBuilder
+    sb.append(s"CREATE TRIGGER ${triggerName} ${timingPointOpt.get} ${triggerFiringOpt.get} ON ${tableNameQuoted} ")
+    forEachRowOpt.foreach(x=>sb.append(" FOR EACH ROW "))
+    whenOpt.foreach(x=>sb.append(s" ${x} "))
+    sb.append(" BEGIN ")
+    sb.append(f.replaceAll("\n"," "))
+    sb.append(" END;")
+
+    sb.toString()
+  }
 }
 

@@ -92,6 +92,11 @@ sealed trait CheckOption
  */
 sealed trait TableOption
 
+/**
+ * trigger option
+ */
+sealed trait TriggerOption
+
 object CharacterSet {
   /**
    * Construct a CharacterSet with the given character set name and
@@ -456,6 +461,35 @@ case object UpdatePrivilege
  */
 case object UsagePrivilege
   extends SchemaPrivilege
+
+/**
+ * foreach row
+ */
+case object ForEachRow extends TriggerOption
+
+/**
+ * trigger timing point
+ */
+sealed trait TriggerTimingPoint extends TriggerOption
+case object Before extends TriggerTimingPoint
+case object After extends TriggerTimingPoint
+case object INSTEAD_OF extends TriggerTimingPoint
+
+/**
+ * trigger firing
+ */
+sealed trait TriggerFiring extends TriggerOption
+case object Insert extends TriggerFiring
+case object Update extends TriggerFiring
+case object Delete extends TriggerFiring
+case class UpdateOf(columns:String*) extends TriggerFiring
+
+/**
+ * trigger condition
+ */
+case class When(conditions:String) extends TriggerOption
+
+
 
 /**
  * This class is defined to prevent ant from recompiling this source

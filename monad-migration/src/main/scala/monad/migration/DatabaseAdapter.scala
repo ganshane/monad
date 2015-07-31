@@ -83,6 +83,7 @@ object DatabaseAdapter {
  */
 abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
 
+
   protected final val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -751,4 +752,13 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
     s"""DROP SEQUENCE ${nameWithSchema}"""
   }
   def findSequencesSql():Option[String] = None
+  def createTriggerSql(tableName: String,
+                                triggerName: String,
+                                timingPointOpt: Option[TriggerTimingPoint],
+                                triggerFiringOpt: Option[TriggerFiring],
+                                forEachRowOpt: Option[ForEachRow.type],
+                                whenOpt: Option[When])
+                               (f: =>String):String= {
+    throw new UnsupportedOperationException
+  }
 }

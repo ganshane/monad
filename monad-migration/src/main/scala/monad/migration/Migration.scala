@@ -37,6 +37,8 @@ import java.sql.{Connection, PreparedStatement, ResultSet}
 
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
+
 /**
  * Due to the JVM erasure, the scala.Predef.ArrowAssoc.->
  * method generates a Tuple2 and the following cannot be distinguished
@@ -1021,5 +1023,56 @@ abstract class Migration {
       logger.warn("Database does not support CHECK constraints; ignoring " +
         "request to remove a CHECK constraint: {}",
         sql)
+  }
+
+  /**
+   * add trigger
+   */
+  def addTrigger(tableName:String,triggerName:String,options:TriggerOption*)(f: => String): Unit ={
+    var opts = options
+    @tailrec //tail call
+    def checkOption[T <: TriggerOption: Manifest](tailOptions:Seq[TriggerOption],current:Option[T]): Option[T]={
+      tailOptions.toList match{
+        case head::tail=>
+          var newCurrent = current
+          head match {
+            case x: T =>
+              if (current.isDefined) throw new DuplicateTriggerException("duplicate " + current + " definition")
+              opts = opts filterNot (x ==)
+              newCurrent = Some(x)
+            case _ =>
+          }
+          checkOption(tail,newCurrent)
+        case Nil =>
+          current
+      }
+    }
+    def findTriggerObjectOption[T <: TriggerOption: Manifest](objects:T*):Option[T]={
+      objects.foldLeft(Option.empty[T]){ (last,currentObject) =>
+        val current = checkOption[T](opts,Option.empty[T])
+        if(current.isDefined && last.isDefined) throw new ConflictingTriggerException(current+" conflict "+last)
+
+        if(current.isDefined) current else last
+      }
+    }
+    def findTriggerValueOption[T <: TriggerOption: Manifest]:Option[T]={
+        checkOption(opts,Option.empty[T])
+    }
+
+    val timingPointOpt = findTriggerObjectOption[TriggerTimingPoint](Before,After,INSTEAD_OF)
+    if(timingPointOpt.isEmpty) throw new MissingTriggerOptionException("missing timing point definition")
+
+    val triggerFiringOpt = findTriggerObjectOption[TriggerFiring](Update,Insert,Delete)
+    if(triggerFiringOpt.isEmpty) throw new MissingTriggerOptionException("missing trigger firing definition")
+
+    val tableNameQuoted = adapter.quoteTableName(tableName)
+
+    val forEachRowOpt = findTriggerObjectOption(ForEachRow)
+    val whenOpt = findTriggerValueOption[When]
+
+    val sql = adapter.createTriggerSql(tableName,triggerName,timingPointOpt,triggerFiringOpt,forEachRowOpt,whenOpt)(f)
+
+    execute(sql)
+
   }
 }
