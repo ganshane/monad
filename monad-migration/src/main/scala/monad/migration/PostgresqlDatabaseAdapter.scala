@@ -46,6 +46,11 @@ class PostgresqlByteaColumnDefinition
     with ColumnSupportsDefault {
   override protected def sql = "BYTEA"
 }
+class PostgresqlTextColumnDefinition
+  extends DefaultBlobColumnDefinition
+  with ColumnSupportsDefault {
+  override protected def sql = "TEXT"
+}
 
 class PostgresqlIntegerColumnDefinition
     extends DefaultIntegerColumnDefinition
@@ -96,6 +101,8 @@ class PostgresqlDatabaseAdapter(override val schemaNameOpt: Option[String])
         new PostgresqlBigintColumnDefinition
       case BlobType =>
         new PostgresqlByteaColumnDefinition
+      case ClobType =>
+        new PostgresqlTextColumnDefinition
       case BooleanType =>
         new DefaultBooleanColumnDefinition
       case CharType =>

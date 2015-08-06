@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="../../../../../../monad-core/src/main/resources/monad.xsd"/>
+  <xs:element name="monad_id" type="monadIdType"/>
+  <xs:complexType name="monadIdType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="log_file" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置日志文件的路径</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="xs:string" name="local_store_dir" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>本地化存储的配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="rpcType" name="rpc" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置RPC绑定的的地址</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="heartbeatType" name="heartbeat" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置心跳相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="zkType" name="zk" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置Zookeeper服务器相关信息</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="idType" name="id" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>id的所有配置</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="idType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="groups_supported" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>支持的组，用半角逗号分隔</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element type="nosqlType" name="nosql" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>配置节点数据保存的策略</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

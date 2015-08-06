@@ -74,6 +74,11 @@
           <xs:documentation>控制查询的最大数据限制，默认是-1,则不进行限制</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element type="xs:boolean" name="query_cache_supported" minOccurs="0" maxOccurs="1" default="true">
+        <xs:annotation>
+          <xs:documentation>控制对于查询结果是否需要缓存</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element type="xs:int" name="binlog_length" minOccurs="0" maxOccurs="1" default="1000">
         <xs:annotation>
           <xs:documentation>节点上binlog保存的长度，默认:1000</xs:documentation>

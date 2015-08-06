@@ -11,9 +11,10 @@ import com.google.protobuf.ExtensionRegistry
 import monad.api.internal._
 import monad.api.services._
 import monad.face.config.ApiConfigSupport
-import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
-import monad.face.services.{ResourceDefinitionLoaderListener, RpcSearcherFacade}
-import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto}
+import monad.face.internal.RemoteIdFacade
+import monad.face.model.{IdShardResult, OpenBitSetWithNodes}
+import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
+import monad.protocol.internal.{InternalFindDocProto, InternalIdProto, InternalMaxdocQueryProto, InternalSearchProto}
 import monad.rpc.services.ProtobufExtensionRegistryConfiger
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
@@ -38,6 +39,7 @@ object LocalMonadApiModule {
       scope(ScopeConstants.PERTHREAD).
       withId("ResourceRequest")
     binder.bind(classOf[RpcSearcherFacade], classOf[RemoteRpcSearcherFacade]).withId("RpcSearcherFacade")
+    binder.bind(classOf[IdFacade], classOf[RemoteIdFacade]).withId("RemoteIdFacade")
   }
 
   def buildMemcachedClient(apiConfigSupport: ApiConfigSupport) = {
@@ -65,7 +67,7 @@ object LocalMonadApiModule {
   @Contribute(classOf[ComponentEventResultProcessor[_]])
   def provideOpenBitSetResultProcessor(configuration: MappedConfiguration[Class[_ <: AnyRef], ComponentEventResultProcessor[_ <: AnyRef]]) {
     configuration.addInstance(classOf[OpenBitSetWithNodes], classOf[OpenBitSetResultProcessor])
-    configuration.addInstance(classOf[IdShardResultCollect], classOf[IdShardResultCollectResultProcessor])
+    configuration.addInstance(classOf[IdShardResult], classOf[IdShardResultResultProcessor])
   }
 
   @Contribute(classOf[ExtensionRegistry])
@@ -75,6 +77,7 @@ object LocalMonadApiModule {
         InternalMaxdocQueryProto.registerAllExtensions(registry)
         InternalSearchProto.registerAllExtensions(registry)
         InternalFindDocProto.registerAllExtensions(registry)
+        InternalIdProto.registerAllExtensions(registry)
       }
     })
   }

@@ -10,7 +10,6 @@ import monad.face.MonadFaceConstants
 import monad.face.model.ColumnType
 import monad.face.services.DataTypeUtils
 import monad.jni.services.gen.DataCommandType
-import monad.support.MonadSupportConstants
 import monad.support.services.{LoggerSupport, MonadException}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
@@ -44,7 +43,6 @@ class SaveRecordHandler(manager: ResourceImporterManager)
 
     val json = new JsonObject
     var primaryKey: String = null
-    var objectId: Array[Byte] = null
     for ((col, fv) <- importer.rd.properties.view.zip(row) if fv != null) {
       col.columnType match {
         case ColumnType.Date | ColumnType.Long | ColumnType.Int =>
@@ -56,16 +54,16 @@ class SaveRecordHandler(manager: ResourceImporterManager)
       if (col.primaryKey) {
         primaryKey = String.valueOf(fv)
       }
-      //分析ID字段
-      if ((col.mark & 8) == 8) {
-        objectId = String.valueOf(fv).getBytes(MonadSupportConstants.UTF8_ENCODING_CHARSET)
-      }
     }
     if (primaryKey == null) {
       throw new MonadException("[%s]主键字段为空".format(event.resourceName), MonadSyncExceptionCode.PRIMARY_KEY_VALUE_IS_NULL)
     }
 
     json.addProperty(MonadFaceConstants.UPDATE_TIME_FIELD_NAME, DataTypeUtils.convertDateAsInt(System.currentTimeMillis()))
+
+    event.objectId.foreach{ord=>
+      json.addProperty(MonadFaceConstants.OID_FILED_NAME, ord)
+    }
 
     val status = importer.put(primaryKey, json, DataCommandType.PUT, timestamp)
     if (!status.ok())

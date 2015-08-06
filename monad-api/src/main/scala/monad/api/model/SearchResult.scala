@@ -96,10 +96,10 @@ object SearchResult {
     val maxHit = math.min(start + offset, totalHitCount)
     //避免start过高造成错误
     if (maxHit < start) {
-      return new SearchResult(totalHitCount, Array[Array[Byte]](), Array[Short](), all)
+      return new SearchResult(totalHitCount, Array[Int](), Array[Short](), all)
     }
     //结果数组
-    val hits = new Array[Array[Byte]](maxHit - start)
+    val hits = new Array[Int](maxHit - start)
     val servers = new Array[Short](hits.length)
     //游标变量
     var hitUpto: Int = 0
@@ -162,7 +162,7 @@ object SearchResult {
 
 }
 
-class SearchResult(val hitCount: Int, val hits: Array[Array[Byte]], val servers: Array[Short], val all: Int, val facetCount: Option[Array[Int]] = None) {
+class SearchResult(val hitCount: Int, val hits: Array[Int], val servers: Array[Short], val all: Int, val facetCount: Option[Array[Int]] = None) {
   var nodeAll: Int = 0
   var nodeSuccess: Int = 0
   var nodeSuccessInfo: JsonArray = _

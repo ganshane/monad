@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2009 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -47,7 +48,9 @@ package monad.migration
  * The base trait for all column options.  This is not a sealed class
  * so database specific column options can be defined.
  */
-trait ColumnOption
+trait ColumnOption {
+  def toTypeString:String
+}
 
 /**
  * The base trait for all foreign key options.
@@ -88,6 +91,11 @@ sealed trait CheckOption
  * The base trait for all table options.
  */
 sealed trait TableOption
+
+/**
+ * trigger option
+ */
+sealed trait TriggerOption
 
 object CharacterSet {
   /**
@@ -149,13 +157,20 @@ case class CharacterSet(name: CharacterSetName,
   def this(name: CharacterSetName) {
     this(name, None)
   }
+
+  override def toTypeString: String = throw new UnsupportedOperationException
 }
 
 /**
  * A default value for a column.
  */
 case class Default(value: String)
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = {
+    val valueEscaped = value.replaceAll("\"","\\\\\"")
+    s"""Default(\"${valueEscaped}\")"""
+  }
+}
 
 /**
  * Default companion object allowing Defaults to be constructed with
@@ -175,7 +190,9 @@ object Default {
  * 注释
  * @param comment 注释
  */
-case class Comment(comment:String) extends ColumnOption with TableOption
+case class Comment(comment:String) extends ColumnOption with TableOption{
+  override def toTypeString: String = s"""Comment(\"${comment}\")"""
+}
 
 /**
  * A limit on the size of a column type.
@@ -197,6 +214,8 @@ case class Limit(expr: String)
   catch {
     case _: NumberFormatException =>
   }
+
+  override def toTypeString: String = s"""Limit(${expr})"""
 }
 
 /**
@@ -230,28 +249,36 @@ case class Name(name: String)
  * Specify a check constraint on a column.
  */
 case class Check(expr: String)
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = s"""Check(\"${expr}\")"""
+}
 
 /**
  * Specify a named check constraint on a column.
  */
 case class NamedCheck(name: String, expr: String)
-  extends ColumnOption
-// NamedCheck cannot inherit from Check, it causes a compiler error.
-//   http://lampsvn.epfl.ch/trac/scala/ticket/425
-// & http://lampsvn.epfl.ch/trac/scala/ticket/816
+  extends ColumnOption {
+  // NamedCheck cannot inherit from Check, it causes a compiler error.
+  //   http://lampsvn.epfl.ch/trac/scala/ticket/425
+  // & http://lampsvn.epfl.ch/trac/scala/ticket/816
+  override def toTypeString: String = s"""NamedCheck(\"${name}\",\"${expr}\")"""
+}
 
 /**
  * Specify that the column's values must not be NULL.
  */
 case object NotNull
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = "NotNull"
+}
 
 /**
  * Specify that the column's values may be NULL.
  */
 case object Nullable
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = "Nullable"
+}
 
 /**
  * Specify the action that occurs when a value referenced in a foreign
@@ -259,6 +286,7 @@ case object Nullable
  */
 case class OnDelete(action: ForeignKeyConstraintAction)
   extends ForeignKeyOption
+
 
 /**
  * Specify the action that occurs when a value referenced in a foreign
@@ -276,13 +304,17 @@ case class Precision(value: Int)
     val message = "The precision cannot be less than one."
     throw new IllegalArgumentException(message)
   }
+
+  override def toTypeString: String = s"""Precision(${value})"""
 }
 
 /**
  * Specify that the column is a primary key.
  */
 case object PrimaryKey
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = "PrimaryKey"
+}
 
 /**
  * Specify the scale for a DECIMAL column.
@@ -293,6 +325,8 @@ case class Scale(value: Int)
     val message = "The scale cannot be less than zero."
     throw new IllegalArgumentException(message)
   }
+
+  override def toTypeString: String = s"""Scale(${value})"""
 }
 
 /**
@@ -301,7 +335,9 @@ case class Scale(value: Int)
  */
 case object Unique
   extends ColumnOption
-  with IndexOption
+  with IndexOption{
+  override def toTypeString: String = "Unique"
+}
 
 /**
  * Specify that the default value for the column for a new row in the
@@ -327,7 +363,9 @@ case object Unique
  * greater.
  */
 case object AutoIncrement
-  extends ColumnOption
+  extends ColumnOption{
+  override def toTypeString: String = "AutoIncrement"
+}
 
 /**
  * Maps to GRANT ALL PRIVILEGES.
@@ -423,6 +461,36 @@ case object UpdatePrivilege
  */
 case object UsagePrivilege
   extends SchemaPrivilege
+
+/**
+ * foreach row
+ */
+case object ForEachRow extends TriggerOption
+
+/**
+ * trigger timing point
+ */
+sealed trait TriggerTimingPoint extends TriggerOption
+case object Before extends TriggerTimingPoint
+case object After extends TriggerTimingPoint
+case object INSTEAD_OF extends TriggerTimingPoint
+
+/**
+ * trigger firing
+ */
+sealed trait TriggerFiring extends TriggerOption
+case object Insert extends TriggerFiring
+case object Update extends TriggerFiring
+case object Delete extends TriggerFiring
+case class UpdateOf(columns:String*) extends TriggerFiring
+
+case class Referencing(expr:String) extends TriggerFiring
+/**
+ * trigger condition
+ */
+case class When(conditions:String) extends TriggerOption
+
+
 
 /**
  * This class is defined to prevent ant from recompiling this source

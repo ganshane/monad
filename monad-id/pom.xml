@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Copyright 2011,2012,2013,2015 the original author or authors. All rights reserved.
+   site: http://www.ganshane.com
+-->
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>monad-id</artifactId>
+  <name>Monad Object Server</name>
+  <parent>
+    <groupId>com.ganshane.monad</groupId>
+    <artifactId>monad-project</artifactId>
+    <version>dev-SNAPSHOT</version>
+  </parent>
+  <dependencies>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-support</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-interface</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ganshane.monad</groupId>
+      <artifactId>monad-rpc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <type>jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>monad-id-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>id</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>monad-id-${project.version}</finalName>
+              <descriptors>
+                <descriptor>support/assembly/bin-id.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -199,6 +199,8 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
         new OracleBigintColumnDefinition
       case BlobType =>
         new DefaultBlobColumnDefinition
+      case ClobType =>
+        new DefaultClobColumnDefinition
       case BooleanType => {
         val message = "Oracle does not support a boolean type, you must " +
           "choose a mapping your self."
@@ -326,6 +328,47 @@ class OracleDatabaseAdapter(override val schemaNameOpt: Option[String])
       .append(quoteTableName(schemaNameOpt, tableName))
       .append(" IS '")
       .append(comment).append("'").toString
+  }
+
+  override def fetchTableCommentSql(tableName: String): String = {
+    s"SELECT COMMENTS FROM USER_TAB_COMMENTS where TABLE_NAME='${tableName}'"
+  }
+
+  override def fetchColumnCommentSql(tableName: String, columnName: String): String = {
+    s"SELECT COMMENTS FROM USER_COL_COMMENTS where TABLE_NAME='${tableName}' AND COLUMN_NAME='${columnName}'"
+  }
+
+  override def findSequencesSql(): Option[String] = {
+    Some("SELECT SEQUENCE_NAME FROM USER_SEQUENCES")
+  }
+  def findTriggersSql():Option[String] ={
+    Some("SELECT TABLE_NAME,TRIGGER_NAME,TRIGGER_TYPE,TRIGGERING_EVENT,REFERENCING_NAMES,WHEN_CLAUSE,TRIGGER_BODY FROM USER_TRIGGERS")
+  }
+
+  override def createTriggerSql(tableName: String,
+                                triggerName: String,
+                                timingPointOpt: Option[TriggerTimingPoint],
+                                triggerFiringOpt: List[TriggerFiring],
+                                referencingOpt:Option[Referencing],
+                                forEachRowOpt: Option[ForEachRow.type],
+                                whenOpt: Option[When])
+                               (f: =>String):String= {
+    val tableNameQuoted = quoteTableName(tableName)
+    val sb = new StringBuilder
+    sb.append(s"CREATE TRIGGER ${triggerName} ${timingPointOpt.get} ")
+    sb.append(triggerFiringOpt.mkString(" OR "))
+
+    sb.append(s" ON ${tableNameQuoted} ")
+
+    referencingOpt.foreach(x=>sb.append(s" REFERENCING(${x.expr}) "))
+
+    forEachRowOpt.foreach(x=>sb.append(" FOR EACH ROW "))
+    whenOpt.foreach(x=>sb.append(s" ${x} "))
+    sb.append(" BEGIN ")
+    sb.append(f.replaceAll("\n"," "))
+    sb.append(" END;")
+
+    sb.toString()
   }
 }
 

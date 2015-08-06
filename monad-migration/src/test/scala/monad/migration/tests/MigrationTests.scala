@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2009 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -76,6 +77,21 @@ class MigrationTests {
       false)
   }
 
+  @Test
+  def sequence(): Unit ={
+    migrator.migrate(InstallAllMigrations,
+      "monad.migration.tests.sequence",false)
+  }
+  @Test
+  def clob(): Unit ={
+    migrator.migrate(InstallAllMigrations,
+      "monad.migration.tests.clob",false)
+  }
+  @Test
+  def trigger(): Unit ={
+    migrator.migrate(InstallAllMigrations,
+      "monad.migration.tests.trigger",false)
+  }
   @Test
   def comment(): Unit ={
     migrator.migrate(InstallAllMigrations,

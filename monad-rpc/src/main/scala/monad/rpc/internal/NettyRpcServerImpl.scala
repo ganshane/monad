@@ -9,7 +9,7 @@ import java.util.concurrent.{Executors, ThreadFactory}
 import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.rpc.config.RpcBindSupport
-import monad.rpc.protocol.CommandProto.BaseCommand
+import monad.rpc.protocol.CommandProto.{BaseCommand, CommandStatus}
 import monad.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
 import org.apache.tapestry5.ioc.annotations.EagerLoad
@@ -142,5 +142,14 @@ class ServerResponse(channel: Channel)
 
   override def writeMessage[T](baseCommand: BaseCommand, extension: GeneratedExtension[BaseCommand, T], value: T) = {
     channel.write(wrap(baseCommand.getTaskId, extension, value))
+  }
+
+  override def writeErrorMessage[T](commandRequest: BaseCommand, message: String): ChannelFuture = {
+    val command = BaseCommand.newBuilder().setTaskId(commandRequest.getTaskId)
+      .setStatus(CommandStatus.FAIL)
+      .setMsg(message)
+      .build()
+
+    channel.write(command)
   }
 }

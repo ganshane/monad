@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2009 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -40,6 +41,7 @@ sealed abstract class SqlType
 
 case object BigintType extends SqlType
 case object BlobType extends SqlType
+case object ClobType extends SqlType
 case object BooleanType extends SqlType
 case object CharType extends SqlType
 case object DecimalType extends SqlType

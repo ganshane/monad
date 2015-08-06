@@ -14,11 +14,15 @@ class DataEvent {
   var row: Array[Any] = null
   var timestamp: Long = -1
   var version: Int = 0
+  var objectId:Option[Int]=None
 
   def reset() {
     resourceName = null
     row = null
     version = 0
     timestamp = -1
+    objectId = None
   }
+
+
 }

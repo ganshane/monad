@@ -3,7 +3,7 @@
 package monad.face.model
 
 import com.google.gson.JsonArray
-import org.apache.lucene.util.LongBitSet
+import monad.face.internal.MonadSparseFixedBitSet
 
 /**
  * shard result
@@ -12,7 +12,7 @@ import org.apache.lucene.util.LongBitSet
  */
 class ShardResult extends Serializable{
     var totalRecord:Int = 0
-    var results:Array[(Array[Byte],AnyVal)] = _
+    var results:Array[(Int,Float)] = _
     var facetArr:Array[String] = _
     var maxScore:Float = _
     var serverHash:Short = 0
@@ -26,7 +26,7 @@ class ShardResultCollect extends ShardResult{
     var nodesError:Int = 0
 }
 class IdShardResult extends Serializable{
-  var data: LongBitSet = _
+    var data: MonadSparseFixedBitSet = _
     var region:Short = 0
 }
 class IdShardResultCollect extends IdShardResult{

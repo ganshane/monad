@@ -64,11 +64,6 @@
           <xs:documentation>配置节点数据保存的策略</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element type="nosqlType" name="id_nosql" minOccurs="0" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>支持节点数据处理对象分析的支持，注意，如果没有配置将不支持ID分析</xs:documentation>
-        </xs:annotation>
-      </xs:element>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="nodesType">

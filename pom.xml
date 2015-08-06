@@ -23,6 +23,7 @@
     <module>monad-migration</module>
     <module>monad-mmseg</module>
     <module>monad-node</module>
+    <module>monad-id</module>
     <module>monad-protocol</module>
     <module>monad-rpc</module>
     <module>monad-support</module>
@@ -315,6 +316,11 @@
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
+        <version>${lucene-release-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-facet</artifactId>
         <version>${lucene-release-version}</version>
       </dependency>
       <dependency>

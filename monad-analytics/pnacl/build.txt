@@ -1,0 +1,8 @@
+PEPPER=/Users/jcai/dev/nacl_sdk/pepper_43 
+cmake -DCMAKE_TOOLCHAIN_FILE=../pnacl/Toolchain-cross-mingw32-pnacl.cmake -DENABLE_PNACL=on \
+                             -DPNACL_ROOT=${PEPPER} \
+                             -DPNACL_TOOL_PREFIX="mac"  \
+                             -DCMAKE_CXX_FLAGS="-I${PEPPER}/include" \
+                             -DCMAKE_CXX_LINK_FLAGS="-L${PEPPER}/lib/pnacl/Debug" \
+                             ..
+

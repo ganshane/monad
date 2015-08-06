@@ -1,0 +1,34 @@
+#ifndef ANALYTICS_CONFIG_H_
+#define ANALYTICS_CONFIG_H_
+
+//版本号
+#define ANALYTICS_VERSION_MAJOR @ANALYTICS_VERSION_MAJOR@
+#define ANALYTICS_VERSION_MINOR @ANALYTICS_VERSION_MINOR@
+#define ANALYTICS_VERSION_PATCH @ANALYTICS_VERSION_PATCH@
+
+#define ANALYTICS_MAKE_VERSION(major, minor, patch) \
+        ((major) * 10000 + (minor) * 100 + (patch))
+#define ANALYTICS_VERSION \
+        ANALYTICS_MAKE_VERSION(ANALYTICS_VERSION_MAJOR, ANALYTICS_VERSION_MINOR, ANALYTICS_VERSION_PATCH)
+//定义Linux相关的变量支持
+#ifdef __linux__
+   #define ANALYTICS_HAVE_LINUX
+   #ifndef _GNU_SOURCE
+      #define _GNU_SOURCE
+   #endif
+#endif
+//和Mac相关的变量
+#ifdef __APPLE__ 
+  #define ANALYTICS_HAVE_OSX
+#endif
+
+//无符号64位的最大值
+#ifndef UINT64_MAX
+  #define UINT64_MAX        18446744073709551615ULL
+#endif
+//无符号32位最大值
+#ifndef UINT32_MAX
+  #define UINT32_MAX        4294967295U
+#endif
+
+#endif

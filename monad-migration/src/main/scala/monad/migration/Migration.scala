@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2010 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -32,13 +33,11 @@
  */
 package monad.migration
 
+import java.sql.{Connection, PreparedStatement, ResultSet}
+
 import org.slf4j.LoggerFactory
 
-import java.sql.{
-  Connection,
-  PreparedStatement,
-  ResultSet
-}
+import scala.annotation.tailrec
 
 /**
  * Due to the JVM erasure, the scala.Predef.ArrowAssoc.->
@@ -293,6 +292,22 @@ abstract class Migration {
   final def commentTable(tableName:String,
                           comment:String): Unit ={
     execute(adapter.commentTableSql(tableName,comment))
+  }
+
+  /**
+   * 创建序列
+   * @param name 序列名称
+   */
+  final def sequence(name:String):Unit={
+    execute(adapter.sequenceSql(name))
+  }
+
+  /**
+   * 删除序列
+   * @param name 序列的名称
+   */
+  final def dropSequence(name:String):Unit={
+    execute(adapter.dropSequenceSql(name))
   }
 
   /**
@@ -1008,5 +1023,76 @@ abstract class Migration {
       logger.warn("Database does not support CHECK constraints; ignoring " +
         "request to remove a CHECK constraint: {}",
         sql)
+  }
+
+  /**
+   * droper some trigger
+   * @param triggerName trigger name
+   */
+  def dropTrigger(triggerName:String): Unit ={
+    execute(s"DROP TRIGGER ${triggerName}")
+  }
+  /**
+   * add trigger
+   */
+  def addTrigger(tableName:String,triggerName:String,options:TriggerOption*)(f: => String): Unit ={
+    var opts = options
+    @tailrec //tail call
+    def checkOption[T <: TriggerOption: Manifest](tailOptions:Seq[TriggerOption],current:Option[T]): Option[T]={
+      tailOptions.toList match{
+        case head::tail=>
+          var newCurrent = current
+          head match {
+            case x: T =>
+              opts = opts filterNot (x ==)
+              if(x.isInstanceOf[TriggerFiring]){ //TriggerFiring 允许有多个值
+                return Some(x)
+              }else {
+                if (current.isDefined)
+                  throw new DuplicateTriggerException("duplicate " + current.get + " and " + x + " definition")
+
+                newCurrent = Some(x)
+              }
+            case _ =>
+          }
+
+          checkOption(tail,newCurrent)
+        case Nil =>
+          current
+      }
+    }
+    def findMultiTriggerObjectOption[T <: TriggerOption: Manifest](objects:T*):List[T]={
+      objects.foldLeft(List[T]()){ (last,currentObject) =>
+        checkOption[T](opts,Option.empty[T]).foldLeft(last)( _ :+ _)
+      }
+    }
+    def findTriggerObjectOption[T <: TriggerOption: Manifest](objects:T*):Option[T]={
+      objects.foldLeft(Option.empty[T]){ (last,currentObject) =>
+        val current = checkOption[T](opts,Option.empty[T])
+        if(current.isDefined && last.nonEmpty) throw new ConflictingTriggerException(current+" conflict "+last)
+        if(current.isDefined)  current else last
+      }
+    }
+    def findTriggerValueOption[T <: TriggerOption: Manifest]:Option[T]={
+        checkOption(opts,Option.empty[T])
+    }
+
+    val timingPointOpt = findTriggerObjectOption[TriggerTimingPoint](Before,After,INSTEAD_OF)
+    if(timingPointOpt.isEmpty) throw new MissingTriggerOptionException("missing timing point definition")
+
+    val triggerFiringOpt = findMultiTriggerObjectOption[TriggerFiring](Update,Insert,Delete)
+    if(triggerFiringOpt.isEmpty) throw new MissingTriggerOptionException("missing trigger firing definition")
+
+    val referencingOpt = findTriggerValueOption[Referencing]
+
+
+    val forEachRowOpt = findTriggerObjectOption(ForEachRow)
+    val whenOpt = findTriggerValueOption[When]
+
+    val sql = adapter.createTriggerSql(tableName,triggerName,
+      timingPointOpt,triggerFiringOpt,referencingOpt,forEachRowOpt,whenOpt)(f)
+
+    execute(sql)
+
   }
 }

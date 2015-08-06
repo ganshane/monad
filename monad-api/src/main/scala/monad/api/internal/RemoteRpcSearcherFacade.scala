@@ -2,12 +2,11 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
-import java.nio.ByteBuffer
-
 import monad.face.MonadFaceConstants
-import monad.face.model.ShardResult
+import monad.face.model.{IdShardResult, ShardResult}
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
+import monad.protocol.internal.InternalIdProto._
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
 import monad.rpc.services.RpcClient
@@ -33,6 +32,20 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
     future.get()
   }
 
+  /**
+   * 搜索对象
+   * @param resourceName 资源名称
+   * @param q 搜索条件
+   * @return 搜索比中结果
+   */
+  override def searchObjectId(resourceName: String, q: String): IdShardResult = {
+    val builder = IdSearchRequest.newBuilder()
+    builder.setResourceName(resourceName)
+    builder.setQ(q)
+    val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createIdSearchMerger(), IdSearchRequest.cmd, builder.build())
+    future.get()
+  }
+
   override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {
     throw new UnsupportedOperationException
   }
@@ -44,9 +57,9 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
    * @param key 键值
    * @return 数据值
    */
-  override def findObject(serverId: Short, resourceName: String, key: Array[Byte]): Option[Array[Byte]] = {
+  override def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]] = {
     val builder = InternalFindDocRequest.newBuilder()
-    builder.setId(ByteBuffer.wrap(key).getInt)
+    builder.setId(key)
     builder.setResourceName(resourceName)
     val future = rpcClient.writeMessageWithBlocking(MonadFaceConstants.MACHINE_NODE_FORMAT.format(serverId), InternalFindDocRequest.cmd, builder.build)
     val resultCommand = future.get
@@ -66,4 +79,5 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
     val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createMaxdocMerger, MaxdocQueryRequest.cmd, builder.build())
     future.get()
   }
+
 }

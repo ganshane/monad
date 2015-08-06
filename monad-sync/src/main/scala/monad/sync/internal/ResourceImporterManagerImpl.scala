@@ -14,7 +14,6 @@ import monad.face.config.SyncConfigSupport
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
-import monad.jni.services.gen.NoSQLOptions
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
 import monad.support.services.{LoggerSupport, MonadUtils}
 import monad.sync.model.DataEvent
@@ -50,7 +49,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
    */
   @PostConstruct
   def start(hub: RegistryShutdownHub) {
-    dbReader = Executors.newFixedThreadPool(syncConfig.sync.db_thread_num + 1, new ThreadFactory {
+    dbReader = Executors.newFixedThreadPool(syncConfig.sync.db_thread_num, new ThreadFactory {
       private val seq = new AtomicInteger(0)
 
       def newThread(p1: Runnable) = {
@@ -61,19 +60,13 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
         t
       }
     })
-    disruptor = new Disruptor[DataEvent](EVENT_FACTORY, buffer, dbReader)
+    disruptor = new Disruptor[DataEvent](EVENT_FACTORY, buffer, Executors.newCachedThreadPool())
     disruptor.handleExceptionsWith(new LogExceptionHandler)
-    disruptor.
-      handleEventsWith(objectLocator.autobuild(classOf[SaveRecordHandler]))
+    val idFindHandler = objectLocator.autobuild(classOf[IdFindHandler])
+    disruptor
+      .handleEventsWithWorkerPool(1.to(3).map(x=>idFindHandler):_*)
+      .handleEventsWith(objectLocator.autobuild(classOf[SaveRecordHandler]))
     disruptor.start()
-
-    if (syncConfig.sync.idNoSql != null) {
-      val nosqlOptions = new NoSQLOptions()
-      nosqlOptions.setCache_size_mb(syncConfig.sync.idNoSql.cache)
-      nosqlOptions.setWrite_buffer_mb(syncConfig.sync.idNoSql.writeBuffer)
-      nosqlOptions.setMax_open_files(syncConfig.sync.idNoSql.maxOpenFiles)
-      nosqlOptions.setLog_keeped_num(syncConfig.sync.binlogLength)
-    }
 
     hub.addRegistryWillShutdownListener(new Runnable {
       override def run(): Unit = shutdown()

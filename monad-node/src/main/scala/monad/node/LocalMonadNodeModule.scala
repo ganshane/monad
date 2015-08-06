@@ -5,10 +5,10 @@ package monad.node
 import com.google.protobuf.ExtensionRegistry
 import monad.face.MonadFaceConstants
 import monad.face.services._
-import monad.node.internal.NodeMessageFilter.{InternalFindDocRequestMessageFilter, InternalSearchMessageFilter, MaxdocMessageFilter}
+import monad.node.internal.NodeMessageFilter.{InternalFindDocRequestMessageFilter, InternalIdSearchRequestMessageFilter, InternalSearchMessageFilter, MaxdocMessageFilter}
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
-import monad.protocol.internal.{InternalFindDocProto, InternalMaxdocQueryProto, InternalSearchProto, InternalSyncProto}
+import monad.protocol.internal._
 import monad.rpc.services._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.services.Builtin
@@ -52,6 +52,8 @@ object LocalMonadNodeModule {
     configuration.addInstance("MaxdocQueryRequest", classOf[MaxdocMessageFilter])
     configuration.addInstance("InternalSearchRequest", classOf[InternalSearchMessageFilter])
     configuration.addInstance("InternalFindDocRequest", classOf[InternalFindDocRequestMessageFilter])
+    configuration.addInstance("InternalIdSearchRequest", classOf[InternalIdSearchRequestMessageFilter])
+
   }
 
   @Contribute(classOf[RpcServerListener])
@@ -67,6 +69,7 @@ object LocalMonadNodeModule {
         InternalMaxdocQueryProto.registerAllExtensions(registry)
         InternalSearchProto.registerAllExtensions(registry)
         InternalFindDocProto.registerAllExtensions(registry)
+        InternalIdProto.registerAllExtensions(registry)
       }
     })
   }

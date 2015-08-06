@@ -119,6 +119,10 @@ class MysqlBlobColumnDefinition
     extends DefaultBlobColumnDefinition {
   override val sql = "LONGBLOB"
 }
+class MysqlClobColumnDefinition
+  extends DefaultBlobColumnDefinition {
+  override val sql = "MEDIUMTEXT"
+}
 
 class MysqlCharColumnDefinition(characterSetOpt: Option[CharacterSet])
     extends DefaultCharColumnDefinition
@@ -215,6 +219,8 @@ class MysqlDatabaseAdapter(override val schemaNameOpt: Option[String])
         new MysqlBigintColumnDefinition
       case BlobType =>
         new MysqlBlobColumnDefinition
+      case ClobType =>
+        new MysqlClobColumnDefinition
       case BooleanType =>
         new DefaultBooleanColumnDefinition
       case CharType =>

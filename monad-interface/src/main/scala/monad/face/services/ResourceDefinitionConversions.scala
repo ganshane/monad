@@ -3,9 +3,9 @@ package monad.face.services
 import java.sql.ResultSet
 
 import com.google.gson.JsonObject
-import monad.face.model.ResourceDefinition.ResourceProperty
+import monad.face.model.ResourceDefinition.{ResourceProperty, ResourceTraitProperty}
 import monad.face.model.types._
-import monad.face.model.{ColumnType, IndexType, MonadColumnType}
+import monad.face.model.{ColumnType, IndexType, MonadColumnType, ResourceDefinition}
 import monad.support.services.MonadException
 import org.apache.lucene.document.Field
 
@@ -17,6 +17,34 @@ import scala.util.control.NonFatal
  * @since 2015-03-01
  */
 trait ResourceDefinitionConversions {
+  implicit def resourceDefinitionWrapper(rd: ResourceDefinition) = new {
+    private lazy val _categoryProperty:Option[(Int,ResourceProperty)] = findObjectColumn()
+    /**
+     * 加入一个资源属性
+     */
+    def addProperty(property: ResourceProperty) = rd.properties.add(property)
+
+    /**
+     * 加入一个动态特征资源属性
+     */
+    def addDynamicProperty(property: ResourceTraitProperty) = rd.dynamicType.properties.add(property)
+
+    def categoryProperty = _categoryProperty
+    private def findObjectColumn():Option[(Int,ResourceProperty)]={
+      var ret:Option[(Int,ResourceProperty)] = None
+      val it = rd.properties.iterator()
+      var index = 0
+      while(it.hasNext && ret.isEmpty){
+        val rp = it.next()
+        if(rp.objectCategory != null){
+          ret = Some((index,rp))
+        }
+        index += 1
+      }
+
+      ret
+    }
+  }
   implicit def indexTypeWrapper(it: IndexType) = new {
     def indexType() = it match {
       case IndexType.Text =>

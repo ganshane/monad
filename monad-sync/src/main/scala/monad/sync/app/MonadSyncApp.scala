@@ -30,6 +30,7 @@ object MonadSyncApp
     logger.info("Starting sync server ....")
     val classes = List[Class[_]](
       Class.forName("monad.rpc.LocalRpcServerModule"),
+      Class.forName("monad.rpc.LocalRpcClientModule"),
       Class.forName("monad.core.LocalMonadCoreModule"),
       Class.forName("monad.face.RemoteGroupModule"),
       Class.forName("monad.core.ThreadPoolModule"),

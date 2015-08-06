@@ -183,6 +183,21 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     destryNoSQL(rd)
   }
 
+
+  /**
+   * 增加索引的等待数
+   */
+  override def incIndexActionRef(): Unit = {
+    indexRef.incrementAndGet()
+  }
+
+  /**
+   * 减少索引的等待数
+   */
+  override def decIndexActionRef(): Unit = {
+    indexRef.decrementAndGet()
+  }
+
   def index(): Unit = {
     val waiting = indexRef.get()
     if(waiting == 0){
@@ -299,10 +314,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
     }
   }
 
-  def findObject(key: Array[Byte]) = {
-    val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, DataTypeUtils.convertAsInt(key));
+  def findObject(key: Int) = {
+    val nosqlKey = new NormalSeqDataKey(indexConfigSupport.partitionId, key)
     val value = nosqlOpt().get.Get(nosqlKey)
-    if (value != null) Some(value) else None
+    Option(value)
   }
 
   override def toString = {

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2009 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -125,6 +126,20 @@ class TableDefinition(adapter: DatabaseAdapter,
   final def blob(name: String,
                  options: ColumnOption*): TableDefinition = {
     column(name, BlobType, options: _*)
+  }
+  /**
+   * Add a CLOB column type to the table.  The actual SQL text used to
+   * create the column is chosen by the database adapter and may be
+   * different than the name of the columnType argument.
+   *
+   * @param name the column's name
+   * @param options a possibly empty array of column options to customize the
+   *        column
+   * @return the same instance
+   */
+  final def clob(name: String,
+                 options: ColumnOption*): TableDefinition = {
+    column(name, ClobType, options: _*)
   }
 
   /**

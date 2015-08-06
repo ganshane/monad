@@ -7,7 +7,6 @@ import java.util
 import monad.face.MonadFaceConstants
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model.{AnalyzerCreator, ColumnType, ResourceDefinition}
-import monad.face.services.DataTypeUtils
 import monad.face.services.ResourceDefinitionConversions._
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.core.KeywordAnalyzer
@@ -128,8 +127,8 @@ trait QueryParserSupport {
               logger.warn("wrong query for field:{}", field)
           }
         } else if (field == MonadFaceConstants.UPDATE_TIME_FIELD_NAME) {
-          val begin = DataTypeUtils.dateToInt(part1.toInt)
-          val end = DataTypeUtils.dateToInt(part2.toInt)
+          val begin = part1.toInt //DataTypeUtils.convertDateAsInt(part1.toInt)
+          val end = part1.toInt //DataTypeUtils.convertDateAsInt(part2.toInt)
           return NumericRangeQuery.newIntRange(field, begin, end, startInclusive, endInclusive)
         }
         super.newRangeQuery(field, part1, part2, startInclusive, endInclusive)

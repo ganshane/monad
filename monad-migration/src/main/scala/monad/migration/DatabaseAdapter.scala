@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Jun Tsai <jcai@ganshane.com>
  * Copyright (c) 2010 Sony Pictures Imageworks Inc.
  *
  * All rights reserved.
@@ -116,7 +117,7 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
    * while MySQL uses
    *
    *   ALTER TABLE child DROP FOREIGN KEY idx_child_pk_parent;
-   *                          ^^^^^^^^^^^
+   *                          ^^^^^^^^^^
    */
   val alterTableDropForeignKeyConstraintPhrase: String
 
@@ -440,6 +441,12 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
   def commentTableSql(tableName:String,comment: String): String = {
     throw new UnsupportedOperationException("commentColumnSql unimplemented!")
   }
+  def fetchTableCommentSql(tableName:String):String={
+    throw new UnsupportedOperationException("fetchTableCommentSql unimplemented!")
+  }
+  def fetchColumnCommentSql(tableName:String,columnName:String):String={
+    throw new UnsupportedOperationException("fetchColumnCommentSql unimplemented!")
+  }
 
   /**
    * Different databases require different SQL to drop an index.
@@ -735,5 +742,24 @@ abstract class DatabaseAdapter(val schemaNameOpt: Option[String]) {
       case Some(onUpdate) => "ON UPDATE " + onUpdate.action.sql
       case None => ""
     }
+  }
+ def sequenceSql(name: String): String = {
+   val nameWithSchema = quoteTableName(name)
+    s"""CREATE SEQUENCE ${nameWithSchema}"""
+  }
+  def dropSequenceSql(name: String): String = {
+    val nameWithSchema = quoteTableName(name)
+    s"""DROP SEQUENCE ${nameWithSchema}"""
+  }
+  def findSequencesSql():Option[String] = None
+  def createTriggerSql(tableName: String,
+                                triggerName: String,
+                                timingPointOpt: Option[TriggerTimingPoint],
+                                triggerFiringOpt: List[TriggerFiring],
+                                referencingOpt:Option[Referencing],
+                                forEachRowOpt: Option[ForEachRow.type],
+                                whenOpt: Option[When])
+                               (f: =>String):String= {
+    throw new UnsupportedOperationException
   }
 }

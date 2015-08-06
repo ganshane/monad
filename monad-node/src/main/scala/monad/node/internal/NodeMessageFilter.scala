@@ -3,14 +3,13 @@
 package monad.node.internal
 
 import com.google.protobuf.ByteString
-import monad.face.services.RpcSearcherFacade
+import monad.face.services.{BitSetUtils, RpcSearcherFacade}
 import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
+import monad.protocol.internal.InternalIdProto.{IdSearchRequest, IdSearchResponse}
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
 import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
-import monad.rpc.protocol.CommandProto
 import monad.rpc.protocol.CommandProto.BaseCommand
 import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
-import monad.support.services.CodingHelper
 
 /**
  * node message filter
@@ -55,8 +54,8 @@ object NodeMessageFilter {
 
       shardResult.results.foreach { s =>
         val r = searchResponse.addResultsBuilder()
-        r.setId(CodingHelper.DecodeInt32WithBigEndian(s._1))
-        r.setScore(s._2.asInstanceOf[Float])
+        r.setId(s._1)
+        r.setScore(s._2)
       }
 
       response.writeMessage(commandRequest, InternalSearchResponse.cmd, searchResponse.build())
@@ -72,7 +71,7 @@ object NodeMessageFilter {
       }
 
       val request = commandRequest.getExtension(InternalFindDocRequest.cmd)
-      val result = searcher.findObject(12, request.getResourceName, CodingHelper.convertAsBytes(request.getId))
+      val result = searcher.findObject(12, request.getResourceName, request.getId)
       val findDocResponse = InternalFindDocResponse.newBuilder()
       findDocResponse.setResourceName(request.getResourceName)
       result match {
@@ -83,6 +82,24 @@ object NodeMessageFilter {
       }
 
       response.writeMessage(commandRequest, InternalFindDocResponse.cmd, findDocResponse.build())
+
+      true
+    }
+  }
+
+  class InternalIdSearchRequestMessageFilter(searcher:RpcSearcherFacade) extends RpcServerMessageFilter{
+    override def handle(commandRequest: BaseCommand, response: CommandResponse, handler: RpcServerMessageHandler): Boolean = {
+      if (!commandRequest.hasExtension(IdSearchRequest.cmd)) {
+        return handler.handle(commandRequest, response)
+      }
+
+      val request = commandRequest.getExtension(IdSearchRequest.cmd)
+      val result = searcher.searchObjectId(request.getResourceName,request.getQ)
+      val idSearchResponse = IdSearchResponse.newBuilder()
+      idSearchResponse.setPartitionId(result.region)
+      val bs = ByteString.copyFrom(BitSetUtils.serialize(result.data))
+      idSearchResponse.setBitset(bs)
+      response.writeMessage(commandRequest,IdSearchResponse.cmd,idSearchResponse.build())
 
       true
     }

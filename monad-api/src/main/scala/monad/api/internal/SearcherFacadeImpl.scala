@@ -59,8 +59,9 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
       } finally {
         semaphore.release()
       }
+    }else{
+      throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
     }
-    throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
   }
 
   /*
@@ -80,10 +81,10 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
    * @param searchRequest 搜索请求
    * @return
    */
-  /*
   def idSearch(searchRequest: SearchRequest) = {
-    searcherQueue.idSearch(searchRequest.q)
+    doInSearcherQueue{
+      searcherQueue.idSearch(searchRequest.q)
+    }
   }
-  */
 }
 

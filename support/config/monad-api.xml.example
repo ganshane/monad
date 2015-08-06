@@ -5,10 +5,13 @@
 -->
 
 <monad_api>
-    <log_file>${server.home}/log/monad.api.log</log_file>
-    <group_api>http://127.0.0.1:9080/group/api</group_api>
-    <local_store_dir>${server.home}/config/local.api</local_store_dir>
-    <web>
-      <bind>127.0.0.1:9081</bind>
-    </web>
+  <log_file>${server.home}/log/monad.api.log</log_file>
+  <group_api>http://127.0.0.1:9080/group/api</group_api>
+  <local_store_dir>${server.home}/config/local.api</local_store_dir>
+  <web>
+    <bind>127.0.0.1:9081</bind>
+  </web>
+  <api>
+    <concurrent_query>20</concurrent_query>
+  </api>
 </monad_api>

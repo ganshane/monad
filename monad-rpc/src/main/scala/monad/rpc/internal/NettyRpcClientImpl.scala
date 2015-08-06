@@ -117,14 +117,7 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
       val channelFutureOpt = writeMessage(s, message)
       channelFutureOpt match {
         case Some(f) =>
-          //当在客户端写入失败，则应该减少计数器,TODO 处理服务器端错误或者Channel关闭
-          f.addListener(new ChannelFutureListener {
-            override def operationComplete(channelFuture: ChannelFuture): Unit = {
-              if (!channelFuture.isSuccess) {
-                future.countDown()
-              }
-            }
-          })
+          future.monitorChannel(f)
         case None =>
           future.countDown()
       }
@@ -186,6 +179,10 @@ class NettyRpcClientImpl(handler: RpcClientMessageHandler,
 
   private class CommandClientHandler extends SimpleChannelUpstreamHandler {
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
+      /**
+       *  TODO 如何统一处理command返回错误信息？？
+       *  发送的handler需要等待返回结果，如何通知handler已经返回
+       */
       val command = e.getMessage.asInstanceOf[BaseCommand]
       //针对多个任务异步执行需要merger的支持
       val task = AsyncTaskMonitor.findTask(command.getTaskId)

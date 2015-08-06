@@ -32,25 +32,15 @@
  */
 package monad.migration
 
-import net.sf.log4jdbc.ConnectionSpy
-
-import org.slf4j.{
-  Logger,
-  LoggerFactory
-}
-
-import scala.collection.{
-  immutable,
-  mutable
-}
-
-import java.net.{
-  URL,
-  URLDecoder
-}
+import java.net.{URL, URLDecoder}
 import java.sql.Connection
 import java.util.jar.JarFile
 import javax.sql.DataSource
+
+import net.sf.log4jdbc.ConnectionSpy
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.{immutable, mutable}
 
 /**
  * A migration to create the schema_migrations table that records
@@ -392,7 +382,7 @@ private class RawAndLoggingConnections(val raw: Connection,
  * This class migrates the database into the desired state.
  */
 class Migrator(connectionBuilder: ConnectionBuilder,
-               adapter: DatabaseAdapter) {
+               val adapter: DatabaseAdapter) extends SchemaDumperSupport{
   import Migrator._
   import RichConnection._
 
