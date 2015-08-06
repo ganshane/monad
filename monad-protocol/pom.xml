@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.ganshane.monad</groupId>
     <artifactId>monad-project</artifactId>
-    <version>5.0.15</version>
+    <version>5.0.16</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>monad-protocol</artifactId>
