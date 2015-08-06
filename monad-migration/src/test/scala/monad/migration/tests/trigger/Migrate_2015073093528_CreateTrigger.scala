@@ -3,7 +3,10 @@
  */
 package monad.migration.tests.trigger
 
+import java.sql.Connection
+
 import monad.migration._
+import org.h2.api.Trigger
 
 /**
  * test create sequence
@@ -21,6 +24,11 @@ class Migrate_2015073093528_CreateTrigger
         addTrigger(tableName,"test_trigger",Before,Update,When("NEW.User_ID is NULL")){
           "NULL"
         }
+      case H2 =>
+        addTrigger(tableName,"test_trigger",Before,Update,ForEachRow){
+          "CALL \"%s\" ".format(classOf[MyTrigger].getName)
+          //"$$org.h2.api.Trigger create() { return new MyTrigger(\"constructorParam\"); } $$;"
+        }
       case other=>
     }
   }
@@ -33,4 +41,17 @@ class Migrate_2015073093528_CreateTrigger
     }
     dropTable(tableName)
   }
+}
+class MyTrigger extends Trigger{
+  override def fire(conn: Connection, oldRow: Array[AnyRef], newRow: Array[AnyRef]): Unit = {
+
+  }
+
+  override def init(conn: Connection, schemaName: String, triggerName: String, tableName: String, before: Boolean, `type`: Int): Unit = {
+
+  }
+
+  override def remove(): Unit = {}
+
+  override def close(): Unit = {}
 }

@@ -128,4 +128,33 @@ class H2DatabaseAdapter(override val schemaNameOpt: Option[String])
       quoteTableName(schemaNameOpt, tableName))
       .append(" IS '").append(comment).append("'").toString();
   }
+
+  override def createTriggerSql(tableName: String,
+                                triggerName: String,
+                                timingPointOpt: Option[TriggerTimingPoint],
+                                triggerFiringOpt: List[TriggerFiring],
+                                referencingOpt:Option[Referencing],
+                                forEachRowOpt: Option[ForEachRow.type],
+                                whenOpt: Option[When])
+                               (f: =>String):String= {
+    val tableNameQuoted = quoteTableName(tableName)
+    val sb = new StringBuilder
+    sb.append(s"CREATE TRIGGER ${triggerName} ${timingPointOpt.get} ")
+    sb.append(triggerFiringOpt.mkString(" OR "))
+
+    sb.append(s" ON ${tableNameQuoted} ")
+
+    referencingOpt.foreach(x=>sb.append(s" REFERENCING(${x.expr}) "))
+
+    forEachRowOpt.foreach(x=>sb.append(" FOR EACH ROW "))
+    if(whenOpt.isDefined){
+      logger.warn("h2 doesn't support when in trigger")
+    }
+    //whenOpt.foreach(x=>sb.append(s" ${x} "))
+    //sb.append(" BEGIN ")
+    sb.append(f.replaceAll("\n"," "))
+    //sb.append(" END;")
+
+    sb.toString()
+  }
 }
