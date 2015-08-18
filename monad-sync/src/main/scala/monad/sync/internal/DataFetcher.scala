@@ -45,27 +45,48 @@ abstract class BaseDataFetcher(rcl:ResourceConfigLike) extends DataFetcher{
   override def buildMaxValueSQL(): String = {
     if(isFullFetch)
       limitSQLString(Some("max"))
-    else
-    "select max(" + rcl.incrementColumn.name + ") from ( " + resourceDefinition.sync.jdbc.sql + " ) x_"
+    else{
+      splitSQL() match {
+        case (sql,Some(maxSql)) =>
+          maxSql
+        case (sql,None) =>
+          "select max(" + rcl.incrementColumn.name + ") from ( " + sql + " ) x_"
+      }
+    }
   }
   override def buildMinValueSQL(): String = {
     if(isFullFetch)
       limitSQLString(Some("min"))
-    else
-      "select min(" + rcl.incrementColumn.name + ") from ( " + resourceDefinition.sync.jdbc.sql + " ) x_"
+    else{
+      splitSQL() match {
+        case (sql,_) =>
+          "select min(" + rcl.incrementColumn.name + ") from ( " + sql + " ) x_"
+      }
+    }
   }
 
   override def buildIncrementSQL(): String = {
     if(isFullFetch)
       limitSQLString()
     else {
-      val sqlBuilder = new StringBuilder()
-        .append("select " + selects + " from (").append(resourceDefinition.sync.jdbc.sql).append(" ) x_  where ")
-        .append(rcl.incrementColumn.name).append(">?").append(" and ").
-        append(rcl.incrementColumn.name).append("<=?").
-        append(" order by ").append(rcl.incrementColumn.name).append(" asc")
-      //增量数据的Sql
-      sqlBuilder.toString()
+      splitSQL() match {
+        case (sql,_) =>
+          val sqlBuilder = new StringBuilder()
+            .append("select " + selects + " from (").append(sql).append(" ) x_  where ")
+            .append(rcl.incrementColumn.name).append(">?").append(" and ").
+            append(rcl.incrementColumn.name).append("<=?").
+            append(" order by ").append(rcl.incrementColumn.name).append(" asc")
+          //增量数据的Sql
+          sqlBuilder.toString()
+      }
+    }
+  }
+  protected def splitSQL():(String,Option[String])={
+    val sqls = resourceDefinition.sync.jdbc.sql.split(";")
+    if(sqls.length == 2){
+      (sqls(0),Some(sqls(1)))
+    }else{
+      (sqls(0),None)
     }
   }
   protected def limitSQLString(valueQuery:Option[String]=None):String
