@@ -173,8 +173,8 @@ namespace monad{
         bitArray->_length = new_size;
         bitArray->_data = new_data;
         delete[] data;
-        ++_nonZeroLongCount;
       }
+    ++_nonZeroLongCount;
   }
   void SparseBitSet::Set(uint32_t i) {
     assert(consistent(i));

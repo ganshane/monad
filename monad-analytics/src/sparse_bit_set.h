@@ -90,6 +90,20 @@ namespace monad {
         printf(" %llu",_indices[i]);
       }
       printf("===== end indices:\n");
+      printf("bits:===> \n");
+      for(int i=0;i<_blockCount;i++){
+        Uint64Array* array = _bits[i];
+        if(array) {
+          printf("i:%d => ",i);
+          for (int j = 0; j < array->_length; j++) {
+            printf("[%d]=%llu,", j, array->_data[j]);
+          }
+          printf("\n");
+        }
+      }
+      printf("<===== end bits\n");
+
+      printf("nonzero => %d\n",_nonZeroLongCount);
     }
   private:
     bool consistent(uint32_t index);

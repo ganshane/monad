@@ -28,6 +28,14 @@ static uint32_t bitCount(uint64_t x)
 }
 TEST_F(SparseBitSetTest, TestRead) {
   SparseBitSet bit_set(10000);
+  bit_set.Set(1000);
+  bit_set.Debug();
+  bit_set.Set(3000);
+  bit_set.Debug();
+  bit_set.Set(5000);
+  bit_set.Debug();
+  bit_set.Set(40);
+  /*
   bit_set.ReadNonZero(3);
   bit_set.ReadIndice(0,70368744210432);
   bit_set.ReadIndice(1,16384);
@@ -40,6 +48,10 @@ TEST_F(SparseBitSetTest, TestRead) {
   bit_set.CreateBit(1, 1);
   bit_set.ReadBitBlock(1,0,256);
   bit_set.Set(40);
+  */
+
+  bit_set.Debug();
+
 
   ASSERT_TRUE(bit_set.FastGet(40));
   ASSERT_TRUE(bit_set.FastGet(1000));
