@@ -56,7 +56,8 @@ TEST_F(SparseBitSetWrapperTest, TestRead) {
   wrapper.CreateBit(0, 3);
   wrapper.ReadBitBlock(0,0,1099511627776);
   wrapper.ReadBitBlock(0,1,72057594037927936);
-  
+  wrapper.ReadBitBlock(0,2,0);
+
   wrapper.CreateBit(1, 1);
   wrapper.ReadBitBlock(1,0,256);
   wrapper.FastSet(40);
