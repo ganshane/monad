@@ -31,6 +31,13 @@ TEST_F(SparseBitSetWrapperTest, TestBitCount) {
     //printf("c:%d \n",wrapper.BitCount());
   }
   printf("c:%d \n",wrapper.BitCount());
+  int32_t len=0;
+  RegionDoc** topDocs = wrapper.Top(10,len);
+  for(uint32_t i=0;i<len;i++){
+    ASSERT_EQ(i,topDocs[i]->doc);
+    delete topDocs[i];
+  }
+  delete[] topDocs;
 }
 
 TEST_F(SparseBitSetWrapperTest, TestRead) {
