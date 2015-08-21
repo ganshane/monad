@@ -158,7 +158,7 @@ namespace monad{
       if (data[bitArray->_length - 1] == 0) {
         // since we only store non-zero longs, if the last value is 0, it means
         // that we alreay have extra space, make use of it
-        memcpy(data+o+1,data+o,(bitArray->_length -o - 1)*sizeof(uint64_t));
+        memmove(data+o+1,data+o,(bitArray->_length -o - 1)*sizeof(uint64_t));
         //System.arraycopy(bitArray, o, bitArray, o + 1, bitArray.length - o - 1);
         data[o] = (uint64_t) LeftShift(1ULL , i);
         //data[o] = (uint64_t) BitSetUtils::UnsignedShift(1ULL, i);
@@ -417,7 +417,7 @@ namespace monad{
       uint32_t length = bitCount(index);
       Uint64Array* bitArray = _bits[i4096];
       uint64_t* data = bitArray->_data;
-      memcpy(data+o,data+o+1,(length -o)*sizeof(uint64_t));
+      memmove(data+o,data+o+1,(length -o)*sizeof(uint64_t));
       data[length] = 0LLU;
     }
     _nonZeroLongCount -= 1;
