@@ -116,6 +116,10 @@ if(ENABLE_JNI)
   ELSE()
     SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-felide-constructors")
   ENDIF()
+
+  SET_TARGET_PROPERTIES(analytics4j PROPERTIES LINK_FLAGS "-fno-strict-aliasing")
+  SET_TARGET_PROPERTIES(analytics4j PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
+
   ADD_CUSTOM_TARGET(jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
   ADD_DEPENDENCIES(analytics4j analytics jni-swig-out-dir)
   INSTALL(TARGETS analytics4j
