@@ -28,12 +28,5 @@ namespace monad{
     static const uint32_t NO_MORE_DOCS;
     virtual ~BitSetIterator(){};
   };
-  class BitSetUtils{
-  public:
-    static uint64_t UnsignedShift(uint64_t num,uint32_t shift);
-    //static uint32_t UnsignedShift(uint32_t num,uint32_t shift);
-    static uint32_t BitCount(uint64_t num);
-  };
-
 }
 #endif //MONAD_BIT_SET_ITERATOR_H_
