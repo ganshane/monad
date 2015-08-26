@@ -45,6 +45,37 @@ namespace monad{
   private:
     SparseBitSet* _bit_set;
   };
+  class Uint64Array{
+
+  public:
+    Uint64Array(uint32_t length){
+      _length = length;
+      _data = new uint64_t[length];
+      memset(_data,0,sizeof(uint64_t)*length);
+    }
+    Uint64Array(uint32_t length,uint64_t* data){
+      _length = length;
+      _data = data;
+    }
+    void Set(uint32_t index,uint64_t i){
+      _data[index] = i;
+    }
+    virtual ~Uint64Array(){
+      delete[] _data;
+    }
+    uint64_t operator[](const uint32_t index){
+      assert(index<_length);
+      return _data[index];
+    }
+    uint32_t _length;
+    uint64_t* _data;
+
+    Uint64Array* Clone() {
+      uint64_t * new_data = new uint64_t[_length];
+      memcpy(new_data,_data,sizeof(uint64_t)*_length);
+      return new Uint64Array(_length,new_data);
+    }
+  };
   static uint64_t mask(uint32_t from, uint32_t to) {
     return BitSetUtils::LeftShift(((BitSetUtils::LeftShift(1ULL , (to - from)) << 1) - 1) , from);
   }
@@ -83,6 +114,12 @@ namespace monad{
         delete _bits[i];
     }
     delete[] _bits;
+  }
+  void SparseBitSet::CreateBit(uint32_t index,uint32_t size){
+    _bits[index] = new Uint64Array(size);
+  }
+  void SparseBitSet::ReadBitBlock(uint32_t index,uint32_t block_index,uint64_t i){
+    _bits[index]->Set(block_index,i);
   }
 
   bool SparseBitSet::consistent(uint32_t index) {
@@ -464,9 +501,25 @@ namespace monad{
     return bit_set;
   }
 
-  Uint64Array *Uint64Array::Clone() {
-    uint64_t * new_data = new uint64_t[_length];
-    memcpy(new_data,_data,sizeof(uint64_t)*_length);
-    return new Uint64Array(_length,new_data);
+  void SparseBitSet::Debug(){
+    printf("indices:\n ===>");
+    for(int i=0;i<_blockCount;i++){
+      printf(" %llu",_indices[i]);
+    }
+    printf("===== end indices:\n");
+    printf("bits:===> \n");
+    for(int i=0;i<_blockCount;i++){
+      Uint64Array* array = _bits[i];
+      if(array) {
+        printf("i:%d => ",i);
+        for (int j = 0; j < array->_length; j++) {
+          printf("[%d]=%llu,", j, array->_data[j]);
+        }
+        printf("\n");
+      }
+    }
+    printf("<===== end bits\n");
+
+    printf("nonzero => %d\n",_nonZeroLongCount);
   }
 }
