@@ -22,12 +22,12 @@ namespace monad{
       this->_bit_set = bit_set;
     }
     virtual void onMatch(int doc) {
-      _bit_set->Clear(_previous + 1, doc);
+      _bit_set->Clear(static_cast<uint32_t> (_previous + 1), doc);
       _previous = doc;
     }
     virtual void finish() {
-      if ((_previous + 1) < _bit_set->GetLength()) {
-        _bit_set->Clear(_previous + 1, _bit_set->GetLength());
+      if ((_previous + 1) < static_cast<int32_t>(_bit_set->GetLength())) {
+        _bit_set->Clear(static_cast<uint32_t> (_previous + 1), _bit_set->GetLength());
       }
     }
   private:
@@ -109,7 +109,7 @@ namespace monad{
   }
   SparseBitSet::~SparseBitSet() {
     delete[] _indices;
-    for (int i=0;i<_blockCount;i++) {
+    for (uint32_t i=0;i<_blockCount;i++) {
       if(_bits[i])
         delete _bits[i];
     }
@@ -128,7 +128,7 @@ namespace monad{
   }
   uint32_t SparseBitSet::Cardinality() const{
     uint32_t cardinality = 0;
-    for(int i=0;i< _blockCount;i++){
+    for(uint32_t i=0;i< _blockCount;i++){
       if(_bits[i]){
         for(int j=0;j<_bits[i]->_length;j++){
           cardinality += BitSetUtils::BitCount(_bits[i]->_data[j]);
@@ -266,7 +266,7 @@ namespace monad{
     }
   }
   void SparseBitSet::Or(const SparseBitSet &other) {
-    for (int i = 0; i < other._blockCount; ++i) {
+    for (uint32_t i = 0; i < other._blockCount; ++i) {
       uint64_t index = other._indices[i];
       if (index != 0) {
         Or(i, index, other._bits[i], BitSetUtils::BitCount(index));
@@ -284,7 +284,7 @@ namespace monad{
     if(min_len > other._blockCount){
       min_len = other._blockCount;
     }
-    for (int i = 0; i < min_len; ++i) {
+    for (uint32_t i = 0; i < min_len; ++i) {
       if ((_indices[i] & other._indices[i]) == 0) {
         _nonZeroLongCount -= BitSetUtils::BitCount(_indices[i]);
         _indices[i] = 0;
@@ -450,7 +450,7 @@ namespace monad{
     } else {
       assert(firstLong < lastLong);
       And(i4096, lastLong, ~mask(0, to));
-      for (int i = lastLong - 1; i >= firstLong + 1; --i) {
+      for (uint32_t i = lastLong - 1; i >= firstLong + 1; --i) {
         And(i4096, i, 0L);
       }
       And(i4096, firstLong, ~mask(from, 63));
@@ -469,7 +469,7 @@ namespace monad{
       clearWithinBlock(firstBlock, from & MASK_4096, (to - 1) & MASK_4096);
     } else {
       clearWithinBlock(firstBlock, from & MASK_4096, MASK_4096);
-      for (int i = firstBlock + 1; i < lastBlock; ++i) {
+      for (uint32_t i = firstBlock + 1; i < lastBlock; ++i) {
         _nonZeroLongCount -= BitSetUtils::BitCount(_indices[i]);
         _indices[i] = 0;
         if(_bits[i])
@@ -493,7 +493,7 @@ namespace monad{
     bit_set->_nonZeroLongCount = _nonZeroLongCount;
     //TODO 是否copy weight?
     memcpy(bit_set->_indices,_indices,sizeof(uint64_t)*_blockCount);
-    for(int i=0;i<_blockCount;i++){
+    for(uint32_t i=0;i<_blockCount;i++){
       if(_bits[i]){
         bit_set->_bits[i] = _bits[i]->Clone();
       }
@@ -503,16 +503,16 @@ namespace monad{
 
   void SparseBitSet::Debug(){
     printf("indices:\n ===>");
-    for(int i=0;i<_blockCount;i++){
+    for(uint32_t i=0;i<_blockCount;i++){
       printf(" %llu",_indices[i]);
     }
     printf("===== end indices:\n");
     printf("bits:===> \n");
-    for(int i=0;i<_blockCount;i++){
+    for(uint32_t i=0;i<_blockCount;i++){
       Uint64Array* array = _bits[i];
       if(array) {
         printf("i:%d => ",i);
-        for (int j = 0; j < array->_length; j++) {
+        for (uint32_t j = 0; j < array->_length; j++) {
           printf("[%d]=%llu,", j, array->_data[j]);
         }
         printf("\n");
