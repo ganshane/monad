@@ -47,6 +47,23 @@ namespace monad{
       x = x + (x >> 32ULL);
       return (uint32_t)x & 0x7f;
     }
+    //采用big endian的模式来转换
+    inline static uint32_t ConvertBytesToInt32(const int8_t* data,uint32_t offset=0){
+      const int8_t* ptr= data+offset;
+      return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])) << 24)
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 16)
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 8)
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3]))));
+    }
+    //采用big endian的模式来转换
+    inline static uint64_t ConvertBytesToInt64(const int8_t* data,uint32_t offset=0){
+      //前4位为高端、后四位为低端数据
+      uint64_t hi = ConvertBytesToInt32(data,offset);
+      uint64_t lo = ConvertBytesToInt32(data,4+offset);
+      return (hi << 32) | lo;
+    }
+
+
   };
 }
 #endif //MONAD_BIT_SET_UTILS_H

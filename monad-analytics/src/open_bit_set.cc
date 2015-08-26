@@ -2,6 +2,7 @@
 
 #include "open_bit_set.h"
 #include "open_bit_set_iterator.h"
+#include "bit_set_utils.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -10,23 +11,6 @@
 #include <string.h>
 
 namespace monad {
-  //采用big endian的模式来转换
-  static inline uint32_t ConvertBytesToInt32(const int8_t* data,uint32_t offset=0){
-    const int8_t* ptr= data+offset;
-    return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])) << 24)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 16)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 8)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3]))));
-  }
-  //采用big endian的模式来转换
-  static inline uint64_t ConvertBytesToInt64(const int8_t* data,uint32_t offset=0){
-    //前4位为高端、后四位为低端数据
-    uint64_t hi = ConvertBytesToInt32(data,offset);
-    uint64_t lo = ConvertBytesToInt32(data,4+offset);
-    return (hi << 32) | lo;
-  }
-  
-
   OpenBitSet::OpenBitSet(uint32_t num_words) {
     this->_bits = AllocateMemory(num_words);
     this->_num_words = num_words;
@@ -59,7 +43,7 @@ namespace monad {
   }
 
   void OpenBitSet::ReadLong(int8_t* word, uint32_t index) {
-    this->ReadLong(ConvertBytesToInt64(word),index);
+    this->ReadLong(BitSetUtils::ConvertBytesToInt64(word),index);
   }
   void OpenBitSet::ReadLong(int8_t* word, uint32_t from,uint32_t to) {
     for(uint32_t index = from;index <= to;index++){
@@ -77,14 +61,14 @@ namespace monad {
     if (i >= _num_words)
       return false;
     uint32_t bit = (index & 0x3f); // mod 64
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     return ((_bits[i] & bitmask) != 0);
   }
 
   bool OpenBitSet::FastGet(uint32_t index) {
     uint32_t i = index >> 6; // div 64
     uint32_t bit = (index & 0x3f); // mod 64
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     return ((_bits[i] & bitmask) != 0);
   }
 
@@ -93,28 +77,28 @@ namespace monad {
     if (i >= _num_words)
       return false;
     uint32_t bit = ((uint32_t) index & 0x3f); // mod 64
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     return ((_bits[i] & bitmask) != 0);
   }
 
   bool OpenBitSet::FastGet(uint64_t index) {
     uint32_t i = (uint32_t) (index >> 6); // div 64
     uint32_t bit = ((uint32_t) index & 0x3f); // mod 64
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     return ((_bits[i] & bitmask) != 0);
   }
 
   void OpenBitSet::FastSet(uint32_t index) {
     uint32_t wordNum = index >> 6; // div 64
     uint32_t bit = index & 0x3f;
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     _bits[wordNum] |= bitmask;
   }
 
   void OpenBitSet::Set(uint32_t index) {
     uint32_t wordNum = ExpandingWordNum(index);
     uint32_t bit = (uint32_t) index & 0x3f;
-    uint64_t bitmask = 1LL << bit;
+    uint64_t bitmask = 1ULL << bit;
     _bits[wordNum] |= bitmask;
   }
   uint32_t OpenBitSet::ExpandingWordNum(uint64_t index) {
@@ -188,16 +172,6 @@ namespace monad {
     }
     _words_len = new_len;
   }
-  static uint32_t pop(uint64_t x)
-    {
-        x = x - ((x >> 1ULL) & 0x5555555555555555ULL);
-        x = (x & 0x3333333333333333ULL) + ((x >>2ULL) & 0x3333333333333333ULL);
-        x = (x + (x >> 4ULL)) & 0x0f0f0f0f0f0f0f0fULL;
-        x = x + (x >> 8ULL);
-        x = x + (x >> 16ULL);
-        x = x + (x >> 32ULL);
-        return (uint32_t)x & 0x7f;
-    }
   static void CSA(int64_t& h, int64_t& l, int64_t a, int64_t b, int64_t c)
   {
     int64_t u = a ^ b;
@@ -235,7 +209,7 @@ namespace monad {
       int64_t eights;
       CSA(eights, fours, fours, foursA, foursB);
 
-      tot8 += pop(eights);
+      tot8 += BitSetUtils::BitCount(static_cast<uint64_t >(eights));
     }
 
     // Handle trailing words in a binary-search manner.
@@ -255,7 +229,7 @@ namespace monad {
       int64_t eights = fours & foursA;
       fours = fours ^ foursA;
 
-      tot8 += pop(eights);
+      tot8 += BitSetUtils::BitCount(static_cast<uint64_t >(eights));
       i += 4;
     }
 
@@ -270,13 +244,13 @@ namespace monad {
       int64_t eights = fours & foursA;
       fours = fours ^ foursA;
 
-      tot8 += pop(eights);
+      tot8 += BitSetUtils::BitCount(static_cast<uint64_t >(eights));
       i += 2;
     }
 
     if (i < n)
-      tot += pop(A[i]);
-    tot += (pop(fours) << 2) + (pop(twos) << 1) + pop(ones) + (tot8 << 3);
+      tot += BitSetUtils::BitCount(A[i]);
+    tot += (BitSetUtils::BitCount(fours) << 2) + (BitSetUtils::BitCount(twos) << 1) + BitSetUtils::BitCount(ones) + (tot8 << 3);
     return tot;
   }
 }//namespace monad

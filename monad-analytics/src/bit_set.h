@@ -17,9 +17,9 @@ namespace monad{
     virtual void Remove(const T& other) = 0;
     virtual int32_t Weight() = 0;
     virtual BitSet<T>* Clone() = 0;
-    void operator+=(const T& other){ Or(other);}
-    void operator&=(const T& other){ And(other);};
-    void operator-=(const T& other){ Remove(other);};
+    virtual void operator+=(const T& other){ Or(other);}
+    virtual void operator&=(const T& other){ And(other);};
+    virtual void operator-=(const T& other){ Remove(other);};
   };
   class BitSetIterator {
   public:
