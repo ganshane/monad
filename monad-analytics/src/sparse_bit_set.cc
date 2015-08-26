@@ -130,7 +130,7 @@ namespace monad{
     uint32_t cardinality = 0;
     for(uint32_t i=0;i< _blockCount;i++){
       if(_bits[i]){
-        for(int j=0;j<_bits[i]->_length;j++){
+        for(uint32_t j=0;j<_bits[i]->_length;j++){
           cardinality += BitSetUtils::BitCount(_bits[i]->_data[j]);
         }
       }
