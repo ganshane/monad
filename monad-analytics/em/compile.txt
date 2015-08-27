@@ -1,0 +1,1 @@
+cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EM=on -DCMAKE_CXX_FLAGS="--bind -s NO_EXIT_RUNTIME=1" ..
