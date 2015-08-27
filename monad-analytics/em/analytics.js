@@ -7,6 +7,16 @@ config = {
  fail:function(message){},
  progress:function(message){}
 };
+//等待Module进行初始化完毕
+function wait_load_analytics(){
+  if(!window.analytics_loaded){
+    console.log("waiting....")
+    setTimeout(wait_load_analytics,1000)
+    return;
+  }
+}
+
+wait_load_analytics();
 
 function extend( a, b, undefOnly ) {
 	for ( var prop in b ) {
@@ -25,7 +35,36 @@ function extend( a, b, undefOnly ) {
 
 	return a;
 }
-
+//判断是否位json对象
+function is_json(obj){
+  return typeof(obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == "[object object]" && !obj.length;
+}
+//创建迭代使用的函数
+function createQueryFunction(query_object,iterator_callback){
+  if(is_json(query_object)){
+    iterator_callback(null,function(query_callback){
+      Analytics.query(query_object.i,query_object.q,function(coll){query_callback(null,coll)});
+    });
+  }else{
+    iterator_callback(null,function(query_callback){
+      query_callback(null,Module.getCollectionProperties(query_object));
+    })
+  }
+}
+//异步执行
+function base_operation_func(query_parameters,operation_func){
+  	async.map(query_parameters,createQueryFunction,function(err,results){
+  		if(err)
+  	     config.fail(err)
+  		async.parallel(results,function(err,task_results){
+  			var keys = [];
+  			for(var i=0;i<task_results.length;i++){
+  				keys[i] = task_results[i].key;
+  			}
+  			operation_func(keys)
+  		})
+  	})
+}
 //自增长序列
 var key = 0;
 
@@ -46,58 +85,24 @@ extend(Analytics,{
   	if(arguments.length == 4)
   		weight = arguments[3];
 
-  	async.map(args,function(queryObj,callback){
-  		callback(null,function(query_callback){
-  			return Analytics.query(queryObj.i,queryObj.q,function(coll){
-  				query_callback(null,coll)}
-  			);
-  		});
-  	},function(err,results){
-  		if(err)
-  	     config.fail(err)
-  		//console.log(results.length)
-  		async.parallel(results,function(err,task_results){
-  			var keys = [];
-  			for(var i=0;i<task_results.length;i++){
-  				keys[i] = task_results[i].key;
-  			}
-  			//console.log(keys)
-        Module.inPlaceAndTop(keys,++key,
-          function(coll){
-            callback(coll);
-            Module.clearAllCollection();
-        	},freq,config.fail,config.progress)
-        });
-  	})
+  	base_operation_func(args,function(keys){
+      Module.inPlaceAndTop(keys,++key,function(coll){callback(coll);},freq,config.fail,config.progress)
+    });
+  },
+  andNot:function(args,callback){
+  	base_operation_func(args,function(keys){
+      Module.andNot(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+    });
   },
   inPlaceAnd:function(args,callback){
-  	async.map(args,function(queryObj,callback){
-
-  		callback(null,function(query_callback){
-  			return Analytics.query(queryObj.i,queryObj.q,function(coll){
-  				query_callback(null,coll)}
-  			);
-  		});
-  	},function(err,results){
-  		if(err)
-  	     config.fail(err)
-  		//console.log(results.length)
-  		async.parallel(results,function(err,task_results){
-  			var keys = [];
-  			for(var i=0;i<task_results.length;i++){
-  				keys[i] = task_results[i].key;
-  			}
-  			//console.log(keys)
-        Module.inPlaceAnd(keys,++key,
-          function(coll){
-            callback(coll);
-            Module.clearAllCollection();
-        	},config.fail,config.progress)
-
-        },config.fail,config.progress);
-  		})
-  	}
-  });
+  	base_operation_func(args,function(keys){
+      Module.inPlaceAnd(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+    });
+  },
+  clearAllCollection:function(){
+    Module.clearAllCollection();
+  }
+});
 
 Analytics.config = config;
 

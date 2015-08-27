@@ -137,7 +137,10 @@ namespace monad {
   void OnFail(unsigned task_id,void* args,int32_t code,const char* msg){
     std::vector<val> args_ = *(std::vector<val>*)args;
     std::stringstream message;
-    message << " code:" << code <<",msg:"<<msg;
+    message << " code:" << code;
+    if(msg){
+      message << "message:" << msg;
+    }
     args_[2](val(message.str()));
     delete (std::vector<val>*)args;
   }

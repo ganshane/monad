@@ -6,11 +6,9 @@
   <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
   <script type="text/javascript" src="async.min.js"></script>
   <script type="text/javascript">
-    var analytics_loaded = false;
-        function analytics_onready(){
-            Module.SetApiUrl("http://localhost:9081/api");
-            analytics_loaded = true;
-        }
+    function analytics_onready(){
+        Module.SetApiUrl("http://localhost:9081/api");
+    }
     </script>
 </head>
 <body>

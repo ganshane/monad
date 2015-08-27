@@ -1,18 +1,3 @@
-function wait_load_analytics(){
-  if(!analytics_loaded){
-    console.log("waiting....")
-    setTimeout(wait_load_analytics,1000)
-    return;
-  }
-
-  test_function();
-
-}
-
-wait_load_analytics();
-
-
-function test_function(){
   var resource = "test_100000";
   var key = 0;
 
@@ -30,17 +15,6 @@ function test_function(){
   function onProgress(msg){
       onMessage(msg);
   }
-  function mini_query(query,fun){
-    Module.query({i:resource,q:query},++key,fun,onFail,onProgress,1);
-  }
-  function mini_query2(query,callback){
-    Module.query({i:resource,q:query},++key,function(r){callback(null,r);},onFail,onProgress,1);
-  }
-  function async_query(query){
-    return function(callback){
-      Module.query({i:resource,q:query},++key,function(r){callback(null,r);},onFail,onProgress,1);
-    }
-  }
   Analytics.config.fail = onFail;
   Analytics.config.progress= onProgress;
 
@@ -50,7 +24,7 @@ function test_function(){
     Analytics.query(resource,'id:[4321 TO 4350]',function(r){
       assert.equal(30,r.count)
       assert.equal(1,Module.ContainerSize())
-      Module.clearAllCollection();
+      Analytics.clearAllCollection();
       done();
     })
   });
@@ -62,42 +36,29 @@ function test_function(){
       {i:resource,q:'id:[4341 TO 4360]'}
       ],function(result){
           assert.equal(result.count,10)
+          Analytics.clearAllCollection();
           done();
     });
   });
 
   QUnit.test( "inPlaceAndTop", function( assert ) {
     var done = assert.async();
-    var done = assert.async();
-    Analytics.inPlaceAndTop([
-      {i:resource,q:'test'},
-      {i:resource,q:'id:[4341 TO 4360]'}
-      ],function(result){
-          assert.equal(result.count,20)
-          done();
+    Analytics.inPlaceAndTop([{i:resource,q:'test'},{i:resource,q:'id:[4341 TO 4360]'}],
+      function(result){
+        assert.equal(result.count,20)
+        Analytics.clearAllCollection();
+        done();
     },2);
-
   });
-
 
   QUnit.test( "andNot", function( assert ) {
     var done = assert.async();
-    async.parallel([
-      async_query('test'),
-      async_query('id:[4321 TO 4330]')
-    ],function(err,results){
-        assert.notOk(err)
-        assert.equal(results.length,2)
-        Module.andNot([results[0].key,results[1].key],++key,function(r){
-          assert.equal(r.count,99990)
-          Module.clearAllCollection();
-          done();
-        },onFail,onProgress)
-      });
+    Analytics.andNot([{i:resource,q:'test'},{i:resource,q:'id:[4321 TO 4330]'}],
+      function(r){
+        assert.equal(r.count,99990)
+        Analytics.clearAllCollection();
+        done();
     });
+  });
 
-
-
-
-}
 
