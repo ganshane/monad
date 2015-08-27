@@ -19,13 +19,17 @@
   Analytics.config.progress= onProgress;
 
   QUnit.test( "query", function( assert ) {
-    assert.expect( 2 );
     var done = assert.async();
     Analytics.query(resource,'id:[4321 TO 4350]',function(r){
       assert.equal(30,r.count)
       assert.equal(1,Module.ContainerSize())
-      Analytics.clearAllCollection();
-      done();
+
+      Analytics.top(Module.IdCategory.Person,r.key,100,0,function(result,key){
+        assert.equal(30,result.length)
+        done();
+      })
+
+      //Analytics.clearAllCollection();
     })
   });
 
@@ -36,6 +40,17 @@
       {i:resource,q:'id:[4341 TO 4360]'}
       ],function(result){
           assert.equal(result.count,10)
+          Analytics.clearAllCollection();
+          done();
+    });
+  });
+  QUnit.test( "inPlaceOr", function( assert ) {
+    var done = assert.async();
+    Analytics.inPlaceOr([
+      {i:resource,q:'id:[4321 TO 4350]'},
+      {i:resource,q:'id:[4341 TO 4360]'}
+      ],function(result){
+          assert.equal(result.count,40)
           Analytics.clearAllCollection();
           done();
     });

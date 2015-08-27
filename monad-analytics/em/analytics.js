@@ -69,6 +69,9 @@ function base_operation_func(query_parameters,operation_func){
 var key = 0;
 
 extend(Analytics,{
+  top:function(category,key,topN,offset,callback){
+     Module.top(category,key,topN,callback,offset,config.fail,config.progress);
+  },
   query:function(index,q1,callback){
   	var weight = 1;
   	if(arguments.length == 4){
@@ -97,6 +100,11 @@ extend(Analytics,{
   inPlaceAnd:function(args,callback){
   	base_operation_func(args,function(keys){
       Module.inPlaceAnd(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+    });
+  },
+  inPlaceOr:function(args,callback){
+  	base_operation_func(args,function(keys){
+      Module.inPlaceOr(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
     });
   },
   clearAllCollection:function(){
