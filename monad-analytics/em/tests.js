@@ -19,6 +19,7 @@
   Analytics.config.progress= onProgress;
 
   QUnit.test( "query", function( assert ) {
+
     var done = assert.async();
     Analytics.query({i:resource,q:'id:[4321 TO 4350]',weight:2},function(r){
       assert.equal(30,r.count)
@@ -35,6 +36,7 @@
   });
 
   QUnit.test( "inPlaceAnd", function( assert ) {
+    assert.expect( 1 );
     var done = assert.async();
     Analytics.inPlaceAnd([
       {i:resource,q:'id:[4321 TO 4350]'},
@@ -103,6 +105,34 @@
         assert.equal(10,objects.length)
         done();
       });
+  });
+  QUnit.test( "Performance", function( assert ) {
+
+    assert.expect( 1 );
+    var done = assert.async();
+    setTimeout(function(){
+    onMessage("creating wrapper ...")
+    var wrapper_object = Analytics.createBitSetWrapper();
+    var bit_set_wrapper = wrapper_object.wrapper;
+    bit_set_wrapper.NewSeg(1,100000000)
+    for(i=0;i<10000000;i++ ){
+      bit_set_wrapper.FastSet(i*3);
+    }
+    bit_set_wrapper.Commit();
+
+    onMessage("wrapper created");
+    //assert.ok(bit_set_wrapper.FastGet(100))
+
+    Analytics.inPlaceAnd([
+      wrapper_object.key,
+      wrapper_object.key,
+      wrapper_object.key,
+      ],function(result){
+          assert.equal(result.count,10000000)
+          Analytics.clearAllCollection();
+          done();
+    });
+    },1000)
   });
 
 

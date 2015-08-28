@@ -142,6 +142,10 @@ extend(Analytics,{
         Module.inPlaceAndTopWithPositionMerged(keys,++key,function(coll){callback(coll);},_freq,config.fail,config.progress)
     });
   },
+  createBitSetWrapper:function(){
+    var key_seq = ++ key;
+    return {wrapper:Module.createBitSetWrapper(key_seq),key:key_seq};
+  },
   clearAllCollection:function(){
     Module.clearAllCollection();
   }
@@ -221,3 +225,5 @@ Analytics.config = config;
 window.Analytics = Analytics;
 
 })((function(){return this;})());
+
+

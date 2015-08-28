@@ -483,6 +483,13 @@ namespace monad {
     }
     return result;
   }
+  SparseBitSetWrapper* CreateBitSetWrapper(const val& key){
+    //先删除同key的集合
+    ClearCollection(key);
+    SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
+    container.insert(std::pair<val,SparseBitSetWrapper*>(key,wrapper));
+    return wrapper;
+  }
 
 
   // Binding code
@@ -506,8 +513,9 @@ namespace monad {
       function("clearAllCollection", &ClearAllCollection);
       function("clearCollection", &ClearCollection);
       function("getCollectionProperties", &GetCollectionProperties);
+      function("createBitSetWrapper", &CreateBitSetWrapper,allow_raw_pointers());
 
-      /*
+
       class_<SparseBitSetWrapper>("BitSetWrapper")
           .constructor()
           .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
@@ -520,10 +528,10 @@ namespace monad {
           .function("Commit", &monad::SparseBitSetWrapper::Commit)
           .function("FastGet", &monad::SparseBitSetWrapper::FastGet)
           .function("SetWeight", &monad::SparseBitSetWrapper::SetWeight)
-          .function("BitCount", &monad::SparseBitSetWrapper::BitCount)
+          .function("BitCount", &monad::SparseBitSetWrapper::BitCount);
           //.class_function("InPlaceAnd",method, allow_raw_pointers());
-          .class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
-       */
+          //.class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
+
   };
 }
 
