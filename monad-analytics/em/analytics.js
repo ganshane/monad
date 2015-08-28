@@ -75,7 +75,7 @@ function base_operation_func(query_parameters,operation_func){
 var key = 0;
 
 extend(Analytics,{
-  createConditions:function(){ return new Conditions();},
+  createCondition:function(){ return new Conditions();},
   top:function(callback,options){
     var _options = {category:Module.IdCategory.Person,top:100,offset:0}
     extend(_options,options)

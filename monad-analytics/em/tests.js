@@ -68,11 +68,11 @@
   });
   QUnit.test( "inPlaceAndTopWithPositionMerged", function( assert ) {
     var done = assert.async();
-    var condition1 = Analytics.createConditions()
+    var condition1 = Analytics.createCondition()
                        .query({i:resource,q:'test'})
                        .query({i:resource,q:'id:[4330 TO 4370]'})
                        .inPlaceAndTop(2);
-    var condition2 = Analytics.createConditions()
+    var condition2 = Analytics.createCondition()
                        .query({i:resource,q:'id:[4341 TO 4360]'})
                        .inPlaceAndTop(1);
 
@@ -96,7 +96,7 @@
 
   QUnit.test( "dsl", function( assert ) {
     var done = assert.async();
-    var condition = Analytics.createConditions()
+    var condition = Analytics.createCondition()
       .query({i:resource,q:'test'})
       .query({i:resource,q:'id:[4321 TO 4330]'})
       .inPlaceAnd().top(function(objects,key){
