@@ -21,7 +21,6 @@ wait_load_analytics();
 function extend( a, b, undefOnly ) {
 	for ( var prop in b ) {
 		if ( hasOwn.call( b, prop ) ) {
-
 			// Avoid "Member not found" error in IE8 caused by messing with window.constructor
 			if ( !( prop === "constructor" && a === window ) ) {
 				if ( b[ prop ] === undefined ) {
@@ -41,9 +40,14 @@ function is_json(obj){
 }
 //创建迭代使用的函数
 function createQueryFunction(query_object,iterator_callback){
-  if(is_json(query_object)){
+  if(hasOwn.call(query_object,"query_objects")){//Condition
+    console.log("condition!!")
     iterator_callback(null,function(query_callback){
-      Analytics.query(query_object.i,query_object.q,function(coll){query_callback(null,coll)});
+      query_object.apply(function(coll){query_callback(null,coll)})
+    })
+  }else if(is_json(query_object)){
+    iterator_callback(null,function(query_callback){
+      Analytics.query(query_object,function(coll){query_callback(null,coll)});
     });
   }else{
     iterator_callback(null,function(query_callback){
@@ -54,8 +58,10 @@ function createQueryFunction(query_object,iterator_callback){
 //异步执行
 function base_operation_func(query_parameters,operation_func){
   	async.map(query_parameters,createQueryFunction,function(err,results){
-  		if(err)
-  	     config.fail(err)
+  		if(err){
+  	   config.fail(err);
+  	   return;
+  	  }
   		async.parallel(results,function(err,task_results){
   			var keys = [];
   			for(var i=0;i<task_results.length;i++){
@@ -69,48 +75,146 @@ function base_operation_func(query_parameters,operation_func){
 var key = 0;
 
 extend(Analytics,{
-  top:function(category,key,topN,offset,callback){
-     Module.top(category,key,topN,callback,offset,config.fail,config.progress);
+  createConditions:function(){ return new Conditions();},
+  top:function(callback,options){
+    var _options = {category:Module.IdCategory.Person,top:100,offset:0}
+    extend(_options,options)
+     Module.top(_options.category,_options.key,_options.top,callback,_options.offset,config.fail,config.progress);
   },
-  query:function(index,q1,callback){
-  	var weight = 1;
-  	if(arguments.length == 4){
-  		weight = arguments[3];
-  	}
-    Module.query({i:index,q:q1},++key,callback,config.fail,config.progress,weight);
+  //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
+  query:function(parameters,callback){
+    var op={weight:1}
+    extend(op,parameters)
+    Module.query({i:op.i,q:op.q},++key,callback,config.fail,config.progress,op.weight);
   },
-  inPlaceAndTop:function(args,callback){
-  	var freq = 1;
-  	if(arguments.length == 3)
-  		freq = arguments[2]
-
-  	var weight = 1;
-  	if(arguments.length == 4)
-  		weight = arguments[3];
+  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
+  inPlaceAndTop:function(args,callback,freq){
+    var _freq = 1;
+    if(freq != null)
+      _freq = freq;
 
   	base_operation_func(args,function(keys){
-      Module.inPlaceAndTop(keys,++key,function(coll){callback(coll);},freq,config.fail,config.progress)
+      Module.inPlaceAndTop(keys,++key,callback,_freq,config.fail,config.progress)
     });
   },
+  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   andNot:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.andNot(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+      Module.andNot(keys,++key,callback,config.fail,config.progress)
     });
   },
+  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceAnd:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.inPlaceAnd(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+      Module.inPlaceAnd(keys,++key,callback,config.fail,config.progress)
     });
   },
+  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceOr:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.inPlaceOr(keys,++key,function(coll){callback(coll);},config.fail,config.progress)
+      Module.inPlaceOr(keys,++key,callback,config.fail,config.progress)
+    });
+  },
+  //args=[Condition,Condition] callback=function(coll)
+  inPlaceAndTopWithPositionMerged:function(args,callback,freq){
+    var _freq = 1;
+    if(freq != null)
+      _freq = freq;
+
+    var top_func = [];
+    for(i=0;i< args.length;i++){
+      top_func[i] = function(top_cb){
+        this.inPlaceAndTop(args[i].conditions,function(coll){top_cb(null,coll)},args[i].freq);
+      }
+    }
+
+    async.map(args,function(query_object,iterator_callback){
+          query_object.apply(function(coll){iterator_callback(null,coll)})
+      },function(err,task_results){
+  		  if(err){
+  	      config.fail(err);
+  	      return;
+  	    }
+  			var keys = [];
+  			for(var i=0;i<task_results.length;i++){
+  				keys[i] = task_results[i].key;
+  			}
+        Module.inPlaceAndTopWithPositionMerged(keys,++key,function(coll){callback(coll);},_freq,config.fail,config.progress)
     });
   },
   clearAllCollection:function(){
     Module.clearAllCollection();
   }
 });
+
+var OP_IN_PLACE_AND  = 1;
+var OP_IN_PLACE_AND_TOP  = 2;
+var OP_IN_PLACE_OR = 3;
+var OP_AND_NOT = 4;
+var OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED = 5;
+
+//DSL mode
+function Conditions(){this.query_objects=[];}
+Conditions.prototype = {
+  op:0,
+  freq:1,
+  query:function(query_object){
+    this.query_objects.push(query_object);
+    return this;
+  },
+  top:function(callback,options){
+    var top_func = function(coll){
+      var _options = {category:Module.IdCategory.Person,top:100,offset:0,key:coll.key}
+      extend(_options,options)
+      Analytics.top(callback,_options)
+    }
+    this.apply(top_func)
+  },
+  apply:function(callback){
+    switch(this.op){
+      case(OP_IN_PLACE_AND):
+        Analytics.inPlaceAnd(this.query_objects,callback);
+        break;
+      case(OP_IN_PLACE_AND_TOP):
+        Analytics.inPlaceAndTop(this.query_objects,callback,this.freq);
+        break;
+      case(OP_IN_PLACE_OR):
+        Analytics.inPlaceOr(this.query_objects,callback);
+        break;
+      case(OP_AND_NOT):
+        Analytics.andNot(this.query_objects,callback);
+        break;
+      case (OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED):
+        Analytics.inPlaceAndTopWithPositionMerged(this.query_objects,callback,this.freq);
+        break
+      default:
+        config.fail("op unrecognized!")
+        break;
+    }
+  },
+  inPlaceAnd:function(){
+    this.op = OP_IN_PLACE_AND;
+    return this;
+  },
+  inPlaceAndTop:function(freq){
+    this.op = OP_IN_PLACE_AND_TOP;
+    this.freq = freq;
+    return this;
+  },
+  inPlaceAndTopWithPositionMerged:function(freq){
+    this.op = OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED;
+    this.freq = freq;
+    return this;
+  },
+  inPlaceOr:function(callback){
+    this.op = OP_IN_PLACE_OR;
+    return this;
+  },
+  andNot:function(callback){
+    this.op = OP_AND_NOT;
+    return this;
+  }
+}
 
 Analytics.config = config;
 

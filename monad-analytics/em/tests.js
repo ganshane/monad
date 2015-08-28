@@ -20,14 +20,15 @@
 
   QUnit.test( "query", function( assert ) {
     var done = assert.async();
-    Analytics.query(resource,'id:[4321 TO 4350]',function(r){
+    Analytics.query({i:resource,q:'id:[4321 TO 4350]',weight:2},function(r){
       assert.equal(30,r.count)
       assert.equal(1,Module.ContainerSize())
 
-      Analytics.top(Module.IdCategory.Person,r.key,100,0,function(result,key){
+      Analytics.top(function(result,key){
         assert.equal(30,result.length)
+        Analytics.clearAllCollection();
         done();
-      })
+      },{key:r.key})
 
       //Analytics.clearAllCollection();
     })
@@ -65,6 +66,23 @@
         done();
     },2);
   });
+  QUnit.test( "inPlaceAndTopWithPositionMerged", function( assert ) {
+    var done = assert.async();
+    var condition1 = Analytics.createConditions()
+                       .query({i:resource,q:'test'})
+                       .query({i:resource,q:'id:[4330 TO 4370]'})
+                       .inPlaceAndTop(2);
+    var condition2 = Analytics.createConditions()
+                       .query({i:resource,q:'id:[4341 TO 4360]'})
+                       .inPlaceAndTop(1);
+
+    Analytics.inPlaceAndTopWithPositionMerged([condition1,condition2],
+      function(result){
+        assert.equal(result.count,20)
+        Analytics.clearAllCollection();
+        done();
+    },2);
+  });
 
   QUnit.test( "andNot", function( assert ) {
     var done = assert.async();
@@ -74,6 +92,17 @@
         Analytics.clearAllCollection();
         done();
     });
+  });
+
+  QUnit.test( "dsl", function( assert ) {
+    var done = assert.async();
+    var condition = Analytics.createConditions()
+      .query({i:resource,q:'test'})
+      .query({i:resource,q:'id:[4321 TO 4330]'})
+      .inPlaceAnd().top(function(objects,key){
+        assert.equal(10,objects.length)
+        done();
+      });
   });
 
 
