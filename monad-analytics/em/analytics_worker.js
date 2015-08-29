@@ -26,7 +26,7 @@ onmessage=function(event){
       break;
     case OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED:
       var parameters = event.data.parameters;
-      var conditions = parameters.conditions;
+      var conditions = parameters.query_objects;
       var freq = parameters.freq;
 
       var condition_objects = [];

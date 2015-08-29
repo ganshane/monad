@@ -73,35 +73,28 @@
                        .query({i:resource,q:'id:[4341 TO 4360]'})
                        .inPlaceAndTop(1);
 
-    Analytics.inPlaceAndTopWithPositionMerged([condition1,condition2],
-      function(result){
-        assert.equal(result.count,20)
-        //Analytics.clearAllCollection();
-        done();
-    },2);
+    Analytics.createCondition()
+          .addCondition(condition1)
+          .addCondition(condition2)
+          .inPlaceAndTopWithPositionMerged(2)
+          .execute(function(result){
+              assert.equal(result.count,20)
+              //Analytics.clearAllCollection();
+              done();
+          });
   });
 
-  /*
   QUnit.test( "andNot", function( assert ) {
     var done = assert.async();
-    Analytics.andNot([{i:resource,q:'test'},{i:resource,q:'id:[4321 TO 4330]'}],
-      function(r){
-        assert.equal(r.count,99990)
-        Analytics.clearAllCollection();
-        done();
-    });
-  });
-
-  QUnit.test( "dsl", function( assert ) {
-    var done = assert.async();
-    var condition = Analytics.createCondition()
+    Analytics.createCondition()
       .query({i:resource,q:'test'})
       .query({i:resource,q:'id:[4321 TO 4330]'})
-      .inPlaceAnd().top(function(objects,key){
-        assert.equal(10,objects.length)
+      .andNot().execute(function(r){
+        assert.equal(r.count,99990)
         done();
       });
   });
+
   /*
   QUnit.test( "Performance", function( assert ) {
 

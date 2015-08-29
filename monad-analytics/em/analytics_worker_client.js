@@ -66,7 +66,6 @@ extend(AnalyticsClient,{
       Module.inPlaceOr(keys,++key,callback,config.fail,config.progress)
     });
   },
-  */
   //args=[Condition,Condition] callback=function(coll)
   inPlaceAndTopWithPositionMerged:function(args,callback,freq){
     var _freq = 1;
@@ -116,6 +115,10 @@ Conditions.prototype = {
   query:function(query_object){
     this.query_objects.push(query_object);
     this.op = OP_QUERY;
+    return this;
+  },
+  addCondition:function(condition){
+    this.query_objects.push(condition);
     return this;
   },
   top:function(callback,options){
