@@ -1,23 +1,12 @@
 (function( window ) {
-var Analytics,
+var AnalyticsClient,
   config,
   hasOwn = Object.prototype.hasOwnProperty;
-Analytics = {};
-config = {
- fail:function(message){},
- progress:function(message){}
-};
-//等待Module进行初始化完毕
-function wait_load_analytics(){
-  if(!window.analytics_loaded){
-    console.log("waiting....")
-    setTimeout(wait_load_analytics,1000)
-    return;
-  }
-}
-
-wait_load_analytics();
-
+  AnalyticsClient = {};
+  config = {
+   fail:function(message){},
+   progress:function(message){}
+  };
 function extend( a, b, undefOnly ) {
 	for ( var prop in b ) {
 		if ( hasOwn.call( b, prop ) ) {
@@ -34,48 +23,10 @@ function extend( a, b, undefOnly ) {
 
 	return a;
 }
-//判断是否位json对象
-function is_json(obj){
-  return typeof(obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == "[object object]" && !obj.length;
-}
-//创建迭代使用的函数
-function createQueryFunction(query_object,iterator_callback){
-  if(hasOwn.call(query_object,"query_objects")){//Condition
-    console.log("condition!!")
-    iterator_callback(null,function(query_callback){
-      query_object.execute(function(coll){query_callback(null,coll)})
-    })
-  }else if(is_json(query_object)){
-    iterator_callback(null,function(query_callback){
-      Analytics.query(query_object,function(coll){query_callback(null,coll)});
-    });
-  }else{
-    iterator_callback(null,function(query_callback){
-      query_callback(null,Module.getCollectionProperties(query_object));
-    })
-  }
-}
-//异步执行
-function base_operation_func(query_parameters,operation_func){
-  	async.map(query_parameters,createQueryFunction,function(err,results){
-  		if(err){
-  	   config.fail(err);
-  	   return;
-  	  }
-  		async.parallel(results,function(err,task_results){
-  			var keys = [];
-  			for(var i=0;i<task_results.length;i++){
-  				keys[i] = task_results[i].key;
-  			}
-  			operation_func(keys)
-  		})
-  	})
-}
-//自增长序列
-var key = 0;
 
-extend(Analytics,{
+extend(AnalyticsClient,{
   createCondition:function(){ return new Conditions();},
+  /*
   top:function(callback,options){
     var _options = {category:Module.IdCategory.Person,top:100,offset:0}
     extend(_options,options)
@@ -85,7 +36,7 @@ extend(Analytics,{
   query:function(parameters,callback){
     var op={weight:1}
     extend(op,parameters)
-    Module.query({i:op.i,q:op.q},++key,callback,config.fail,config.progress,op.weight);
+    //Module.query({i:op.i,q:op.q},++key,callback,config.fail,config.progress,op.weight);
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceAndTop:function(args,callback,freq){
@@ -149,48 +100,51 @@ extend(Analytics,{
   clearAllCollection:function(){
     Module.clearAllCollection();
   },
+  */
   extend:extend
+});
+
+var current_task_callback = null
+var worker = new Worker("analytics_worker.js")
+worker.addEventListener("message",function(event) {
+  switch(event.data.op){
+    case OP_FAIL:
+      onFail(event.data.message)
+      break;
+    case OP_PROGRESS:
+      onProgress(event.data.message)
+      break;
+    default:
+        current_task_callback(event.data.result)
+      break;
+  }
 });
 
 //DSL mode
 function Conditions(){this.query_objects=[];}
 Conditions.prototype = {
-  op:0,
+  op:'',
   freq:1,
   query:function(query_object){
     this.query_objects.push(query_object);
+    this.op = OP_QUERY;
     return this;
   },
   top:function(callback,options){
     var top_func = function(coll){
-      var _options = {category:Module.IdCategory.Person,top:100,offset:0,key:coll.key}
+      var _options = {key:coll.key}
       extend(_options,options)
-      Analytics.top(callback,_options)
+      current_task_callback = callback;
+      worker.postMessage({op:OP_TOP,parameters:_options})
     }
     this.execute(top_func)
   },
   execute:function(callback){
+    current_task_callback = callback;
     switch(this.op){
-      case(OP_IN_PLACE_AND):
-        Analytics.inPlaceAnd(this.query_objects,callback);
-        break;
-      case(OP_IN_PLACE_AND_TOP):
-        Analytics.inPlaceAndTop(this.query_objects,callback,this.freq);
-        break;
-      case(OP_IN_PLACE_OR):
-        Analytics.inPlaceOr(this.query_objects,callback);
-        break;
-      case(OP_AND_NOT):
-        Analytics.andNot(this.query_objects,callback);
-        break;
-      case (OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED):
-        Analytics.inPlaceAndTopWithPositionMerged(this.query_objects,callback,this.freq);
-        break
-      case (OP_QUERY):
-        Analytics.query(this.query_objects[0],callback)
-        break;
       default:
-        config.fail("op["+this.op+"] unrecognized!")
+        var message= {op:this.op,parameters:{queries:this.query_objects,freq:this.freq}}
+        worker.postMessage(message);
         break;
     }
   },
@@ -218,10 +172,9 @@ Conditions.prototype = {
   }
 }
 
-Analytics.config = config;
+AnalyticsClient.config = config;
 
-window.Analytics = Analytics;
+window.Analytics = AnalyticsClient;
 
 })((function(){return this;})());
-
 

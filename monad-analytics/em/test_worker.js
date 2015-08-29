@@ -21,20 +21,13 @@
   QUnit.test( "query", function( assert ) {
 
     var done = assert.async();
-    Analytics.query({i:resource,q:'id:[4321 TO 4350]',weight:2},function(r){
-      assert.equal(30,r.count)
-      assert.equal(1,Module.ContainerSize())
-
-      Analytics.top(function(result,key){
-        assert.equal(30,result.length)
-        Analytics.clearAllCollection();
+    Analytics.createCondition().query({i:resource,q:'id:[4321 TO 4350]',weight:2}).top(function(r){
+        assert.equal(r.length,30)
         done();
-      },{key:r.key})
-
-      //Analytics.clearAllCollection();
-    })
+      })
   });
 
+/*
   QUnit.test( "inPlaceAnd", function( assert ) {
     assert.expect( 1 );
     var done = assert.async();

@@ -403,9 +403,13 @@ namespace monad {
 
     if(sparse_wrapper == NULL && wrapper == NULL) {
       char message[100];
-      printf("collection not found !!!! \n");
-      //printf("key type:%s\n",key.typeof().as<std::string>().c_str());
-      sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
+      std::string type = key.typeof().as<std::string>();
+      //printf("type:%s \n",type.c_str());
+      if(type == "number")
+        sprintf(message,"collection not found by key %d",key.as<int>());
+      else
+        sprintf(message,"collection not found by key %s",key.as<std::string>().c_str());
+
       ((val)on_fail)(val(std::string(message)));
     }else if(len > offset) { //查到数据
       switch(category){
