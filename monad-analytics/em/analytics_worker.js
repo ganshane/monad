@@ -19,15 +19,31 @@ onmessage=function(event){
   //console.log("op:"+event.data.op+" index:"+event.data.i+" q:"+event.data.q)
   var op = event.data.op;
   switch(op){
+    case OP_CLEAR_ALL_COLLECTION:
+      Analytics.clearAllCollection();
     case OP_TOP:
       Analytics.top(function(objects){postMessage({op:op,result:objects})},event.data.parameters)
       break;
+    case OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED:
+      var parameters = event.data.parameters;
+      var conditions = parameters.conditions;
+      var freq = parameters.freq;
+
+      var condition_objects = [];
+      for(i =0;i<conditions.length;i++){
+        var condition = Analytics.createCondition();
+        Analytics.extend(condition,conditions[i])
+        condition_objects[i]=condition;
+      }
+
+      Analytics.inPlaceAndTopWithPositionMerged(condition_objects,function(result){
+        postMessage({op:op,result:result})
+      },freq)
+
     default:
       var condition = Analytics.createCondition();
       var parameters = event.data.parameters;
-      condition.query_objects = parameters.queries;
-      condition.freq = parameters.freq;
-      condition.op = op
+      Analytics.extend(condition,parameters)
 
       condition.execute(function(coll){
         postMessage({op:op,result:coll});

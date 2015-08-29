@@ -121,13 +121,6 @@ extend(Analytics,{
     if(freq != null)
       _freq = freq;
 
-    var top_func = [];
-    for(i=0;i< args.length;i++){
-      top_func[i] = function(top_cb){
-        this.inPlaceAndTop(args[i].conditions,function(coll){top_cb(null,coll)},args[i].freq);
-      }
-    }
-
     async.map(args,function(query_object,iterator_callback){
           query_object.execute(function(coll){iterator_callback(null,coll)})
       },function(err,task_results){

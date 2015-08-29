@@ -66,41 +66,29 @@ extend(AnalyticsClient,{
       Module.inPlaceOr(keys,++key,callback,config.fail,config.progress)
     });
   },
+  */
   //args=[Condition,Condition] callback=function(coll)
   inPlaceAndTopWithPositionMerged:function(args,callback,freq){
     var _freq = 1;
     if(freq != null)
       _freq = freq;
 
-    var top_func = [];
-    for(i=0;i< args.length;i++){
-      top_func[i] = function(top_cb){
-        this.inPlaceAndTop(args[i].conditions,function(coll){top_cb(null,coll)},args[i].freq);
-      }
+    var conditions=[];
+    for(i = 0;i<args.length;i++){
+      conditions[i]=args[i].toWorkerParameter();
     }
-
-    async.map(args,function(query_object,iterator_callback){
-          query_object.execute(function(coll){iterator_callback(null,coll)})
-      },function(err,task_results){
-  		  if(err){
-  	      config.fail(err);
-  	      return;
-  	    }
-  			var keys = [];
-  			for(var i=0;i<task_results.length;i++){
-  				keys[i] = task_results[i].key;
-  			}
-        Module.inPlaceAndTopWithPositionMerged(keys,++key,function(coll){callback(coll);},_freq,config.fail,config.progress)
-    });
+    current_task_callback = callback;
+    worker.postMessage({op:OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED,parameters:{conditions:conditions,freq:freq}})
   },
+  /*
   createBitSetWrapper:function(){
     var key_seq = ++ key;
     return {wrapper:Module.createBitSetWrapper(key_seq),key:key_seq};
   },
-  clearAllCollection:function(){
-    Module.clearAllCollection();
-  },
   */
+  clearAllCollection:function(){
+    worker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
+  },
   extend:extend
 });
 
@@ -143,7 +131,7 @@ Conditions.prototype = {
     current_task_callback = callback;
     switch(this.op){
       default:
-        var message= {op:this.op,parameters:{queries:this.query_objects,freq:this.freq}}
+        var message= {op:this.op,parameters:this.toWorkerParameter()};
         worker.postMessage(message);
         break;
     }
@@ -169,6 +157,9 @@ Conditions.prototype = {
   andNot:function(callback){
     this.op = OP_AND_NOT;
     return this;
+  },
+  toWorkerParameter:function(){
+    return {query_objects:this.query_objects,freq:this.freq,op:this.op};
   }
 }
 

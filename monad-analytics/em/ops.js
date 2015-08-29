@@ -5,6 +5,7 @@ var OP_IN_PLACE_OR = 'inPlaceOr';
 var OP_AND_NOT = 'andNot';
 var OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED = 'inPlaceAndTopWithPositionMerged';
 var OP_TOP='top'
+var OP_CLEAR_ALL_COLLECTION='clearAllCollection'
 
 var OP_FAIL = 'fail'
 var OP_PROGRESS= 'progress'

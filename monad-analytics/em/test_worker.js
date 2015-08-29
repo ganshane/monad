@@ -27,39 +27,41 @@
       })
   });
 
-/*
   QUnit.test( "inPlaceAnd", function( assert ) {
     assert.expect( 1 );
     var done = assert.async();
-    Analytics.inPlaceAnd([
-      {i:resource,q:'id:[4321 TO 4350]'},
-      {i:resource,q:'id:[4341 TO 4360]'}
-      ],function(result){
+    Analytics.createCondition()
+      .query({i:resource,q:'id:[4321 TO 4350]'})
+      .query({i:resource,q:'id:[4341 TO 4360]'})
+      .inPlaceAnd().execute(function(result){
           assert.equal(result.count,10)
-          Analytics.clearAllCollection();
           done();
-    });
-  });
-  QUnit.test( "inPlaceOr", function( assert ) {
-    var done = assert.async();
-    Analytics.inPlaceOr([
-      {i:resource,q:'id:[4321 TO 4350]'},
-      {i:resource,q:'id:[4341 TO 4360]'}
-      ],function(result){
-          assert.equal(result.count,40)
-          Analytics.clearAllCollection();
-          done();
-    });
+      })
   });
 
+  QUnit.test( "inPlaceOr", function( assert ) {
+    var done = assert.async();
+    Analytics.createCondition()
+      .query({i:resource,q:'id:[4321 TO 4350]'})
+      .query({i:resource,q:'id:[4341 TO 4360]'})
+      .inPlaceOr().execute(function(result){
+          assert.equal(result.count,40)
+          done();
+    });
+
+  });
   QUnit.test( "inPlaceAndTop", function( assert ) {
     var done = assert.async();
-    Analytics.inPlaceAndTop([{i:resource,q:'test'},{i:resource,q:'id:[4341 TO 4360]'}],
-      function(result){
+
+    Analytics.createCondition()
+      .query({i:resource,q:'test'})
+      .query({i:resource,q:'id:[4341 TO 4360]'})
+      .inPlaceAndTop(2)
+      .execute(function(result){
         assert.equal(result.count,20)
-        Analytics.clearAllCollection();
+        //Analytics.clearAllCollection();
         done();
-    },2);
+      });
   });
   QUnit.test( "inPlaceAndTopWithPositionMerged", function( assert ) {
     var done = assert.async();
@@ -74,11 +76,12 @@
     Analytics.inPlaceAndTopWithPositionMerged([condition1,condition2],
       function(result){
         assert.equal(result.count,20)
-        Analytics.clearAllCollection();
+        //Analytics.clearAllCollection();
         done();
     },2);
   });
 
+  /*
   QUnit.test( "andNot", function( assert ) {
     var done = assert.async();
     Analytics.andNot([{i:resource,q:'test'},{i:resource,q:'id:[4321 TO 4330]'}],
