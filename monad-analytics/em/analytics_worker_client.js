@@ -85,6 +85,10 @@ extend(AnalyticsClient,{
     return {wrapper:Module.createBitSetWrapper(key_seq),key:key_seq};
   },
   */
+  performance:function(callback){
+    current_task_callback = callback;
+    worker.postMessage({op:OP_PERFORMANCE});
+  },
   clearAllCollection:function(){
     worker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
   },
@@ -102,7 +106,7 @@ worker.addEventListener("message",function(event) {
       onProgress(event.data.message)
       break;
     default:
-        current_task_callback(event.data.result)
+      current_task_callback(event.data.result)
       break;
   }
 });

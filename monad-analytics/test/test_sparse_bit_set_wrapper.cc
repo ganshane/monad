@@ -420,3 +420,15 @@ TEST_F(SparseBitSetWrapperTest, TestGetSet) {
     delete docs[i];
   delete []docs;
 }
+TEST_F(SparseBitSetWrapperTest, TestPerformance) {
+  SparseBitSetWrapper wrapper;
+  wrapper.NewSeg(1,100000000);
+  for(int i=0;i<10000000;i++ ){
+    wrapper.FastSet(i*3);
+  }
+  wrapper.Commit();
+
+  SparseBitSetWrapper* coll[]={&wrapper,&wrapper};
+  TopBitSetWrapper* result = SparseBitSetWrapper::InPlaceAndTop(coll,1,1);
+  delete result;
+}

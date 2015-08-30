@@ -10,7 +10,10 @@
       onMessage("分析结果数:"+obj.count);
   }
   function onFail(msg){
-      onMessage(msg);
+      var el = document.createElement("div");
+      el.setAttribute("style","color:red")
+      el.appendChild(document.createTextNode(msg));
+      document.getElementById("msg").appendChild(el);
   }
   function onProgress(msg){
       onMessage(msg);
@@ -79,7 +82,7 @@
           .inPlaceAndTopWithPositionMerged(2)
           .execute(function(result){
               assert.equal(result.count,20)
-              //Analytics.clearAllCollection();
+              Analytics.clearAllCollection();
               done();
           });
   });
@@ -91,38 +94,16 @@
       .query({i:resource,q:'id:[4321 TO 4330]'})
       .andNot().execute(function(r){
         assert.equal(r.count,99990)
+        Analytics.clearAllCollection();
         done();
       });
   });
 
-  /*
-  QUnit.test( "Performance", function( assert ) {
-
-    assert.expect( 1 );
+  QUnit.test( "performance", function( assert ) {
     var done = assert.async();
-
-    onMessage("creating wrapper ...")
-    var wrapper_object = Analytics.createBitSetWrapper();
-    var bit_set_wrapper = wrapper_object.wrapper;
-    bit_set_wrapper.NewSeg(1,100000000)
-    for(i=0;i<10000000;i++ ){
-      bit_set_wrapper.FastSet(i*3);
-    }
-    bit_set_wrapper.Commit();
-
-    onMessage("wrapper created");
-    //assert.ok(bit_set_wrapper.FastGet(100))
-
-    Analytics.inPlaceAnd([
-      wrapper_object.key,
-      wrapper_object.key,
-      wrapper_object.key,
-      ],function(result){
-          assert.equal(result.count,10000000)
-          Analytics.clearAllCollection();
-          done();
+    Analytics.performance(function(r){
+      assert.ok(r);
+      Analytics.clearAllCollection();
+      done();
     });
   });
-
-*/
-
