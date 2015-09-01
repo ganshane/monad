@@ -94,7 +94,7 @@ namespace monad {
   RegionDoc** OpenBitSetWrapper::Top(int32_t n, int32_t& data_len) {
     int32_t len = BitCount();
     data_len = (n < len) ? n : len;
-    //printf("n:%d bitCount():%d data_len %d \n",n,len,data_len);
+    //printf("n:%d BitCount():%d data_len %d \n",n,len,data_len);
     RegionDoc** result = new RegionDoc*[data_len]();
     std::vector<BitSetRegion<OpenBitSet>*>::iterator it = _data.begin();
     uint32_t i = 0;

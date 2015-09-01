@@ -7,6 +7,7 @@ int main(){
     if (analytics_onready){
       analytics_onready();
     }
+    analytics_loaded = true;
   );
   return 0;
 }

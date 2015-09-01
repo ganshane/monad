@@ -137,7 +137,10 @@ namespace monad {
   void OnFail(unsigned task_id,void* args,int32_t code,const char* msg){
     std::vector<val> args_ = *(std::vector<val>*)args;
     std::stringstream message;
-    message << " code:" << code <<",msg:"<<msg;
+    message << " code:" << code;
+    if(msg){
+      message << "message:" << msg;
+    }
     args_[2](val(message.str()));
     delete (std::vector<val>*)args;
   }
@@ -183,7 +186,12 @@ namespace monad {
       if(wrapper == NULL){
         delete [] collections;
         char message[100];
-        sprintf(message,"collection not found by key :%s", key.as<std::string>().c_str());
+        std::string type = key.typeof().as<std::string>();
+        //printf("type:%s \n",type.c_str());
+        if(type == "number")
+          sprintf(message,"collection not found by key %d",key.as<int>());
+        else
+          sprintf(message,"collection not found by key %s",key.as<std::string>().c_str());
         OnFail(0,args,51,message);
         return NULL;
       }
@@ -324,7 +332,7 @@ namespace monad {
   void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail,on_progress);
 
-    ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
+    ReportProgressOnOperation(on_progress,"creating top wrapper collection ...");
     uint32_t length=0;
     TopBitSetWrapper** collections = CreateWrapperCollection<TopBitSetWrapper>(top_container,keys,args,&length);
     if(collections == NULL)
@@ -395,7 +403,13 @@ namespace monad {
 
     if(sparse_wrapper == NULL && wrapper == NULL) {
       char message[100];
-      sprintf(message,"collection not found by key :%s",key.as<std::string>().c_str());
+      std::string type = key.typeof().as<std::string>();
+      //printf("type:%s \n",type.c_str());
+      if(type == "number")
+        sprintf(message,"collection not found by key %d",key.as<int>());
+      else
+        sprintf(message,"collection not found by key %s",key.as<std::string>().c_str());
+
       ((val)on_fail)(val(std::string(message)));
     }else if(len > offset) { //查到数据
       switch(category){
@@ -473,6 +487,13 @@ namespace monad {
     }
     return result;
   }
+  SparseBitSetWrapper* CreateBitSetWrapper(const val& key){
+    //先删除同key的集合
+    ClearCollection(key);
+    SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
+    container.insert(std::pair<val,SparseBitSetWrapper*>(key,wrapper));
+    return wrapper;
+  }
 
 
   // Binding code
@@ -496,8 +517,9 @@ namespace monad {
       function("clearAllCollection", &ClearAllCollection);
       function("clearCollection", &ClearCollection);
       function("getCollectionProperties", &GetCollectionProperties);
+      function("createBitSetWrapper", &CreateBitSetWrapper,allow_raw_pointers());
 
-      /*
+
       class_<SparseBitSetWrapper>("BitSetWrapper")
           .constructor()
           .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
@@ -510,10 +532,10 @@ namespace monad {
           .function("Commit", &monad::SparseBitSetWrapper::Commit)
           .function("FastGet", &monad::SparseBitSetWrapper::FastGet)
           .function("SetWeight", &monad::SparseBitSetWrapper::SetWeight)
-          .function("BitCount", &monad::SparseBitSetWrapper::BitCount)
+          .function("BitCount", &monad::SparseBitSetWrapper::BitCount);
           //.class_function("InPlaceAnd",method, allow_raw_pointers());
-          .class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
-       */
+          //.class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
+
   };
 }
 

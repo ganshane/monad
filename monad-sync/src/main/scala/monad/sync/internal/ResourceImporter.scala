@@ -202,7 +202,7 @@ class ResourceImporter(val rd: ResourceDefinition,
       importData()
     } catch {
       case e: MonadException =>
-        error("[{}] {}", rd.name, e.getMessage)
+        error("[{}] {}", rd.name, e.toString)
       case NonFatal(e) =>
         error("[" + rd.name + "] " + e.getMessage, e)
       //logger.error("[" + rd.name + "] fail to import data ,sql:\n" + dataFetcher.buildIncrementSQL(), e)

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Monad Analytics Unit Test</title>
+  <link rel="stylesheet" href="qunit-1.18.0.css">
+  <script type="text/javascript" src="async.min.js"></script>
+  <script type="text/javascript">
+    function analytics_onready(){
+        Module.SetApiUrl("http://localhost:9081/api");
+    }
+    </script>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <div id="msg" style="border:1px solid green"></div>
+  <script src="ops.js"></script>
+  <script src="qunit-1.18.0.js"></script>
+  <script src="analytics_worker_client.js"></script>
+  <script src="test_worker.js"></script>
+</body>
+</html>

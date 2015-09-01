@@ -37,7 +37,7 @@ class MonadException(message: String, cause: Throwable, val errorCode: ErrorCode
 
   def this(message: String, errorCode: ErrorCode) = this(message, null, errorCode)
 
-  def this(cause: Throwable, errorCode: ErrorCode) = this(null, cause, errorCode)
+  def this(cause: Throwable, errorCode: ErrorCode) = this(cause.getMessage, cause, errorCode)
 
   override def printStackTrace(s: PrintStream) {
     s.synchronized {

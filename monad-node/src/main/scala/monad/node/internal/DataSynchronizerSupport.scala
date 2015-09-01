@@ -141,6 +141,7 @@ trait DataSynchronizerSupport
             status.delete()
             throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
           }
+          binlogValue.delete()
           status.delete()
           val num = totalData.incrementAndGet()
           if ((num & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {

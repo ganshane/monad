@@ -31,6 +31,13 @@ TEST_F(SparseBitSetWrapperTest, TestBitCount) {
     //printf("c:%d \n",wrapper.BitCount());
   }
   printf("c:%d \n",wrapper.BitCount());
+  int32_t len=0;
+  RegionDoc** topDocs = wrapper.Top(10,len);
+  for(uint32_t i=0;i<len;i++){
+    ASSERT_EQ(i,topDocs[i]->doc);
+    delete topDocs[i];
+  }
+  delete[] topDocs;
 }
 
 TEST_F(SparseBitSetWrapperTest, TestRead) {
@@ -49,7 +56,8 @@ TEST_F(SparseBitSetWrapperTest, TestRead) {
   wrapper.CreateBit(0, 3);
   wrapper.ReadBitBlock(0,0,1099511627776);
   wrapper.ReadBitBlock(0,1,72057594037927936);
-  
+  wrapper.ReadBitBlock(0,2,0);
+
   wrapper.CreateBit(1, 1);
   wrapper.ReadBitBlock(1,0,256);
   wrapper.FastSet(40);
@@ -411,4 +419,16 @@ TEST_F(SparseBitSetWrapperTest, TestGetSet) {
   for(int i=0;i<data_len;i++)
     delete docs[i];
   delete []docs;
+}
+TEST_F(SparseBitSetWrapperTest, TestPerformance) {
+  SparseBitSetWrapper wrapper;
+  wrapper.NewSeg(1,100000000);
+  for(int i=0;i<10000000;i++ ){
+    wrapper.FastSet(i*3);
+  }
+  wrapper.Commit();
+
+  SparseBitSetWrapper* coll[]={&wrapper,&wrapper};
+  TopBitSetWrapper* result = SparseBitSetWrapper::InPlaceAndTop(coll,1,1);
+  delete result;
 }

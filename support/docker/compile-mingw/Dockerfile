@@ -2,10 +2,10 @@ FROM ubuntu:trusty
 MAINTAINER Jun Tsai <jcai@ganshane.com>
 
 ENV TEMPDIR   /tmp
-
-RUN sed -i 's/archive.ubuntu.com/mirrors.sohu.com/g' /etc/apt/sources.list && \
-    apt-get -qq update && \
-    apt-get install -qqy mingw-w64 g++-mingw-w64 git-core make wget cmake swig openjdk-7-jdk
+RUN dpkg --add-architecture i386
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com\/ubuntu\/ubuntu/g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y mingw-w64 g++-mingw-w64 git-core make wget cmake swig openjdk-7-jdk openjdk-7-jdk:i386
 
 #ssh_config
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config

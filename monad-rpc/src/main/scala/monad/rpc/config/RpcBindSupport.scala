@@ -23,4 +23,6 @@ class RpcBind {
   var ioThread: Int = 1
   @XmlElement(name = "worker_thread")
   var workerThread: Int = 8
+  @XmlElement(name = "max_frame_length")
+  var maxFrameLength: Int = 10 * 1024 * 1024
 }

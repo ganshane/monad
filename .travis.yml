@@ -19,6 +19,7 @@ deploy:
     - monad-group/target/monad-group-${VERSION}-bin.tar.gz
     - monad-node/target/monad-node-${VERSION}-bin.tar.gz
     - monad-sync/target/monad-sync-${VERSION}-bin.tar.gz
+    - monad-id/target/monad-id-${VERSION}-bin.tar.gz
   skip_cleanup: true
   on:
     tags: true

@@ -11,7 +11,11 @@ import org.apache.tapestry5.json.JSONObject
 /**
  * rpc server location.
  */
-class RpcServerLocation(val host: String, val port: Int, val weight: Int = 1, val partition: Short = 0) {
+class RpcServerLocation(val host: String, val port: Int) {
+  @deprecated(message = "will be removed",since="5.0.16")
+  def this(host:String,port:Int,weight:Int,partition:Int){
+    this(host,port)
+  }
   var channelCount: Int = 5
   /** 连接超时的时间数 **/
   var connectTimeoutInMillis: Int = 100
@@ -30,8 +34,6 @@ class RpcServerLocation(val host: String, val port: Int, val weight: Int = 1, va
     val sb = new StringBuilder
     sb.append("host:").append(host).append(",")
     sb.append("port:").append(port).append(",")
-    sb.append("weight:").append(weight).append(",")
-    sb.append("partition:").append(partition.toString)
     sb.toString()
   }
 
@@ -39,8 +41,6 @@ class RpcServerLocation(val host: String, val port: Int, val weight: Int = 1, va
     val json = new JSONObject()
     json.put("host", host)
     json.put("port", port)
-    json.put("weight", weight)
-    json.put("partition", partition)
 
     json
   }
@@ -50,9 +50,7 @@ object RpcServerLocation {
   def fromJSON(json: JSONObject) = {
     val host = json.getString("host")
     val port = json.getInt("port")
-    val weight = if (json.has("weight")) json.getInt("weight") else 1
-    val region: Short = if (json.has("partition")) json.getInt("partition").toShort else 0
-    new RpcServerLocation(host, port, weight, region)
+    new RpcServerLocation(host, port)
   }
 
   def exposeRpcLocation(bind: RpcBind) = {

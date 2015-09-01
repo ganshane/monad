@@ -26,6 +26,40 @@ static uint32_t bitCount(uint64_t x)
   x = x + (x >> 32ULL);
   return (uint32_t)x & 0x7f;
 }
+TEST_F(SparseBitSetTest, TestRead) {
+  SparseBitSet bit_set(10000);
+  bit_set.Set(1000);
+  bit_set.Debug();
+  bit_set.Set(3000);
+  bit_set.Debug();
+  bit_set.Set(5000);
+  bit_set.Debug();
+  bit_set.Set(40);
+  /*
+  bit_set.ReadNonZero(3);
+  bit_set.ReadIndice(0,70368744210432);
+  bit_set.ReadIndice(1,16384);
+
+  bit_set.CreateBit(0, 3);
+  bit_set.ReadBitBlock(0,0,1099511627776);
+  bit_set.ReadBitBlock(0,1,72057594037927936);
+  bit_set.ReadBitBlock(0,2,0);
+
+  bit_set.CreateBit(1, 1);
+  bit_set.ReadBitBlock(1,0,256);
+  bit_set.Set(40);
+  */
+
+  bit_set.Debug();
+
+
+  ASSERT_TRUE(bit_set.FastGet(40));
+  ASSERT_TRUE(bit_set.FastGet(1000));
+  ASSERT_FALSE(bit_set.FastGet(2000));
+  ASSERT_TRUE(bit_set.FastGet(3000));
+  ASSERT_TRUE(bit_set.FastGet(5000));
+
+}
 TEST_F(SparseBitSetTest, TestBitCount) {
   uint64_t num = 1 << 2;
   printf("count1 %d \n",bitCount(num));
