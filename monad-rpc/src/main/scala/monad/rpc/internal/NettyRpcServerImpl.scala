@@ -66,7 +66,7 @@ class NettyRpcServerImpl(rpcBindSupport: RpcBindSupport,
       def getPipeline: ChannelPipeline = {
         val pipeline = Channels.pipeline()
         initChannelManager(pipeline)
-        InitPipeline(pipeline)
+        InitPipeline(pipeline,rpcBindSupport.rpc.maxFrameLength)
         //业务逻辑处理
         pipeline.addLast("handler", new CommandServerHandler)
         pipeline

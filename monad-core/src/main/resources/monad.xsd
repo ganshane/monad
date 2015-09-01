@@ -25,6 +25,7 @@
       <xs:element name="expose" type="xs:string" minOccurs="0" maxOccurs="1"/>
       <xs:element name="io_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="1"/>
       <xs:element name="worker_thread" type="xs:string" minOccurs="0" maxOccurs="1" default="8"/>
+      <xs:element name="max_frame_length" type="xs:int" minOccurs="0" maxOccurs="1" default="10485760"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="webType">

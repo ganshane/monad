@@ -8,7 +8,7 @@ import monad.rpc.protocol.CommandProto
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.ChannelHandler.Sharable
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext, ChannelPipeline}
-import org.jboss.netty.handler.codec.frame.{LengthFieldPrepender, LengthFieldBasedFrameDecoder}
+import org.jboss.netty.handler.codec.frame.{LengthFieldBasedFrameDecoder, LengthFieldPrepender}
 import org.jboss.netty.handler.codec.oneone.{OneToOneDecoder, OneToOneEncoder}
 import org.jboss.netty.handler.codec.protobuf.{ProtobufDecoder, ProtobufEncoder}
 import org.xerial.snappy.Snappy
@@ -23,9 +23,9 @@ trait NettyProtobufPipelineSupport {
   private val commpressSupported =
     System.getProperty(MonadRpcConstants.RPC_COMPRESS_SUPPORTED, "true") != "false"
 
-  protected def InitPipeline(pipeline: ChannelPipeline) {
+  protected def InitPipeline(pipeline: ChannelPipeline,maxBuffer:Int=MAX_FRAME_LENGTH) {
     //解码
-    pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH,0,4,0,4))
+    pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(maxBuffer,0,4,0,4))
     //构造函数传递要解码成的类型
     if (commpressSupported)
       pipeline.addLast("protobufDecoder", new ProtobufDecoderWithSnappy(CommandProto.BaseCommand.getDefaultInstance, extentionRegistry))
