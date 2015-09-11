@@ -7,6 +7,8 @@ import java.net._
 
 import org.apache.tapestry5.ioc.internal.GlobPatternMatcher
 
+import scala.annotation.tailrec
+
 /**
  * 针对network的操作类
  */
@@ -25,12 +27,16 @@ trait NetworkUtilsSupport {
   }
 
   private final val LOCALHOST = "127.0.0.1"
+  private final val ALL= "0.0.0.0"
   def ip(pattern: String): Option[(String, String)] = {
-    val allNetInterfaces = NetworkInterface.getNetworkInterfaces
     var ip: InetAddress = null
+    val allNetInterfaces = NetworkInterface.getNetworkInterfaces
     val patternMatcher = new GlobPatternMatcher(pattern)
     if (patternMatcher.matches(LOCALHOST)) {
       return Some((LOCALHOST, null))
+    }
+    if (patternMatcher.matches(ALL)) {
+      return findPrimaryNetwork(allNetInterfaces)
     }
     while (allNetInterfaces.hasMoreElements) {
       val netInterface = allNetInterfaces.nextElement()
@@ -50,9 +56,30 @@ trait NetworkUtilsSupport {
       }
     }
 
-
-
     None
+  }
+  @tailrec
+  private def findPrimaryNetwork(allNetInterfaces: java.util.Enumeration[NetworkInterface]): Option[(String,String)]={
+    if(allNetInterfaces.hasMoreElements) {
+      val netInterface = allNetInterfaces.nextElement()
+      if(!netInterface.isLoopback && !netInterface.isPointToPoint && netInterface.isUp) {
+        val hardwareAddr = netInterface.getHardwareAddress
+        if (hardwareAddr != null) {
+          val mac = convertAddress(hardwareAddr)
+          val addresses = netInterface.getInetAddresses
+          while (addresses.hasMoreElements) {
+            val ip = addresses.nextElement()
+            if (ip != null && ip.isInstanceOf[Inet4Address]) {
+              val ipAddress = ip.asInstanceOf[Inet4Address].getHostAddress
+              return Some((ipAddress, mac))
+            }
+          }
+        }
+      }
+      findPrimaryNetwork(allNetInterfaces)
+    }else{
+      None
+    }
   }
 
   private val hexArray = "0123456789ABCDEF".toCharArray
