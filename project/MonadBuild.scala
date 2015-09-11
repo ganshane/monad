@@ -1,7 +1,5 @@
 import sbt.Keys._
 import sbt._
-import sbtprotobuf.{ProtobufPlugin => PB}
-
 
 object MonadBuild extends Build {
 
@@ -19,36 +17,21 @@ object MonadBuild extends Build {
       dependencyOverrides += "log4j" % "log4j" % "1.2.16" force(),
       dependencyOverrides += "org.slf4j" % "slf4j-api" % "1.6.6" force(),
       resolvers += Resolver.mavenLocal,
-      libraryDependencies ++= Seq(
-        Deps.junit,
-        Deps.mockito
-      ),
 
       credentials += Credentials(new File("../.credentials"))
   )
-  lazy val root = Project("monad-project", file("."),settings = mainSettings).aggregate(supportProject,rpcProject)
-  lazy val supportProject = Project("monad-support", file("monad-support"),settings = mainSettings) .settings(
+  lazy val root = Project("monad-project", file("."),settings = mainSettings).aggregate(supportProject)
+  lazy val supportProject = Project("monad-support", file("monad-support"),settings = mainSettings).settings(
     libraryDependencies ++= Seq(
-      Deps.httpClient % "provided",
-      Deps.jettyServer % "provided",
-      Deps.jettyServlet % "provided",
-      Deps.tapestryCore % "provided",
-      Deps.curator % "provided",
+      Deps.httpClient,
+      Deps.servlet,
+      Deps.jettyServer,
+      Deps.jettyServlet,
+      Deps.tapestryCore,
+      Deps.curatorFramework,
       Deps.commonsIo,
       Deps.junit)
   )
-  lazy val rpcProject = Project("monad-rpc",file("monad-rpc"),settings = mainSettings ++  PB.protobufSettings).settings(
-    libraryDependencies ++= Seq(
-      Deps.netty,
-      Deps.curator,
-      "org.xerial.snappy" % "snappy-java" % "1.1.1.7",
-      Deps.tapestryJson,
-      Deps.tapestryIoc,
-      Deps.commonsIo,
-      Deps.protobuf
-    ),
-    sourceDirectory in PB.protobufConfig <<= (sourceDirectory in Compile) { _ / "proto" }
-  ) dependsOn supportProject
 
   /**
    * Source:  https://github.com/paulp/scala-improving/blob/master/project/Publishing.scala
