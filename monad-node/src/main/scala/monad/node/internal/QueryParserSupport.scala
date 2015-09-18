@@ -46,6 +46,9 @@ trait QueryParserSupport {
         //针对keyword
         fieldAnalyzers.put(col.name, keyword)
       }
+      //自定义的分词器
+      if(col.analyzer != null)
+        fieldAnalyzers.put(col.name,AnalyzerCreator.create(col.analyzer))
 
       if (col.isNumeric) {
         //is numeric?
