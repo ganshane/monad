@@ -26,6 +26,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="Standard"/>
       <xs:enumeration value="MMSeg"/>
+      <xs:enumeration value="Name"/>
     </xs:restriction>
   </xs:simpleType>
   <!-- cron Type -->
@@ -221,6 +222,11 @@
         <xs:attribute type="categoryType" name="object_category" use="optional">
           <xs:annotation>
             <xs:documentation>设置对象的类别，此字段标记对象属于那种类别</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="analyzerType" name="analyzer" use="optional">
+          <xs:annotation>
+            <xs:documentation>设置改字段的分词器</xs:documentation>
           </xs:annotation>
         </xs:attribute>
       </xs:extension>
