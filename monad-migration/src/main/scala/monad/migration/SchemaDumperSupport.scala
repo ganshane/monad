@@ -225,7 +225,7 @@ trait SchemaDumperSupport {
           //列注释
           val colCommentSql = adapter.fetchColumnCommentSql(table, name)
           val commentOpt = fetchSingleResult(colCommentSql)
-          commentOpt.foreach(x => columnOptions += Comment(x))
+          commentOpt.foreach(x => columnOptions += Comment(x.replaceAll("\n","\\n")))
 
           //是否为主键
           if (primaryKeys.contains(name)) {
