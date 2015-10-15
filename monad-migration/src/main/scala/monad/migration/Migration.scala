@@ -281,7 +281,9 @@ abstract class Migration {
   final def commentColumn(tableName:String,
                           columnName:String,
                           comment:String): Unit ={
-    execute(adapter.commentColumnSql(tableName,columnName,comment))
+    val sql = adapter.commentColumnSql(tableName,columnName,comment)
+    if(sql != null) // some database donen't support comment,such as mysql
+      execute(sql)
   }
 
   /**

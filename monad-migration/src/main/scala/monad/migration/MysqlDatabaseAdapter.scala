@@ -270,4 +270,29 @@ class MysqlDatabaseAdapter(override val schemaNameOpt: Option[String])
       .append(quoteIndexName(None, indexName))
       .toString
   }
+
+  /**
+   * 对某一列增加注释
+   * @param tableName 表名
+   * @param columnName  列名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  override def commentColumnSql(tableName: String, columnName: String, comment: String): String = {
+    //super.commentColumnSql(tableName, columnName, comment)
+    logger.warn("comment column unsupported on mysql database")
+    null
+  }
+
+  /**
+   * 对表添加注释
+   * @param tableName 表名
+   * @param comment 注释
+   * @return 注释的sql
+   */
+  override def commentTableSql(tableName: String, comment: String): String = {
+    new java.lang.StringBuffer().append("ALTER TABLE ").append(
+      quoteTableName(schemaNameOpt, tableName))
+      .append(" COMMENT '").append(comment).append("'").toString();
+  }
 }
