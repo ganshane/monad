@@ -20,5 +20,7 @@ trait MetricsService {
 
   def registerTimer(name: String): Timer
 
+  def histogram(name:String):Histogram
+
   def registerAll(prefix: String, metrics: MetricSet)
 }

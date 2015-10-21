@@ -387,7 +387,7 @@ abstract class ColumnDefinition {
 
   protected def sql: String
   final def toCommentSql:Option[String]={
-    _commentOpt.map(c=>getAdapter.commentColumnSql(getTableName,getColumnName,c))
+    _commentOpt.flatMap(c=>Option(getAdapter.commentColumnSql(getTableName,getColumnName,c)))
   }
 
   final def toSql: String = {

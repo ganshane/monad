@@ -124,7 +124,9 @@ trait SchemaDumperSupport {
   }
   private def dumpIndex(tableName:String,index:Index)(implicit sb:mutable.StringBuilder): Unit ={
     sb.append(s"""    addIndex(\"${tableName}\",""")
-    index.columns.foreach(x=>sb.append("Array[String](\"").append(x).append("\")"))
+    sb.append("Array[String](")
+    sb.append(index.columns.map("\""+_+"\"").mkString(","))
+    sb.append(")")
     if(index.isUnique)
       sb.append(",Unique")
     sb.append(s""",Name(\"${index.name}\"))\n""")
@@ -223,7 +225,7 @@ trait SchemaDumperSupport {
           //列注释
           val colCommentSql = adapter.fetchColumnCommentSql(table, name)
           val commentOpt = fetchSingleResult(colCommentSql)
-          commentOpt.foreach(x => columnOptions += Comment(x))
+          commentOpt.foreach(x => columnOptions += Comment(x.replaceAll("\n","\\n")))
 
           //是否为主键
           if (primaryKeys.contains(name)) {
@@ -237,22 +239,27 @@ trait SchemaDumperSupport {
     }
   }
   def dumpTable(table:String)(implicit sb:mutable.StringBuilder):Unit = {
-    val tableCommentSql= adapter.fetchTableCommentSql(table)
-    val commentOpt = fetchSingleResult(tableCommentSql)
+    try {
+      val tableCommentSql = adapter.fetchTableCommentSql(table)
+      val commentOpt = fetchSingleResult(tableCommentSql)
 
-    sb.append(s"""    createTable(\"${table}\"""")
-    commentOpt.foreach(x=>sb.append(",").append(Comment(x).toTypeString))
-    sb.append("){ t=> \n")
-    columns(table).foreach { c =>
-      sb.append(s"""      t.column(\"${c.name}\",${c.sqlType}""")
-      c.options.foreach{o=>
-        sb.append(",").append(o.toTypeString)
+      sb.append( s"""    createTable(\"${table}\"""")
+      commentOpt.foreach(x => sb.append(",").append(Comment(x).toTypeString))
+      sb.append("){ t=> \n")
+      columns(table).foreach { c =>
+        sb.append( s"""      t.column(\"${c.name}\",${c.sqlType}""")
+        c.options.foreach { o =>
+          sb.append(",").append(o.toTypeString)
+        }
+        sb.append(")\n")
       }
-      sb.append(")\n")
-    }
-    sb.append("    }\n")
+      sb.append("    }\n")
 
-    indexes(table).foreach(x=>dumpIndex(table,x))
+      indexes(table).foreach(x => dumpIndex(table, x))
+    }catch{
+      case e:Throwable =>
+        System.err.println("fail to dump table:"+table+" msg:"+e)
+    }
   }
   def dumpDropTable(table:String)(implicit sb:mutable.StringBuilder): Unit ={
     sb.append(s"""    dropTable("${table}")""").append("\n")

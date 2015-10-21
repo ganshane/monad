@@ -184,6 +184,8 @@ object ResourceDefinition {
     var boost: Float = 1.0f
     @XmlAttribute(name = "object_category")
     var objectCategory: ObjectCategory = _
+    @XmlAttribute(name = "analyzer")
+    var analyzer: AnalyzerType = _
 
 
 

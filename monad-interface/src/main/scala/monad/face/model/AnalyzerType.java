@@ -11,15 +11,10 @@ package monad.face.model;
  * @author jcai
  */
 public enum AnalyzerType {
-    Standard(0),
-    MMSeg(0),
-    Smart(0);
-
-    public int constructorLen;
-
-    AnalyzerType(int constructorLen) {
-        this.constructorLen = constructorLen;
-    }
+    Standard,
+    MMSeg,
+    Smart,
+    Name;
 
     public Class clazz() {
         try {
@@ -30,6 +25,8 @@ public enum AnalyzerType {
                     return Class.forName("monad.mmseg.analysis.MMSegAnalyzer");
                 case 2:
                     return Class.forName("org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer");
+                case 3:
+                    return Class.forName("monad.mmseg.analysis.NameAnalyzer");
                 default:
                     throw new IllegalStateException("Wrong class");
             }

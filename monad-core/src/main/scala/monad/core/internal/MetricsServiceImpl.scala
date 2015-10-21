@@ -52,6 +52,12 @@ class MetricsServiceImpl(periodicExecutor: PeriodicExecutor)
     metrics.timer(name)
   }
 
+
+  override def histogram(name: String): Histogram = {
+    info("Register Metric histogram " + name)
+    metrics.histogram(name)
+  }
+
   def registerMeter(name: String): Meter = {
     info("Register Metric Meter " + name)
     metrics.meter(name)

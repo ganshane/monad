@@ -6,7 +6,7 @@ import java.sql.{PreparedStatement, ResultSet}
 
 import com.google.gson.JsonObject
 import monad.face.model.ResourceDefinition.ResourceProperty
-import monad.face.model.{IndexType, MonadColumnType}
+import monad.face.model.{AnalyzerCreator, IndexType, MonadColumnType}
 import monad.face.services.MonadFaceExceptionCode
 import monad.support.services.MonadException
 import org.apache.lucene.document.Field.Store
@@ -47,13 +47,25 @@ class StringColumnType extends MonadColumnType[String]{
         case IndexType.Keyword =>
           new StringField(cd.name, value, Store.NO)
         case IndexType.Text =>
-          new TextField(cd.name, value, Store.NO)
+          //TODO 此处频繁创建analyzer,
+          if(cd.analyzer != null){
+            val analyzer = AnalyzerCreator.create(cd.analyzer)
+            new TextField(cd.name, analyzer.tokenStream(cd.name,value))
+          }else{
+            new TextField(cd.name, value, Store.NO)
+          }
         case other =>
           throw new MonadException("index type %s unsupported".format(cd.indexType), MonadFaceExceptionCode.INDEX_TYPE_NOT_SUPPORTED)
       }
       (f,None)
     }
     def setIndexValue(f:(Field,Option[Field]),value:String,cd:ResourceProperty){
+      //TODO 此处频繁创建analyzer,
+      if(cd.analyzer != null) {
+        val analyzer = AnalyzerCreator.create(cd.analyzer)
+        f._1.asInstanceOf[Field].setTokenStream(analyzer.tokenStream(cd.name,value))
+      }else {
         f._1.asInstanceOf[Field].setStringValue(value)
+      }
     }
 }
