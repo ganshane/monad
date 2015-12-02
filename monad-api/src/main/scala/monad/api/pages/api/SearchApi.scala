@@ -8,6 +8,7 @@
 package monad.api.pages.api
 
 import com.google.gson.JsonObject
+import monad.api.MonadApiConstants
 import monad.api.base.BaseApi
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, ObjectIdCreator, SearcherFacade}
@@ -16,7 +17,7 @@ import monad.support.services.MonadException
 import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
-import org.apache.tapestry5.services.{Request, ValueEncoderSource}
+import org.apache.tapestry5.services.{Response, Request, ValueEncoderSource}
 import org.slf4j.Logger
 
 /**
@@ -34,6 +35,8 @@ class SearchApi extends BaseApi {
   //web request
   @Inject
   private var request: Request = _
+  @Inject
+  private var response: Response= _
   @Inject
   private var valueEncoderSource: ValueEncoderSource = _
   @Inject
@@ -111,6 +114,7 @@ class SearchApi extends BaseApi {
       searchRequest.hl = false
     }
 
+    response.setHeader(MonadApiConstants.HEADER_ACCESS_CONTROL_ALLOW, "*")
     search(searchRequest)
   }
 

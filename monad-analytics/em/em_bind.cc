@@ -246,6 +246,15 @@ namespace monad {
   }
 
   /**
+   *
+   */
+  static void OnLoadFullTextQueryResult(unsigned xx,void* args,void*buffer, unsigned size){
+    std::vector<val> args_ = *(std::vector<val>*)args;
+
+    args_[1](val(std::string((char*)buffer,size)));
+    delete (std::vector<val>*)args;
+  }
+  /**
    * 从http传输过来的buffer中解析出来SparseBitSetWrapper
    */
   static void OnLoadSparseBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
@@ -289,6 +298,20 @@ namespace monad {
     api_url.assign(api);
   }
 
+  void FullTextQuery(const val& parameter,const val& callback,const val& on_fail,const val& on_progress){
+//  void FullTextQuery(const val& parameter,const val& callback,const val& on_fail,const val& on_progress){
+    //TODO why first argument must be number
+    std::vector<val> *arg = CreateCallArgs(val(1),callback, on_fail,on_progress);
+    //std::vector<val> *arg = CreateCallArgs(callback, on_fail,on_progress);
+    std::string p;
+    p.append("i=").append(parameter["i"].as<std::string>());
+    p.append("&");
+    p.append("q=").append(parameter["q"].as<std::string>());
+    std::string query_api(api_url);
+    query_api.append("/search");
+    //query_api.append("/analytics/IdSearcher");
+    emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadFullTextQueryResult,&OnFail,&OnProgress);
+  }
   void Query(const val& parameter,const val& new_key,const val& callback,const val& on_fail,const val& on_progress,const uint32_t weight){
     std::vector<val> *arg = CreateCallArgs(new_key,callback, on_fail,on_progress,val(weight));
 
@@ -507,6 +530,7 @@ namespace monad {
           .value("Car", IdCategory::Car);
       function("SetApiUrl", &SetApiUrl);
       function("query", &Query);
+      function("fullTextQuery", &FullTextQuery);
       function("ContainerSize", &ContainerSize);
       function("inPlaceAnd", &InPlaceAnd);
       function("inPlaceOr", &InPlaceOr);

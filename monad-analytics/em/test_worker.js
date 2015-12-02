@@ -21,6 +21,17 @@
   Analytics.config.fail = onFail;
   Analytics.config.progress= onProgress;
 
+  QUnit.test( "fullTextQuery", function( assert ) {
+      var done = assert.async();
+      Analytics.createCondition().fullTextQuery({i:resource,q:'id:[4321 TO 4350]'}).execute(function(r){
+          //alert(r);
+          var json = eval("("+r+")");
+          assert.equal(100000, json["all"]);
+          onMessage("query result:"+r)
+          done();
+      })
+  });
+
   QUnit.test( "query", function( assert ) {
 
     var done = assert.async();

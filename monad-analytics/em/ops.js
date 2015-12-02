@@ -1,4 +1,5 @@
 var OP_QUERY = 'query';
+var OP_FULL_TEXT_QUERY = 'fullTextQuery';
 var OP_IN_PLACE_AND  = 'inPlaceAnd';
 var OP_IN_PLACE_AND_TOP  = 'inPlaceAndTop';
 var OP_IN_PLACE_OR = 'inPlaceOr';

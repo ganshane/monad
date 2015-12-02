@@ -82,6 +82,12 @@ extend(Analytics,{
      Module.top(_options.category,_options.key,_options.top,callback,_options.offset,config.fail,config.progress);
   },
   //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
+  fullTextQuery:function(parameters,callback){
+    var op={weight:1}
+    extend(op,parameters)
+    Module.fullTextQuery({i:op.i,q:op.q},callback,config.fail,config.progress);
+  },
+  //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
   query:function(parameters,callback){
     var op={weight:1}
     extend(op,parameters)
@@ -182,8 +188,11 @@ Conditions.prototype = {
       case (OP_QUERY):
         Analytics.query(this.query_objects[0],callback)
         break;
+      case (OP_FULL_TEXT_QUERY):
+        Analytics.fullTextQuery(this.query_objects[0],callback)
+        break;
       default:
-        config.fail("op["+this.op+"] unrecognized!")
+        config.fail("op ["+this.op+"] unrecognized!")
         break;
     }
   },

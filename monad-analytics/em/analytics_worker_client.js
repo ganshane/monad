@@ -116,6 +116,11 @@ function Conditions(){this.query_objects=[];}
 Conditions.prototype = {
   op:'',
   freq:1,
+  fullTextQuery:function(query_object){
+    this.query_objects.push(query_object);
+    this.op = OP_FULL_TEXT_QUERY;
+    return this;
+  },
   query:function(query_object){
     this.query_objects.push(query_object);
     this.op = OP_QUERY;
