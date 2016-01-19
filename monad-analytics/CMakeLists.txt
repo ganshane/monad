@@ -1,16 +1,5 @@
-###############################################################################
-#
-#   analytics build files,you can gernate eclipse/vs project files.
-#
-#   eclipse cdt project files:
-#       cmake -G "Eclipse CDT4 - Unix Makefiles" -D_ECLIPSE_VERSION=4.2 -DCMAKE_BUILD_TYPE=Debug ../../source/
-#   vs solution:
-#
-#   you can use 
-#    -DENABLE_TEST=on -DGTEST_ROOT=xxxx 
-#       to enable google cpp unit test framework.
-#
-###############################################################################
+# Copyright 2016 the original author or authors. All rights reserved.
+# site: http://www.ganshane.com
 PROJECT(analytics)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 

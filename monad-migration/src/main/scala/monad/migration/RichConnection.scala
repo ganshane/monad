@@ -1,3 +1,5 @@
+// Copyright 2016 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 /*
  * Copyright (c) 2010 Sony Pictures Imageworks Inc.
  *

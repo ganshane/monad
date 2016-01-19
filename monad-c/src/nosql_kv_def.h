@@ -1,4 +1,4 @@
-// Copyright 2014,2015 the original author or authors. All rights reserved.
+// Copyright 2014,2015,2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 #ifndef MONAD_STORAGE_NOSQL_KV_DEF_H_
 #define MONAD_STORAGE_NOSQL_KV_DEF_H_

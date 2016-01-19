@@ -1,5 +1,5 @@
-// Copyright (c) 2015 Jun Tsai. All rights reserved.
-
+// Copyright 2016 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 #include "sparse_bit_set.h"
 
 #include <assert.h>

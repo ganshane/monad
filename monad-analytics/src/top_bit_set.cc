@@ -1,5 +1,5 @@
-// Copyright (c) 2009-2014 Jun Tsai. All rights reserved.
-
+// Copyright 2016 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 #include "top_bit_set.h"
 
 #include <assert.h>

@@ -1,3 +1,5 @@
+// Copyright 2016 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 package monad.mmseg.rule;
 
 import monad.mmseg.Chunk;

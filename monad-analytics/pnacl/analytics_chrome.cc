@@ -1,5 +1,5 @@
-// Copyright (c) 2015 The Monad Authors. All rights reserved.
-
+// Copyright 2016 the original author or authors. All rights reserved.
+// site: http://www.ganshane.com
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"

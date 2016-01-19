@@ -1,3 +1,5 @@
+# Copyright 2016 the original author or authors. All rights reserved.
+# site: http://www.ganshane.com
 AUX_SOURCE_DIRECTORY("." ANALYTICS_PNACL_SOURCE)
 SET(PNACL_APP monad_analytics)
 SET(PNACL_APP_FINAL ${PNACL_APP}.final)
