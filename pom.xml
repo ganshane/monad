@@ -20,7 +20,6 @@
     <module>monad-group</module>
     <module>monad-interface</module>
     <module>monad-jni</module>
-    <module>monad-migration</module>
     <module>monad-mmseg</module>
     <module>monad-node</module>
     <module>monad-id</module>
