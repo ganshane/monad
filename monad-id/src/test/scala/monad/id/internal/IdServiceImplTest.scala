@@ -36,7 +36,7 @@ class IdServiceImplTest {
 
     val mask = (1 << 16) - 1
     val start = System.currentTimeMillis()
-    0 until 10000000 foreach { i =>
+    0 until 10000 foreach { i =>
       if((i & mask) == 0 && i > 0){
         val end = System.currentTimeMillis()
         println(i+ "qps:"+(i*1000.0)/(end-start))
