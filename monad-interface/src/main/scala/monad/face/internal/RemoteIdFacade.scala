@@ -5,7 +5,7 @@ package monad.face.internal
 import monad.face.MonadFaceConstants
 import monad.face.services.IdFacade
 import monad.protocol.internal.InternalIdProto._
-import monad.rpc.services.RpcClient
+import stark.rpc.services.RpcClient
 
 import scala.collection.mutable.ArrayBuffer
 

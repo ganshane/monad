@@ -1,8 +1,8 @@
-package monad.rpc.protocol;
+package stark.rpc.protocol;
 
 option optimize_for = SPEED;
 
-option java_package = "monad.rpc.protocol";
+option java_package = "stark.rpc.protocol";
 
 option java_outer_classname = "CommandProto";
 

@@ -29,8 +29,8 @@ object MonadIdApp
     val logger = LoggerFactory getLogger getClass
     logger.info("starting id server ....")
     val classes = List[Class[_]](
-      Class.forName("monad.rpc.LocalRpcServerModule"),
-      Class.forName("monad.rpc.LocalRpcModule"),
+      Class.forName("stark.rpc.LocalRpcServerModule"),
+      Class.forName("stark.rpc.LocalRpcModule"),
       Class.forName("monad.core.LocalMonadCoreModule"),
       Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.id.LocalMonadIdModule"),

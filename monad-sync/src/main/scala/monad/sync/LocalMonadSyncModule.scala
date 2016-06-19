@@ -6,7 +6,7 @@ import com.google.protobuf.ExtensionRegistry
 import monad.face.internal.RemoteIdFacade
 import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener}
 import monad.protocol.internal.{InternalIdProto, InternalSyncProto}
-import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
+import stark.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.sync.internal.{ResourceImporterManagerImpl, SyncMessageFilter, SyncRpcServerListener}
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.annotations.Contribute

@@ -4,9 +4,9 @@ package monad.node.internal
 
 import monad.core.config.PartitionIdSupport
 import monad.face.MonadFaceConstants
-import monad.rpc.config.RpcBindSupport
-import monad.rpc.model.RpcServerLocation
-import monad.rpc.services.RpcServerListener
+import stark.rpc.config.RpcBindSupport
+import stark.rpc.model.RpcServerLocation
+import stark.rpc.services.RpcServerListener
 import monad.support.services.ZookeeperTemplate
 
 /**

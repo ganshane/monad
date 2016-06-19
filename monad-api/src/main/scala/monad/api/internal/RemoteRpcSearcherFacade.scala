@@ -9,7 +9,7 @@ import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, Int
 import monad.protocol.internal.InternalIdProto._
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
-import monad.rpc.services.RpcClient
+import stark.rpc.services.RpcClient
 
 /**
  * implements rpc searcher facade

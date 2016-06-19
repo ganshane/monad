@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.{XmlAccessType, XmlAccessorType, XmlRootElement
 
 import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport, ZkClientConfigSupport}
 import monad.face.config.{GroupApiSupport, IndexConfigSupport}
-import monad.rpc.config.RpcBindSupport
+import stark.rpc.config.RpcBindSupport
 
 /**
  * 节点配置类

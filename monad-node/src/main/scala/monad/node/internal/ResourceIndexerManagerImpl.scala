@@ -16,7 +16,7 @@ import monad.face.model._
 import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSearcherSource}
 import monad.jni.services.gen.SlaveNoSQLSupport
 import monad.node.services.{ResourceIndexer, ResourceIndexerManager}
-import monad.rpc.services.RpcClient
+import stark.rpc.services.RpcClient
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.lucene.store.RateLimiter
 import org.apache.lucene.store.RateLimiter.SimpleRateLimiter

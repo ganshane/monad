@@ -33,9 +33,9 @@ object MonadNodeApp
       Class.forName("monad.face.ResourceModule"),
       Class.forName("monad.core.ThreadPoolModule"),
       Class.forName("monad.face.RemoteGroupModule"),
-      Class.forName("monad.rpc.LocalRpcModule"),
-      Class.forName("monad.rpc.LocalRpcClientModule"),
-      Class.forName("monad.rpc.LocalRpcServerModule"),
+      Class.forName("stark.rpc.LocalRpcModule"),
+      Class.forName("stark.rpc.LocalRpcClientModule"),
+      Class.forName("stark.rpc.LocalRpcServerModule"),
       Class.forName("monad.node.LocalMonadNodeModule"),
       Class.forName("monad.node.MonadNodeModule")
     )

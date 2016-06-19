@@ -8,8 +8,8 @@ import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, Int
 import monad.protocol.internal.InternalIdProto.{IdSearchRequest, IdSearchResponse}
 import monad.protocol.internal.InternalMaxdocQueryProto.{MaxdocQueryRequest, MaxdocQueryResponse}
 import monad.protocol.internal.InternalSearchProto.{InternalSearchRequest, InternalSearchResponse}
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
 
 /**
  * node message filter

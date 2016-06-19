@@ -3,7 +3,7 @@
  */
 package monad.protocol.internal;
 
-import "monad/rpc/protocol/command.proto";
+import "stark/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,7 +12,7 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalSyncProto";
 /* 向Sync服务器发送同步请求 */
 message SyncRequest {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional SyncRequest cmd = 101;
   }
   //资源名称
@@ -26,7 +26,7 @@ message SyncRequest {
 }
 /* 响应同步请求，发送同步数据 */
 message SyncResponse {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional SyncResponse cmd = 102;
   }
   message ResponseData {

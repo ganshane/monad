@@ -3,7 +3,7 @@
  */
 package monad.protocol.internal;
 
-import "monad/rpc/protocol/command.proto";
+import "stark/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,7 +12,7 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalSearchProto";
 /* 向分布式环境发送查询请求 */
 message InternalSearchRequest {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional InternalSearchRequest cmd = 105;
   }
   required string resource_name = 1;
@@ -22,7 +22,7 @@ message InternalSearchRequest {
 }
 /* 返回查询结果 */
 message InternalSearchResponse {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional InternalSearchResponse cmd = 106;
   }
   message DocScore {

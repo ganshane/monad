@@ -5,8 +5,8 @@ package monad.core
 import monad.core.config.LocalStoreConfigSupport
 import monad.core.internal._
 import monad.core.services._
-import monad.rpc.internal.RpcServerFinderWithZk
-import monad.rpc.services.RpcServerFinder
+import stark.rpc.internal.RpcServerFinderWithZk
+import stark.rpc.services.RpcServerFinder
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations.{Contribute, Local, Match}
 import org.apache.tapestry5.ioc.services.{FactoryDefaults, ServiceOverride, SymbolProvider}

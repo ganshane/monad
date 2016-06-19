@@ -12,8 +12,8 @@ import monad.jni.services.gen.{SlaveNoSQLSupport, SyncBinlogValue}
 import monad.node.services.MonadNodeExceptionCode
 import monad.protocol.internal.InternalSyncProto
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services._
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services._
 import monad.support.services.{LoggerSupport, MonadException}
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.jboss.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}

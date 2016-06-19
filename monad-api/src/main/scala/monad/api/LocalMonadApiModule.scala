@@ -15,7 +15,7 @@ import monad.face.internal.RemoteIdFacade
 import monad.face.model.{IdShardResult, OpenBitSetWithNodes}
 import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
 import monad.protocol.internal.{InternalFindDocProto, InternalIdProto, InternalMaxdocQueryProto, InternalSearchProto}
-import monad.rpc.services.ProtobufExtensionRegistryConfiger
+import stark.rpc.services.ProtobufExtensionRegistryConfiger
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, RequestFilter, RequestHandler}

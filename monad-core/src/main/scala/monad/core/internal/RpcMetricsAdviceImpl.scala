@@ -6,8 +6,8 @@ import java.net.SocketAddress
 
 import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.core.services.{MetricsService, RpcMetricsAdvice}
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services.{CommandResponse, RpcClient, RpcClientMessageHandler, RpcServerMessageHandler}
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services.{CommandResponse, RpcClient, RpcClientMessageHandler, RpcServerMessageHandler}
 import monad.support.services.LoggerSupport
 import org.apache.tapestry5.ioc.MethodAdviceReceiver
 import org.apache.tapestry5.plastic.{MethodAdvice, MethodInvocation}
@@ -21,9 +21,9 @@ import scala.util.control.NonFatal
 class RpcMetricsAdviceImpl(metrics: MetricsService)
   extends RpcMetricsAdvice
   with LoggerSupport {
-  private lazy val clientRequestMeter = metrics.registerMeter("monad.rpc.service.RpcClient.request")
-  private lazy val successMeter = metrics.registerMeter("monad.rpc.service.RpcClient.request.success")
-  private lazy val failMeter = metrics.registerMeter("monad.rpc.service.RpcClient.request.fail")
+  private lazy val clientRequestMeter = metrics.registerMeter("stark.rpc.service.RpcClient.request")
+  private lazy val successMeter = metrics.registerMeter("stark.rpc.service.RpcClient.request.success")
+  private lazy val failMeter = metrics.registerMeter("stark.rpc.service.RpcClient.request.fail")
 
   private lazy val clientAdvice = new MethodAdvice() {
 
@@ -44,7 +44,7 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
         failMeter.mark()
     }
   }
-  private lazy val responseMeter = metrics.registerMeter("monad.rpc.service.RpcClient.response")
+  private lazy val responseMeter = metrics.registerMeter("stark.rpc.service.RpcClient.response")
   private lazy val clientHandlerAdvice = new MethodAdvice {
 
     override def advise(invocation: MethodInvocation): Unit = {
@@ -84,8 +84,8 @@ class RpcMetricsAdviceImpl(metrics: MetricsService)
     }
   }
   private lazy val serverHandlerAdvice = new MethodAdvice {
-    private val metricsRequest = metrics.registerMeter("monad.rpc.service.RpcServer:Request")
-    private val metricsResponse = metrics.registerMeter("monad.rpc.service.RpcServer:Response")
+    private val metricsRequest = metrics.registerMeter("stark.rpc.service.RpcServer:Request")
+    private val metricsResponse = metrics.registerMeter("stark.rpc.service.RpcServer:Response")
 
     override def advise(invocation: MethodInvocation): Unit = {
       if (invocation.getMethod.getName != "handle") {

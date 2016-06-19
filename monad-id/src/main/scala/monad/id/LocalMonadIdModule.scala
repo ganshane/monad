@@ -7,7 +7,7 @@ import monad.id.internal.IdMessageFilter.{InternalAddIdRequestFilter, InternalBa
 import monad.id.internal.{IdRpcServerListener, IdServiceImpl, IdZookeeperTemplate}
 import monad.id.services.IdService
 import monad.protocol.internal.InternalIdProto
-import monad.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
+import stark.rpc.services.{ProtobufExtensionRegistryConfiger, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
 import org.apache.tapestry5.ioc.annotations.Contribute
 import org.apache.tapestry5.ioc.{Configuration, OrderedConfiguration, ServiceBinder}
 

@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct
 import monad.core.MonadCoreConstants
 import monad.core.config.HeartbeatConfigSupport
 import monad.core.services.{CronScheduleWithStartModel, MachineHeartbeat, StartAtOnce}
-import monad.rpc.config.RpcBindSupport
+import stark.rpc.config.RpcBindSupport
 import monad.support.services.{MonadUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub

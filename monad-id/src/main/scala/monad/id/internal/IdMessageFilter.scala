@@ -7,9 +7,9 @@ import monad.face.MonadFaceConstants
 import monad.id.config.MonadIdConfig
 import monad.id.services.IdService
 import monad.protocol.internal.InternalIdProto._
-import monad.rpc.model.RpcServerLocation
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services.{CommandResponse, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
+import stark.rpc.model.RpcServerLocation
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services.{CommandResponse, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.support.services.ZookeeperTemplate
 
 /**

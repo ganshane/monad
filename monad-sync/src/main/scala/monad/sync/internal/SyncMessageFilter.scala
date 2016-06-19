@@ -3,9 +3,9 @@
 package monad.sync.internal
 
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.rpc.protocol.CommandProto
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
+import stark.rpc.protocol.CommandProto
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services.{CommandResponse, RpcServerMessageFilter, RpcServerMessageHandler}
 import monad.sync.services.ResourceImporterManager
 
 /**

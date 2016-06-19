@@ -12,8 +12,8 @@ import monad.face.services.BitSetUtils
 import monad.protocol.internal.InternalIdProto.IdSearchResponse
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryResponse
 import monad.protocol.internal.InternalSearchProto.InternalSearchResponse
-import monad.rpc.protocol.CommandProto.BaseCommand
-import monad.rpc.services._
+import stark.rpc.protocol.CommandProto.BaseCommand
+import stark.rpc.services._
 import monad.support.services.LoggerSupport
 import org.apache.lucene.util.BitSetIterator
 import org.jboss.netty.channel.Channel

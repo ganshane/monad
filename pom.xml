@@ -24,8 +24,10 @@
     <module>monad-node</module>
     <module>monad-id</module>
     <module>monad-protocol</module>
+    <!--
     <module>monad-rpc</module>
     <module>monad-support</module>
+    -->
     <module>monad-sync</module>
   </modules>
   <scm>
@@ -85,6 +87,16 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>monad-support</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ganshane.stark</groupId>
+        <artifactId>stark-utils_2.11</artifactId>
+        <version>${stark-release-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ganshane.stark</groupId>
+        <artifactId>stark-rpc_2.11</artifactId>
+        <version>${stark-release-version}</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -687,5 +699,6 @@
     <lucene-release-version>5.2.1</lucene-release-version>
     <proguard-release-version>5.1</proguard-release-version>
     <lichen-release-version>0.5.10.1</lichen-release-version>
+    <stark-release-version>0.1.10</stark-release-version>
   </properties>
 </project>

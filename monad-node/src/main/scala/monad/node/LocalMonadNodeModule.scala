@@ -9,7 +9,7 @@ import monad.node.internal.NodeMessageFilter.{InternalFindDocRequestMessageFilte
 import monad.node.internal._
 import monad.node.services.ResourceIndexerManager
 import monad.protocol.internal._
-import monad.rpc.services._
+import stark.rpc.services._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.services.Builtin
 import org.apache.tapestry5.ioc.{Configuration, MappedConfiguration, OrderedConfiguration, ServiceBinder}

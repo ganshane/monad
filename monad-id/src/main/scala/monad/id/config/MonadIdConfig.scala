@@ -5,7 +5,7 @@ package monad.id.config
 import javax.xml.bind.annotation._
 
 import monad.core.config._
-import monad.rpc.config.RpcBindSupport
+import stark.rpc.config.RpcBindSupport
 
 /**
  * monad id configuration

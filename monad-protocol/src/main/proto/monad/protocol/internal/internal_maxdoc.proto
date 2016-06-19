@@ -3,7 +3,7 @@
  */
 package monad.protocol.internal;
 
-import "monad/rpc/protocol/command.proto";
+import "stark/rpc/protocol/command.proto";
 
 option optimize_for = SPEED;
 
@@ -12,14 +12,14 @@ option java_package = "monad.protocol.internal";
 option java_outer_classname = "InternalMaxdocQueryProto";
 /* 查询最大文档数的请求 */
 message MaxdocQueryRequest {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional MaxdocQueryRequest cmd = 103;
   }
   required string resource_name = 1;
 }
 /* 返回最大文档数 */
 message MaxdocQueryResponse {
-  extend monad.rpc.protocol.BaseCommand {
+  extend stark.rpc.protocol.BaseCommand {
     optional MaxdocQueryResponse cmd = 104;
   }
   //资源名称

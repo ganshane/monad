@@ -3,7 +3,7 @@
 package monad.core.internal
 
 import monad.core.services.MonadCoreErrorCode
-import monad.rpc.config.RpcBindSupport
+import stark.rpc.config.RpcBindSupport
 import monad.support.services.{MonadException, MonadUtils}
 
 /**
