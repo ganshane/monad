@@ -6,7 +6,7 @@ import com.google.gson.{GsonBuilder, JsonObject}
 import monad.api.MonadApiConstants
 import monad.api.services.MonadApiExceptionCode
 import monad.face.MonadFaceConstants
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.EventContext
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -42,14 +42,14 @@ abstract class BaseApi {
         json.addProperty(MonadApiConstants.JSON_KEY_SUCCESS, true)
       }
       else
-        new MonadException("Fail to get result,result is null", MonadApiExceptionCode.FAIL_GET_RESULT)
+        new StarkException("Fail to get result,result is null", MonadApiExceptionCode.FAIL_GET_RESULT)
     } catch {
       //catch any exception
       case NonFatal(e) =>
         json = new JsonObject
         json.addProperty(MonadApiConstants.JSON_KEY_SUCCESS, false)
         json.addProperty(MonadApiConstants.STATUS, MonadApiConstants.ERROR_STATUS)
-        if (e.isInstanceOf[MonadException]) {
+        if (e.isInstanceOf[StarkException]) {
           json.addProperty(MonadApiConstants.MSG, e.toString)
         } else {
           logger.error(e.toString, e)

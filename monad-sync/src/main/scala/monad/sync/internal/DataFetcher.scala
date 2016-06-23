@@ -3,7 +3,7 @@
 package monad.sync.internal
 
 import monad.face.model.SyncPolicy
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 
 import scala.collection.JavaConversions._
 
@@ -23,7 +23,7 @@ object DataFetcher{
     }else{
       new BaseDataFetcher(rcl) {
         override protected def limitSQLString(valueQuery: Option[String]): String = {
-          throw new MonadException("database unsupported",MonadSyncExceptionCode.SQL_UNSUPPORTED)
+          throw new StarkException("database unsupported",MonadSyncExceptionCode.SQL_UNSUPPORTED)
         }
       }
     }

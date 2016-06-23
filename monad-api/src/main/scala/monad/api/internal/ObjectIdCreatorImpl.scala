@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 
 import monad.api.services.{MonadApiExceptionCode, ObjectIdCreator}
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
@@ -51,7 +51,7 @@ class ObjectIdCreatorImpl extends ObjectIdCreator {
 
   def stringToObjectId(s: String) = {
     if (s.length != 12) {
-      throw new MonadException("非法的id数据" + s, MonadApiExceptionCode.INVALIDATE_OBJECT_ID)
+      throw new StarkException("非法的id数据" + s, MonadApiExceptionCode.INVALIDATE_OBJECT_ID)
     }
     val b = new Array[Byte](6)
     0 until b.length foreach { i =>

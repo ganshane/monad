@@ -4,7 +4,7 @@ package monad.face.model
 
 import monad.face.model.ResourceDefinition.ResourceDynamicType
 import monad.face.services.ResourceDefinitionConversions._
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.junit.{Assert, Test}
 
 /**

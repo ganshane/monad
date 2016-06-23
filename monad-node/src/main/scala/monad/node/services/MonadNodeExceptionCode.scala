@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.node.services
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * node的异常编码

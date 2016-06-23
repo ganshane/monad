@@ -4,7 +4,7 @@ package monad.jni.services.gen
 
 import java.io.File
 
-import monad.support.MonadSupportConstants
+import stark.utils.StarkUtilsConstants
 import org.apache.commons.io.FileUtils
 import org.junit.{Assert, Test}
 
@@ -23,11 +23,11 @@ class NoSQLSupportTest extends BaseJniTestCase{
     val support = new NoSQLSupport("target/nosql_support_test",options)
     val testKey = "Test-Key"
     val testValue = "Test-Value"
-    val status = support.RawPut(testKey.getBytes(MonadSupportConstants.UTF8_ENCODING),
-      testValue.getBytes(MonadSupportConstants.UTF8_ENCODING)
+    val status = support.RawPut(testKey.getBytes(StarkUtilsConstants.UTF8_ENCODING),
+      testValue.getBytes(StarkUtilsConstants.UTF8_ENCODING)
     )
     Assert.assertTrue(status.ok())
-    val value = support.Get(testKey.getBytes(MonadSupportConstants.UTF8_ENCODING))
+    val value = support.Get(testKey.getBytes(StarkUtilsConstants.UTF8_ENCODING))
     Assert.assertEquals(testValue,new String(value))
 
     support.delete()

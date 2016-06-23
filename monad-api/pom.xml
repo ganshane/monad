@@ -17,10 +17,6 @@
   <dependencies>
     <dependency>
       <groupId>com.ganshane.monad</groupId>
-      <artifactId>monad-support</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ganshane.monad</groupId>
       <artifactId>monad-core</artifactId>
     </dependency>
     <dependency>

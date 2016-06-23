@@ -6,7 +6,7 @@ import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
 import monad.face.MonadFaceConstants
 import monad.jni.services.JniLoader
-import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
+import stark.utils.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import monad.sync.MonadSyncModule
 import org.slf4j.LoggerFactory
 

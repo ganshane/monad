@@ -8,7 +8,7 @@ import com.google.gson.JsonObject
 import monad.face.model.ResourceDefinition.ResourceProperty
 import monad.face.model.{AnalyzerCreator, IndexType, MonadColumnType}
 import monad.face.services.MonadFaceExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.lucene.document.Field.Store
 import org.apache.lucene.document.{Field, StringField, TextField}
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -55,7 +55,7 @@ class StringColumnType extends MonadColumnType[String]{
             new TextField(cd.name, value, Store.NO)
           }
         case other =>
-          throw new MonadException("index type %s unsupported".format(cd.indexType), MonadFaceExceptionCode.INDEX_TYPE_NOT_SUPPORTED)
+          throw new StarkException("index type %s unsupported".format(cd.indexType), MonadFaceExceptionCode.INDEX_TYPE_NOT_SUPPORTED)
       }
       (f,None)
     }

@@ -3,7 +3,7 @@
 package monad.node.internal
 
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.{MonadException, ServiceLifecycle}
+import stark.utils.services.{StarkException, ServiceLifecycle}
 import org.apache.lucene.index.LeafReaderContext
 import org.apache.lucene.search.{Collector, Scorer, SimpleCollector}
 
@@ -73,7 +73,7 @@ class TimeOutCollector(delegate: Collector, timeoutSeconds: Int = 10) extends Si
   }
 
   private def checkTimeout() {
-    if (TimeOutCollector.timer.getNanoTime > maxTime) throw new MonadException("查询超时",
+    if (TimeOutCollector.timer.getNanoTime > maxTime) throw new StarkException("查询超时",
       MonadNodeExceptionCode.QUERY_TIMEOUT
     )
   }

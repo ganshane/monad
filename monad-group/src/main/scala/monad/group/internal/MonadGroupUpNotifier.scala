@@ -10,13 +10,12 @@ import monad.core.config.ZkClientConfigSupport
 import monad.face.CloudPathConstants
 import monad.face.config.GroupConfigSupport
 import monad.face.model.GroupConfig
-import monad.support.MonadSupportConstants
-import monad.support.services.{ServiceUtils, ZookeeperTemplate}
-import org.apache.tapestry5.ioc.Invokable
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.slf4j.LoggerFactory
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{ServiceUtils, ZookeeperTemplate}
 
 /**
  * Cluster的管理类，主要针对Cluster的服务操作
@@ -69,7 +68,7 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
       zookeeper.createPersistPath(MonadCoreConstants.LIVE_PATH)
     //watch the node,当失去连接，或者session过期的时候，能够自动创建
     zookeeper.createEphemeralPath(MonadCoreConstants.LIVE_PATH + "/" + config.group.id,
-      Some(jsonObject.getBytes(MonadSupportConstants.UTF8_ENCODING)))
+      Some(jsonObject.getBytes(StarkUtilsConstants.UTF8_ENCODING)))
   }
 
   /**
@@ -77,7 +76,7 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
    */
   private def notifyGroupUp() {
     val groupPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id
-    rootZk.createPersistPath(groupPath, Some(config.group.cnName.getBytes(MonadSupportConstants.UTF8_ENCODING)))
+    rootZk.createPersistPath(groupPath, Some(config.group.cnName.getBytes(StarkUtilsConstants.UTF8_ENCODING)))
     val groupResourcesPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.RESOURCES_PATH
     rootZk.createPersistPath(groupResourcesPath)
     val groupNodesPath = MonadCoreConstants.GROUPS_PATH + "/" + config.group.id + CloudPathConstants.NODE_PATH_FORMAT
@@ -108,8 +107,4 @@ class MonadGroupUpNotifier(config: GroupConfigSupport, periodExecutor: PeriodicE
       filter(x => x.isDefined && !x.get.isEmpty).map(_.get).toList
   }
 
-  //only for test
-  private[internal] def expireSession() {
-    rootZk.buildAnotherSession.close()
-  }
 }

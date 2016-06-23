@@ -7,7 +7,7 @@ import monad.face.config.GroupConfigSupport
 import monad.face.model.{GroupConfig, ResourceDefinition}
 import monad.face.services.GroupServerApi
 import monad.group.internal.MonadGroupUpNotifier
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 
 /**
  * 本地化的monad组配置

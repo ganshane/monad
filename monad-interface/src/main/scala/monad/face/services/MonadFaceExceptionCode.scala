@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.face.services
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * monad核心模块对异常的定义

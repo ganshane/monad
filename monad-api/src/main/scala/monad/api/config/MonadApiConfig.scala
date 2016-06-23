@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement
 
 import monad.core.config.{HeartbeatConfigSupport, LocalStoreConfigSupport, LogFileSupport}
 import monad.face.config.{ApiConfigSupport, DicPathSupport, GroupApiSupport}
-import monad.support.services.WebServerConfigSupport
+import stark.utils.services.WebServerConfigSupport
 
 /**
  * api configuration

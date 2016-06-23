@@ -5,7 +5,7 @@ package monad.cloud.app
 import monad.cloud.MonadCloudModule
 import monad.core.MonadCoreSymbols
 import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSupport}
-import monad.support.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
+import stark.utils.services.{SystemEnvDetectorSupport, TapestryIocContainerSupport}
 import org.slf4j.LoggerFactory
 
 /**

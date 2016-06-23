@@ -3,7 +3,7 @@
 package monad.id.internal
 
 import monad.core.config.ZkClientConfigSupport
-import monad.support.services.ZookeeperTemplate
+import stark.utils.services.ZookeeperTemplate
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 
 /**

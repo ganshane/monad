@@ -4,7 +4,7 @@ package monad.api.internal
 
 import monad.api.services.{MonadApiExceptionCode, ResourceRequest}
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.{Request, RequestFilter, RequestHandler, Response}
 
@@ -24,7 +24,7 @@ class ResourceRequestFilter(resourceRequest: ResourceRequest,
         case Some(r) =>
           resourceRequest.storeResourceDefinition(r)
         case None =>
-          throw new MonadException("Resource %s not found".format(resourceName), MonadApiExceptionCode.RESOURCE_NOT_FOUND)
+          throw new StarkException("Resource %s not found".format(resourceName), MonadApiExceptionCode.RESOURCE_NOT_FOUND)
       }
     }
     handler.service(request, response)

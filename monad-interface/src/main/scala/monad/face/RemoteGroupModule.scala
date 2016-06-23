@@ -4,8 +4,8 @@ package monad.face
 
 import monad.face.internal.remote.RemoteGroupServiceApiImpl
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
-import monad.support.internal.HttpRestClientImpl
-import monad.support.services.HttpRestClient
+import stark.utils.internal.HttpRestClientImpl
+import stark.utils.services.HttpRestClient
 import org.apache.tapestry5.ioc.ServiceBinder
 
 /**

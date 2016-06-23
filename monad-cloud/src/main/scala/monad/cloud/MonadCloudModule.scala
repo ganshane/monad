@@ -5,7 +5,7 @@ package monad.cloud
 import monad.cloud.config.MonadCloudConfig
 import monad.core.MonadCoreSymbols
 import monad.core.internal.MonadConfigFileUtils
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.apache.tapestry5.ioc.annotations.Symbol
 
 /**

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import monad.core.config.Partition
 import monad.jni.services.gen._
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 
 /**
  * load balance support
@@ -103,7 +103,7 @@ trait LoadBalanceSupport {
     while (nodes.hasNext) {
       val partition = nodes.next()
       if (partitionInfoData.contains(partition.id))
-        throw new MonadException("duplicate partition(" + partition.id + ") definition in sync configuration.", MonadSyncExceptionCode.DUPLICATE_PARTITION_DEFINITION)
+        throw new StarkException("duplicate partition(" + partition.id + ") definition in sync configuration.", MonadSyncExceptionCode.DUPLICATE_PARTITION_DEFINITION)
       val lastBinlogSeq = nosql.FindMaxBinlogSeqByPartitionId(partition.id)
       val dataSeq = findMaxDataSeqByPartitionId(partition.id)
       info("load partition:{},binlog:{},dataSeq:" + dataSeq, partition.id, lastBinlogSeq)

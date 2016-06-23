@@ -8,8 +8,8 @@ import monad.api.services.{DynamicTraceService, MonadApiExceptionCode}
 import monad.face.CloudPathConstants
 import monad.face.model.DynamicResourceDefinition
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.MonadSupportConstants
-import monad.support.services.{MonadException, NodeDataWatcher, XmlLoader, ZookeeperTemplate}
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{StarkException, NodeDataWatcher, XmlLoader, ZookeeperTemplate}
 import org.slf4j.LoggerFactory
 
 /**
@@ -51,7 +51,7 @@ class DynamicTraceServiceImpl(zookeeper: ZookeeperTemplate,
   def getDynamicResourceDefinition: DynamicResourceDefinition = {
     drd match {
       case Some(x) => x
-      case None => throw new MonadException("未能发现动态资源定义为空", MonadApiExceptionCode.FAIL_FIND_DYNAMIC_DEFINITION)
+      case None => throw new StarkException("未能发现动态资源定义为空", MonadApiExceptionCode.FAIL_FIND_DYNAMIC_DEFINITION)
     }
   }
 
@@ -59,7 +59,7 @@ class DynamicTraceServiceImpl(zookeeper: ZookeeperTemplate,
     data match {
       case Some(x) =>
         logger.debug("loading dynamic resource definition")
-        drd = Some(XmlLoader.parseXML[DynamicResourceDefinition](new String(x, MonadSupportConstants.UTF8_ENCODING)))
+        drd = Some(XmlLoader.parseXML[DynamicResourceDefinition](new String(x, StarkUtilsConstants.UTF8_ENCODING)))
         logger.debug("parse dynamic resource definition is {}", drd)
       case None =>
         logger.debug("dynamic resource definition is None")

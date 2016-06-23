@@ -17,7 +17,7 @@ import monad.face.services.{DocumentSource, GroupZookeeperTemplate, ResourceSear
 import monad.jni.services.gen.SlaveNoSQLSupport
 import monad.node.services.{ResourceIndexer, ResourceIndexerManager}
 import stark.rpc.services.RpcClient
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 import org.apache.lucene.store.RateLimiter
 import org.apache.lucene.store.RateLimiter.SimpleRateLimiter
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
@@ -127,7 +127,7 @@ class ResourceIndexerManagerImpl(indexConfig: IndexConfigSupport,
         }
         info("[{}] finish index", r)
       } catch {
-        case e: MonadException =>
+        case e: StarkException =>
           logger.error(e.toString)
         case NonFatal(e) =>
           logger.error(e.toString, e)

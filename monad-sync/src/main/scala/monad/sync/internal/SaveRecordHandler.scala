@@ -10,7 +10,7 @@ import monad.face.MonadFaceConstants
 import monad.face.model.ColumnType
 import monad.face.services.DataTypeUtils
 import monad.jni.services.gen.DataCommandType
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 
@@ -31,7 +31,7 @@ class SaveRecordHandler(manager: ResourceImporterManager)
     }
     val importer = manager.getObject(event.resourceName)
     if (importer == null) {
-      throw new MonadException("通过%s未能找到对应的saver".format(event.resourceName), MonadSyncExceptionCode.SAVER_NOT_FOUND)
+      throw new StarkException("通过%s未能找到对应的saver".format(event.resourceName), MonadSyncExceptionCode.SAVER_NOT_FOUND)
     }
     val row = event.row
     val timestamp = event.timestamp
@@ -56,7 +56,7 @@ class SaveRecordHandler(manager: ResourceImporterManager)
       }
     }
     if (primaryKey == null) {
-      throw new MonadException("[%s]主键字段为空".format(event.resourceName), MonadSyncExceptionCode.PRIMARY_KEY_VALUE_IS_NULL)
+      throw new StarkException("[%s]主键字段为空".format(event.resourceName), MonadSyncExceptionCode.PRIMARY_KEY_VALUE_IS_NULL)
     }
 
     json.addProperty(MonadFaceConstants.UPDATE_TIME_FIELD_NAME, DataTypeUtils.convertDateAsInt(System.currentTimeMillis()))
@@ -67,7 +67,7 @@ class SaveRecordHandler(manager: ResourceImporterManager)
 
     val status = importer.put(primaryKey, json, DataCommandType.PUT, timestamp)
     if (!status.ok())
-      throw new MonadException("[%s] fail save data with status:%s".format(event.resourceName, new String(status.ToString())), MonadSyncExceptionCode.FAIL_SAVE_DATA)
+      throw new StarkException("[%s] fail save data with status:%s".format(event.resourceName, new String(status.ToString())), MonadSyncExceptionCode.FAIL_SAVE_DATA)
 
     if ((sequence & MonadFaceConstants.NUM_OF_NEED_COMMIT) == 0) {
       info("{} records saved", sequence)

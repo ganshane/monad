@@ -5,7 +5,7 @@ package monad.api.pages.api
 import monad.api.internal.SearchResultExtractor
 import monad.api.model.SearchRequest
 import monad.api.services.MonadApiExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
@@ -24,13 +24,13 @@ class FacetApi extends TraceApi {
   override protected def search(searchRequest: SearchRequest) = {
     val field = request.getParameter("f")
     if (InternalUtils.isBlank(field)) {
-      throw new MonadException("身份证号(f)为空", MonadApiExceptionCode.ID_CARD_IS_NULL)
+      throw new StarkException("身份证号(f)为空", MonadApiExceptionCode.ID_CARD_IS_NULL)
     }
     //转换为本资源的属性
     val uniqueFieldOption = searchRequest.resource.
       dynamicType.properties.find(_.traitProperty == field)
     if (uniqueFieldOption.isEmpty) {
-      throw new MonadException("[" + searchRequest.resourceName + "]通过" + field + "未能找到找到资源属性",
+      throw new StarkException("[" + searchRequest.resourceName + "]通过" + field + "未能找到找到资源属性",
         MonadApiExceptionCode.RESOURCE_NOT_FOUND
       )
     }

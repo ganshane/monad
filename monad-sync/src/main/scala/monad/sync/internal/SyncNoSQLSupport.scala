@@ -6,7 +6,7 @@ import java.io.File
 
 import monad.jni.services.gen._
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import org.apache.commons.io.FileUtils
 
 /**

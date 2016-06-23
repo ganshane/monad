@@ -12,7 +12,7 @@ import com.google.gson.JsonObject
 import monad.api.MonadApiConstants
 import monad.api.base.BaseApi
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
@@ -41,6 +41,6 @@ class MonitorApi extends BaseApi {
       json.addProperty(MonadApiConstants.JSON_KEY_TOTAL_RECORD_NUM, searchFacade.getDocumentNum)
       return json
     }
-    throw new MonadException("请加入 i (index name)参数", MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER)
+    throw new StarkException("请加入 i (index name)参数", MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER)
   }
 }

@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.sync.internal
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * monad sync exception

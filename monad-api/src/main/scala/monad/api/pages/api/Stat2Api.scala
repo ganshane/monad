@@ -7,7 +7,7 @@ import monad.api.base.BaseApi
 import monad.api.internal.ResourceStater
 import monad.api.services.MonadApiExceptionCode
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -36,12 +36,12 @@ class Stat2Api extends BaseApi {
     //index name
     val indexName = request.getParameter("i")
     if (InternalUtils.isBlank(indexName)) {
-      throw new MonadException(messages.get("invalidate-parameter"), MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER)
+      throw new StarkException(messages.get("invalidate-parameter"), MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER)
     }
     //get column definitions
     val definition = loader.getResourceDefinition(indexName)
     if (definition.isEmpty) {
-      throw new MonadException(messages.get("fail-to-find-index"),
+      throw new StarkException(messages.get("fail-to-find-index"),
         MonadApiExceptionCode.RESOURCE_NOT_FOUND
       )
     }

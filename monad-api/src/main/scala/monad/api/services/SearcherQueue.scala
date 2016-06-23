@@ -9,7 +9,7 @@ package monad.api.services
 
 import monad.api.model.SearchResult
 import monad.face.model.IdShardResult
-import monad.support.services.ServiceLifecycle
+import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.search.highlight.Highlighter
 

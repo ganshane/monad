@@ -4,7 +4,7 @@ package monad.node.services
 
 import monad.face.services.ResourceSearcher
 import monad.jni.services.gen.SlaveNoSQLSupport
-import monad.support.services.ServiceLifecycle
+import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.document.Document
 
 /**

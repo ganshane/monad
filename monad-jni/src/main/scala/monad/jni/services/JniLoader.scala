@@ -6,7 +6,7 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
 import monad.jni.services.gen.{LoggerLevel, CMonad}
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import org.fusesource.hawtjni.runtime
 
 /**

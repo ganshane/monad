@@ -15,6 +15,11 @@
   <packaging>jar</packaging>
   <name>Monad Cloud Application</name>
   <dependencies>
+    <!-- zk support -->
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>monad-core</artifactId>
@@ -32,10 +37,6 @@
           <artifactId>tapestry-json</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>monad-support</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.tapestry</groupId>

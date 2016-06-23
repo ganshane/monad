@@ -9,8 +9,8 @@ import monad.core.config.ZkClientConfigSupport
 import monad.face.CloudPathConstants
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
 import monad.face.services.{DataTypeUtils, GroupZookeeperTemplate}
-import monad.support.MonadSupportConstants
-import monad.support.services.XmlLoader
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.XmlLoader
 import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
@@ -111,7 +111,7 @@ class MonadGroupManager(config: ZkClientConfigSupport, zk: GroupZookeeperTemplat
     if (stat.isDefined) {
       zk.setStringData(path, str)
     } else {
-      zk.createPersistPath(path, Some(str.getBytes(MonadSupportConstants.UTF8_ENCODING))
+      zk.createPersistPath(path, Some(str.getBytes(StarkUtilsConstants.UTF8_ENCODING))
       )
     }
 

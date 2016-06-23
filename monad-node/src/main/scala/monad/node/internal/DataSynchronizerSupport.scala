@@ -14,7 +14,7 @@ import monad.protocol.internal.InternalSyncProto
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
 import stark.rpc.protocol.CommandProto.BaseCommand
 import stark.rpc.services._
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.jboss.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 
@@ -139,7 +139,7 @@ trait DataSynchronizerSupport
           val status = nosql.PutBinlog(binlogValue)
           if (!status.ok()) {
             status.delete()
-            throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
+            throw new StarkException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
           }
           binlogValue.delete()
           status.delete()
@@ -203,7 +203,7 @@ trait DataSynchronizerSupport
   @tailrec
   private def constructSyncRequest: SyncRequest = {
     if (resourceIndex >= resources.length)
-      throw new MonadException("reach resource range", MonadNodeExceptionCode.OVERFLOW_RESOURCE_RANGE)
+      throw new StarkException("reach resource range", MonadNodeExceptionCode.OVERFLOW_RESOURCE_RANGE)
     val rd = resources(resourceIndex)
     try {
       val builder = SyncRequest.newBuilder()

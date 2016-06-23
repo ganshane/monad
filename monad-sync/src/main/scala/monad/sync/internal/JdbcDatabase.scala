@@ -5,7 +5,7 @@ package monad.sync.internal
 import java.sql._
 import javax.sql.DataSource
 
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -26,7 +26,7 @@ private[internal] object JdbcDatabase {
     } catch {
       case NonFatal(e) =>
         if (!autoCommit) conn.rollback()
-        throw new MonadException(e, MonadSyncExceptionCode.JDBC_ERROR)
+        throw new StarkException(e, MonadSyncExceptionCode.JDBC_ERROR)
     }
   }
 

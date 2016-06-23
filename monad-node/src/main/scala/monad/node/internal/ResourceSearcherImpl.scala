@@ -11,7 +11,7 @@ import monad.face.model.{ColumnType, ResourceDefinition, ShardResult}
 import monad.face.services.ResourceSearcher
 import monad.node.internal.support.SearcherManagerSupport
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.lucene.index.{IndexReader, IndexWriter, LeafReaderContext}
 import org.apache.lucene.search._
 import org.apache.lucene.util.LongBitSet
@@ -159,7 +159,7 @@ class ResourceSearcherImpl(val rd: ResourceDefinition, writer: IndexWriter, val 
     } catch {
       case NonFatal(e) =>
         logger.error(e.toString)
-        throw new MonadException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
+        throw new StarkException("fail to parse:[" + q + "]", MonadNodeExceptionCode.FAIL_TO_PARSE_QUERY)
     }
   }
 

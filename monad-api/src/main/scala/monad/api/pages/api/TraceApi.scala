@@ -6,7 +6,7 @@ import monad.api.internal.SearchResultExtractor
 import monad.api.model.SearchRequest
 import monad.api.services.{DynamicTraceService, MonadApiExceptionCode}
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
@@ -31,14 +31,14 @@ class TraceApi extends SearchApi {
     //get column definitions
     val definition = loader.getResourceDefinition(request.getParameter("i"))
     if (definition.isEmpty) {
-      throw new MonadException("不能发现Resource!",
+      throw new StarkException("不能发现Resource!",
         MonadApiExceptionCode.RESOURCE_NOT_FOUND
       )
     }
     //是否为动态资源
     val resource = definition.get
     if (!resource.dynamic) {
-      throw new MonadException("资源" + resource.name + "不是动态资源，请检查定义!",
+      throw new StarkException("资源" + resource.name + "不是动态资源，请检查定义!",
         MonadApiExceptionCode.INVALIDATE_DYNAMIC_RESOURCE
       )
     }
@@ -59,7 +59,7 @@ class TraceApi extends SearchApi {
 
     val q = stringBuilder.toString().trim
     if (InternalUtils.isBlank(q)) {
-      throw new MonadException("搜索资源[%s]的参数为空，请检查特征列参数的传递".format(resource.name),
+      throw new StarkException("搜索资源[%s]的参数为空，请检查特征列参数的传递".format(resource.name),
         MonadApiExceptionCode.MISSING_QUERY_PARAMETER
       )
     }

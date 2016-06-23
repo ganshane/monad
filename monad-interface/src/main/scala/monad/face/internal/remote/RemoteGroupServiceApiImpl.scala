@@ -13,7 +13,7 @@ import monad.face.ApiConstants
 import monad.face.config.GroupApiSupport
 import monad.face.model.{GroupConfig, ResourceDefinition}
 import monad.face.services.{GroupServerApi, MonadFaceExceptionCode}
-import monad.support.services.{HttpRestClient, MonadException, XmlLoader}
+import stark.utils.services.{HttpRestClient, StarkException, XmlLoader}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -52,7 +52,7 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       jsonStr = httpRestClient.get(groupApi + "/" + api, params)
     } catch {
       case NonFatal(e) =>
-        throw new MonadException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
+        throw new StarkException("fail to connect group server " + e.toString, MonadFaceExceptionCode.FAIL_CONNECT_GROUP_SERVER)
     }
     val jsonReader = new JsonReader(new StringReader(jsonStr))
     jsonReader.setLenient(true)
@@ -67,7 +67,7 @@ class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient
       }
       return gson.fromJson(json.get(ApiConstants.DATA), genericType).asInstanceOf[T]
     }
-    throw new MonadException("fail to get self group config " + json.get(ApiConstants.MSG),
+    throw new StarkException("fail to get self group config " + json.get(ApiConstants.MSG),
       MonadFaceExceptionCode.FAIL_GET_SELF_GROUP_CONFIG
     )
   }

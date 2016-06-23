@@ -7,7 +7,7 @@ import monad.core.services.{BootstrapTextSupport, GlobalLoggerConfigurationSuppo
 import monad.extjs.MonadExtjsConstants
 import monad.face.MonadFaceConstants
 import monad.group.MonadGroupModule
-import monad.support.services.{JettyServerSupport, SystemEnvDetectorSupport}
+import stark.utils.services.{JettyServerSupport, SystemEnvDetectorSupport}
 import org.slf4j.LoggerFactory
 
 /**

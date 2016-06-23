@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.face.model
 
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.junit.{Assert, Test}
 
 /**

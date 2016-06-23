@@ -8,7 +8,7 @@ import monad.core.config.NoSqlConfig
 import monad.face.model.ResourceDefinition
 import monad.jni.services.gen.{NoSQLOptions, SlaveNoSQLSupport}
 import monad.node.services.SlaveNoSQLService
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import org.apache.commons.io.FileUtils
 
 /**

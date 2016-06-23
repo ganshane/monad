@@ -9,7 +9,7 @@ import com.google.gson.JsonObject
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade, SearcherQueue}
 import monad.face.config.ApiConfigSupport
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 
 /**
@@ -49,7 +49,7 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
         searcherQueue.search(request.q, request.start, request.offset, request.sort)
       }, highlighter)
     }
-    throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
+    throw new StarkException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
   }
 
   private def doInSearcherQueue[T](fun: => T): T = {
@@ -60,7 +60,7 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
         semaphore.release()
       }
     }else{
-      throw new MonadException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
+      throw new StarkException("经过60s后未能获取搜索对象", MonadApiExceptionCode.HIGH_CONCURRENT)
     }
   }
 

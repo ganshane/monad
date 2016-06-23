@@ -8,7 +8,7 @@ import com.google.protobuf.GeneratedMessage.GeneratedExtension
 import monad.core.services.{MetricsService, RpcMetricsAdvice}
 import stark.rpc.protocol.CommandProto.BaseCommand
 import stark.rpc.services.{CommandResponse, RpcClient, RpcClientMessageHandler, RpcServerMessageHandler}
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import org.apache.tapestry5.ioc.MethodAdviceReceiver
 import org.apache.tapestry5.plastic.{MethodAdvice, MethodInvocation}
 import org.jboss.netty.channel._

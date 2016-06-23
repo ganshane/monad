@@ -6,7 +6,7 @@ import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, RelationService, ResourceRequest}
 import monad.face.model.ResourceRelation
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.annotations.Property
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -37,12 +37,12 @@ class RelationApi extends SearchApi {
   override protected def createQuery = {
     val relationId = request.getParameter("r")
     if (InternalUtils.isBlank(relationId)) {
-      throw new MonadException("参数r(关系)是空值!", MonadApiExceptionCode.MISSING_RELATION_PARAMETER)
+      throw new StarkException("参数r(关系)是空值!", MonadApiExceptionCode.MISSING_RELATION_PARAMETER)
     }
 
     val relation = relationService.findRelation(relationId)
     if (relation.isEmpty) {
-      throw new MonadException("通过%s未能找到关系定义".format(relationId), MonadApiExceptionCode.RELATION_NOT_FOUND)
+      throw new StarkException("通过%s未能找到关系定义".format(relationId), MonadApiExceptionCode.RELATION_NOT_FOUND)
     }
 
     rel = relation.get
@@ -52,7 +52,7 @@ class RelationApi extends SearchApi {
     rel.properties.map { pro =>
       val v = request.getParameter(pro.traitProperty)
       if (InternalUtils.isBlank(v)) {
-        throw new MonadException(
+        throw new StarkException(
           "关系属性中的参数%s为空".format(pro.traitProperty),
           MonadApiExceptionCode.MISSING_RELATION_PROPERTY_PARAMETER
         )
@@ -66,7 +66,7 @@ class RelationApi extends SearchApi {
     //get column definitions
     var definition = loader.getResourceDefinition(rel.resource)
     if (definition.isEmpty) {
-      throw new MonadException(
+      throw new StarkException(
         "通过%s未能找到资源定义,检查关系定义".format(rel.resource),
         MonadApiExceptionCode.RELATION_NOT_FOUND
       )

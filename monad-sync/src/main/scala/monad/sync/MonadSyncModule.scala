@@ -4,7 +4,7 @@ package monad.sync
 
 import monad.core.MonadCoreSymbols
 import monad.core.internal.MonadCoreUtils
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import monad.sync.config.MonadSyncConfig
 import org.apache.tapestry5.ioc.annotations.Symbol
 

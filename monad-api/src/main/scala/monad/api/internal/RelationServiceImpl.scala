@@ -9,8 +9,8 @@ package monad.api.internal
 import monad.api.services.RelationService
 import monad.face.CloudPathConstants
 import monad.face.model.ResourceRelation
-import monad.support.MonadSupportConstants
-import monad.support.services.{NodeDataWatcher, XmlLoader, ZookeeperTemplate}
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{NodeDataWatcher, XmlLoader, ZookeeperTemplate}
 
 import scala.collection.JavaConversions._
 
@@ -48,7 +48,7 @@ class RelationServiceImpl(zookeeper: ZookeeperTemplate) extends RelationService 
       case None =>
         relations = Map[String, ResourceRelation.Rel]()
       case Some(str) =>
-        rr = XmlLoader.parseXML[ResourceRelation](new String(str, MonadSupportConstants.UTF8_ENCODING))
+        rr = XmlLoader.parseXML[ResourceRelation](new String(str, StarkUtilsConstants.UTF8_ENCODING))
         relations = rr.relations.foldLeft(Map[String, ResourceRelation.Rel]()) { (m, x) =>
           m + (x.name -> x)
         }

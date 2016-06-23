@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct
 import monad.cloud.config.MonadCloudConfig
 import monad.cloud.services.CloudServer
 import monad.core.MonadCoreConstants
-import monad.support.services.{LoggerSupport, ZookeeperTemplate}
+import stark.utils.services.{LoggerSupport, ZookeeperTemplate}
 import org.apache.commons.io.FileUtils
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub

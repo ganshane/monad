@@ -24,8 +24,8 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>monad-support</artifactId>
+      <groupId>com.ganshane.stark</groupId>
+      <artifactId>stark-utils_2.11</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

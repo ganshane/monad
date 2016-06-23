@@ -16,8 +16,13 @@
   <name>Monad JNI Bridge</name>
   <dependencies>
     <dependency>
-      <groupId>com.ganshane.monad</groupId>
-      <artifactId>monad-support</artifactId>
+      <groupId>com.ganshane.stark</groupId>
+      <artifactId>stark-utils_2.11</artifactId>
+    </dependency>
+    <!-- zk support -->
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>

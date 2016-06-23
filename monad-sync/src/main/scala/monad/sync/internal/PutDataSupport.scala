@@ -4,8 +4,8 @@ package monad.sync.internal
 
 import com.google.gson.JsonObject
 import monad.jni.services.gen._
-import monad.support.MonadSupportConstants
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{LoggerSupport, StarkException}
 
 /**
  * data put support
@@ -13,7 +13,7 @@ import monad.support.services.{LoggerSupport, MonadException}
 trait PutDataSupport {
   this: SyncNoSQLSupport with SyncConfigLike with LoggerSupport =>
   def put(key: String, json: JsonObject, command: DataCommandType, timestamp: Long): MonadStatus = {
-    val keyBytes = key.getBytes(MonadSupportConstants.UTF8_ENCODING_CHARSET)
+    val keyBytes = key.getBytes(StarkUtilsConstants.UTF8_ENCODING_CHARSET)
 
     val partitionMappingKey = new PartitionMappingKey(keyBytes)
     val partitionMappingData = nosql.Get(partitionMappingKey)
@@ -45,7 +45,7 @@ trait PutDataSupport {
 
     val partitionInfo = partitionInfoData.get(partitionId.get)
     if (partitionInfo == null) {
-      throw new MonadException("partition info not found", MonadSyncExceptionCode.PARTITION_NOT_FOUND)
+      throw new StarkException("partition info not found", MonadSyncExceptionCode.PARTITION_NOT_FOUND)
     }
     val binlogSeq = partitionInfo.binlogSeq
     val dataSequence = partitionInfo.dataSeq
@@ -60,7 +60,7 @@ trait PutDataSupport {
     syncBinlogOptions.setSeq(binlogSeq.incrementAndGet())
     syncBinlogOptions.setTimestamp(timestamp)
 
-    val dataBytes = json.toString.getBytes(MonadSupportConstants.UTF8_ENCODING_CHARSET)
+    val dataBytes = json.toString.getBytes(StarkUtilsConstants.UTF8_ENCODING_CHARSET)
     val status = nosql.PutDataWithBinlog(keyBytes, dataBytes, syncBinlogOptions)
     if (!status.ok()) {
       binlogSeq.decrementAndGet()

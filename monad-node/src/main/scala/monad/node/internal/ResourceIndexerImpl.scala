@@ -14,8 +14,8 @@ import monad.face.model.{AnalyzerCreator, IndexEvent, ResourceDefinition}
 import monad.face.services.{DataTypeUtils, ResourceSearcher, ResourceSearcherSource}
 import monad.jni.services.gen.{DataCommandType, NormalSeqDataKey, SlaveNoSQLSupport}
 import monad.node.services.{MonadNodeExceptionCode, ResourceIndexer, ResourceIndexerManager}
-import monad.support.MonadSupportConstants
-import monad.support.services.{LoggerSupport, MonadException, ServiceUtils}
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{LoggerSupport, StarkException, ServiceUtils}
 import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
@@ -374,10 +374,10 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
         }
         val binlogValue = nosql.FindNextBinlog(seq)
         if (binlogValue == null) {
-          throw new MonadException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
+          throw new StarkException(MonadNodeExceptionCode.NOSQL_LOG_DATA_IS_NULL)
         }
         if (binlogValue.Seq() != seq) {
-          //throw new MonadException("["+rd.name+"] seq:"+seq+" db_seq:"+binlogValue.Seq(),MonadNodeExceptionCode.INVALID_BINLOG_SEQ)
+          //throw new StarkException("["+rd.name+"] seq:"+seq+" db_seq:"+binlogValue.Seq(),MonadNodeExceptionCode.INVALID_BINLOG_SEQ)
           error("[{}] seq:{} != db_seq:{}", rd.name, seq, binlogValue.Seq())
         } else {
           val nosqlKey = new NormalSeqDataKey(binlogValue.Key())
@@ -386,7 +386,7 @@ class ResourceIndexerImpl(rd: ResourceDefinition,
 
           var data: JsonObject = null
           if (valBytes != null) {
-            data = parser.parse(new String(valBytes, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
+            data = parser.parse(new String(valBytes, StarkUtilsConstants.UTF8_ENCODING)).getAsJsonObject
           }
           val command = binlogValue.CommandType()
           command match {

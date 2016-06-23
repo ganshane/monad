@@ -5,7 +5,7 @@ package monad.api
 import monad.api.config.MonadApiConfig
 import monad.core.MonadCoreSymbols
 import monad.core.internal.MonadCoreUtils
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.apache.tapestry5.ioc.annotations._
 
 /**

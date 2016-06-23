@@ -3,7 +3,7 @@
 package monad.face.model
 
 import monad.face.services.MonadFaceExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.lucene.analysis.Analyzer
 
 /**
@@ -13,7 +13,7 @@ import org.apache.lucene.analysis.Analyzer
 object AnalyzerCreator {
   def create(analyzerType: AnalyzerType) = {
     if (analyzerType == null) {
-      throw new MonadException("analyzerType is null!",
+      throw new StarkException("analyzerType is null!",
         MonadFaceExceptionCode.ANALYZER_TYPE_IS_NULL
       )
     }

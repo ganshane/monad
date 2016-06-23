@@ -7,7 +7,7 @@ import monad.extjs.annotations.ExtDirectMethod
 import monad.extjs.model.ExtStreamResponse
 import monad.face.model.ResourceDefinition
 import monad.group.internal.{MonadGroupExceptionCode, MonadGroupManager}
-import monad.support.services.{MonadException, XmlLoader}
+import stark.utils.services.{StarkException, XmlLoader}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
@@ -66,14 +66,14 @@ class ResourceAction {
       val rd = XmlLoader.parseXML[ResourceDefinition](xml,
         xsd = Some(getClass.getResourceAsStream("/resource.xsd")))
       if (InternalUtils.isBlank(rd.name)) {
-        throw new MonadException("资源名称未定义",
+        throw new StarkException("资源名称未定义",
           MonadGroupExceptionCode.MISSING_RESOURCE_NAME
         )
       }
       monadGroupManager.saveOrUpdateResource(rd, Some(xml))
     } catch {
       case NonFatal(e) =>
-        throw MonadException.wrap(e)
+        throw StarkException.wrap(e)
     }
     new ExtStreamResponse
   }

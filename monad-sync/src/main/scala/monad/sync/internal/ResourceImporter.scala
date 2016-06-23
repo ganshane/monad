@@ -17,7 +17,7 @@ import monad.face.model._
 import monad.face.model.types.{DateColumnType, IntColumnType, LongColumnType, StringColumnType}
 import monad.face.services.GroupZookeeperTemplate
 import monad.face.services.ResourceDefinitionConversions._
-import monad.support.services._
+import stark.utils.services._
 import monad.sync.internal.JdbcDatabase._
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -102,13 +102,13 @@ class ResourceImporter(val rd: ResourceDefinition,
     } else {
       for ((col, index) <- columns.view.zipWithIndex if col.modifyKey) {
         if (modifyKeyColumn != null) {
-          throw new MonadException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
+          throw new StarkException("重复定义增量列字段", MonadSyncExceptionCode.DUPLICATE_INCREMENT_COLUMN)
         }
         modifyKeyColumn = col
         modifyKeyColumnIndex = index
       }
       if (modifyKeyColumn == null)
-        throw new MonadException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
+        throw new StarkException("未定义增量数据判断列", MonadSyncExceptionCode.INCREMENT_COLUMN_NOT_DEFINED)
     }
     modifyKeyColumn
   }
@@ -126,7 +126,7 @@ class ResourceImporter(val rd: ResourceDefinition,
   private def validateResourceConfig() {
     if (rd.resourceType == ResourceType.Data) {
       if (InternalUtils.isBlank(rd.targetResource)) {
-        throw new MonadException("resource is data,so target attribute need configuration", MonadSyncExceptionCode.TARGET_RESOURCE_NOT_EXIST)
+        throw new StarkException("resource is data,so target attribute need configuration", MonadSyncExceptionCode.TARGET_RESOURCE_NOT_EXIST)
       }
     }
   }
@@ -201,7 +201,7 @@ class ResourceImporter(val rd: ResourceDefinition,
       buildConnection
       importData()
     } catch {
-      case e: MonadException =>
+      case e: StarkException =>
         error("[{}] {}", rd.name, e.toString)
       case NonFatal(e) =>
         error("[" + rd.name + "] " + e.getMessage, e)
@@ -329,7 +329,7 @@ class ResourceImporter(val rd: ResourceDefinition,
           }
         } catch {
           case se: SQLException =>
-            val me = MonadException.wrap(se,
+            val me = StarkException.wrap(se,
               MonadSyncExceptionCode.FAIL_READ_DATA_FROM_DB,
               "fail to read " + col.name + " value from db")
             throw me;
@@ -353,7 +353,7 @@ class ResourceImporter(val rd: ResourceDefinition,
       importerManager.importData(rd.name, data, timestamp.get, version)
       return true
     } catch {
-      case e: MonadException =>
+      case e: StarkException =>
         if (rd.sync.showBadRecordException) {
           logger.error("[{}] {} ", rd.name, e.toString)
         }

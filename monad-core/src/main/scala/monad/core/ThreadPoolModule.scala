@@ -5,7 +5,7 @@ package monad.core
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import monad.support.services.MonadUtils
+import stark.utils.services.StarkUtils
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.ioc.internal.services.ParallelExecutorImpl
 import org.apache.tapestry5.ioc.services._
@@ -110,7 +110,7 @@ object ThreadPoolModule {
 
     shutdownHub.addRegistryShutdownListener(new Runnable() {
       def run() {
-        MonadUtils.shutdownExecutor(executorService, "global executor")
+        StarkUtils.shutdownExecutor(executorService, "global executor")
       }
     })
 

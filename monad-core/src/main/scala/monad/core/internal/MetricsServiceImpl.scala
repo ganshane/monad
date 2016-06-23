@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct
 import com.codahale.metrics._
 import monad.core.MonadCoreConstants
 import monad.core.services.MetricsService
-import monad.support.services.{LoggerSupport, RunInNoExceptionThrown}
+import stark.utils.services.{LoggerSupport, RunInNoExceptionThrown}
 import org.apache.tapestry5.ioc.services.cron.{CronSchedule, PeriodicExecutor}
 import org.slf4j.LoggerFactory
 

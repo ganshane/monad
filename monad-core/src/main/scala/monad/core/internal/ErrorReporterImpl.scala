@@ -6,7 +6,7 @@ import java.io.{PrintWriter, StringWriter}
 
 import monad.core.MonadCoreConstants
 import monad.core.services.{ErrorReporter, MachineHeartbeat}
-import monad.support.services.{MonadUtils, ZookeeperTemplate}
+import stark.utils.services.{StarkUtils, ZookeeperTemplate}
 
 /**
  * error reporter
@@ -30,7 +30,7 @@ class ErrorReporterImpl(heartbeat: MachineHeartbeat,
         zk.delete(machineErrorPath + "/" + timeNode)
     }
 
-    val now = MonadUtils.currentTimeInSecs
+    val now = StarkUtils.currentTimeInSecs
     val sw: StringWriter = new StringWriter
     val pw: PrintWriter = new PrintWriter(sw)
     error.printStackTrace(pw)

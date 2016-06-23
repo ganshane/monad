@@ -8,7 +8,7 @@ import com.google.protobuf.ByteString
 import monad.jni.services.JNIErrorCode
 import monad.jni.services.gen.{StatusCode, SyncBinlogKey, SyncBinlogValue}
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 
 import scala.annotation.tailrec
 
@@ -104,7 +104,7 @@ trait FetchSyncDataSupport {
     else if (status.code() == StatusCode.kNotFound)
       null
     else
-      throw new MonadException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
+      throw new StarkException(new String(status.ToString()), JNIErrorCode.JNI_STATUS_ERROR)
   }
 
   private def updateMinBinlogSeq(partitionId: Short, toSeq: Long): Unit = {

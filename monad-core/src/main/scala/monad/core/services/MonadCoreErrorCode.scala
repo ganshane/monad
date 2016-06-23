@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.core.services
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * monad core error code

@@ -7,7 +7,7 @@ import java.security.{AccessController, PrivilegedActionException, PrivilegedExc
 
 import monad.face.services.DataTypeUtils
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 
 /**
  * 基于byte buffer的Id缓存类
@@ -40,7 +40,7 @@ class ByteBufferIdBuffer(maxDoc: Int, blockSize: Int, hackSupported: Boolean) ex
         arr(i) = buffer.get(start + i + 4)
       } catch {
         case e: IndexOutOfBoundsException =>
-          throw new MonadException("docid:%s,bufferId:%s".format(docId, start + i + 4), MonadNodeExceptionCode.OVERFLOW_DIRECT_BUFFER)
+          throw new StarkException("docid:%s,bufferId:%s".format(docId, start + i + 4), MonadNodeExceptionCode.OVERFLOW_DIRECT_BUFFER)
       }
     }
     DataTypeUtils.convertAsInt(arr)
@@ -62,7 +62,7 @@ class ByteBufferIdBuffer(maxDoc: Int, blockSize: Int, hackSupported: Boolean) ex
         })
       } catch {
         case e: PrivilegedActionException =>
-          throw MonadException.wrap(e, MonadNodeExceptionCode.UNABLE_UNMAP_BUFFER)
+          throw StarkException.wrap(e, MonadNodeExceptionCode.UNABLE_UNMAP_BUFFER)
       }
     }
   }

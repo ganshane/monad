@@ -7,7 +7,7 @@ import java.io.File
 import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.group.config.MonadGroupConfig
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.apache.commons.io.FileUtils
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog

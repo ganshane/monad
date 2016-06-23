@@ -5,7 +5,7 @@ package monad.core.internal
 import java.io.{File, IOException}
 
 import monad.core.services.MonadCoreErrorCode
-import monad.support.services.{LoggerSupport, MonadException, MonadUtils}
+import stark.utils.services.{LoggerSupport, StarkException, StarkUtils}
 import org.apache.commons.io.FileUtils
 
 import scala.annotation.tailrec
@@ -43,7 +43,7 @@ class LocalSimpleStore(dir: String) extends LoggerSupport {
         if (latestPath.isEmpty) return mutable.Map.empty[Any, Any]
         try {
           val bytes = FileUtils.readFileToByteArray(new File(latestPath.get))
-          MonadUtils.deserialize(bytes).asInstanceOf[mutable.Map[Any, Any]]
+          StarkUtils.deserialize(bytes).asInstanceOf[mutable.Map[Any, Any]]
         } catch {
           case ex: IOException =>
             internalSnapshot(seq - 1, Some(ex))
@@ -51,9 +51,9 @@ class LocalSimpleStore(dir: String) extends LoggerSupport {
       } else {
         e match {
           case Some(ex) =>
-            throw MonadException.wrap(ex, MonadCoreErrorCode.FAIL_TO_GET_LOCAL_KV_SNAPSHOT)
+            throw StarkException.wrap(ex, MonadCoreErrorCode.FAIL_TO_GET_LOCAL_KV_SNAPSHOT)
           case None =>
-            throw new MonadException("fail to snapshot", MonadCoreErrorCode.FAIL_TO_GET_LOCAL_KV_SNAPSHOT)
+            throw new StarkException("fail to snapshot", MonadCoreErrorCode.FAIL_TO_GET_LOCAL_KV_SNAPSHOT)
         }
       }
     }
@@ -97,7 +97,7 @@ class LocalSimpleStore(dir: String) extends LoggerSupport {
   }
 
   private def persist(value: mutable.Map[Any, Any], cleanup: Boolean) {
-    val toWrite: Array[Byte] = MonadUtils.serialize(value)
+    val toWrite: Array[Byte] = StarkUtils.serialize(value)
     val newPath: String = _vs.createVersion
     FileUtils.writeByteArrayToFile(new File(newPath), toWrite)
     _vs.succeedVersion(newPath)
@@ -156,7 +156,7 @@ class LocalSimpleStore(dir: String) extends LoggerSupport {
 
     private def validateAndGetVersion(path: String): Long = {
       val v: Long = parseVersion(path)
-      if (v <= 0) throw new MonadException(path + " is not a valid version", MonadCoreErrorCode.INVALID_LOCAL_VERSION)
+      if (v <= 0) throw new StarkException(path + " is not a valid version", MonadCoreErrorCode.INVALID_LOCAL_VERSION)
       v
     }
 
@@ -193,7 +193,7 @@ class LocalSimpleStore(dir: String) extends LoggerSupport {
     def createVersion(version: Long): String = {
       val ret: String = versionPath(version)
       if (getAllVersions.contains(version))
-        throw new MonadException(
+        throw new StarkException(
           "Version already exists or data already exists",
           MonadCoreErrorCode.VERSION_EXISTS_IN_KV)
       else ret

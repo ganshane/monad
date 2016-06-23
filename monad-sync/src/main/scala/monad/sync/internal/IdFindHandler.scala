@@ -6,7 +6,7 @@ import com.lmax.disruptor.WorkHandler
 import monad.face.MonadFaceConstants
 import monad.face.services.IdFacade
 import monad.face.services.ResourceDefinitionConversions.resourceDefinitionWrapper
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 

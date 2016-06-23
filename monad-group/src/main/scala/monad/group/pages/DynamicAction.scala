@@ -10,7 +10,7 @@ import monad.extjs.annotations.ExtDirectMethod
 import monad.extjs.model.ExtStreamResponse
 import monad.face.model.DynamicResourceDefinition
 import monad.group.internal.MonadGroupManager
-import monad.support.services.{MonadException, XmlLoader}
+import stark.utils.services.{StarkException, XmlLoader}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.slf4j.LoggerFactory
 
@@ -39,7 +39,7 @@ class DynamicAction {
       monadGroupManager.saveOrUpdateDynamic(dynamic, Some(xml))
     } catch {
       case NonFatal(e) =>
-        throw MonadException.wrap(e)
+        throw StarkException.wrap(e)
     }
     new ExtStreamResponse
   }

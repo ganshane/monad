@@ -5,7 +5,7 @@ package monad.face.services
 import java.util.concurrent.ExecutorService
 
 import monad.face.model.{IdShardResult, ResourceDefinition, ShardResult}
-import monad.support.services.ServiceLifecycle
+import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.index.IndexWriter
 
 /**

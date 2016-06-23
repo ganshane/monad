@@ -3,7 +3,7 @@
 package monad.core.services
 
 import com.lmax.disruptor.ExceptionHandler
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 
 /**
  * 针对异常的处理，仅仅输出
@@ -13,7 +13,7 @@ class LogExceptionHandler extends ExceptionHandler with LoggerSupport {
 
   def handleEventException(ex: Throwable, sequence: Long, event: Any) {
     ex match {
-      case e: MonadException =>
+      case e: StarkException =>
         error(e.toString)
       case e: InterruptedException =>
       //do nothing

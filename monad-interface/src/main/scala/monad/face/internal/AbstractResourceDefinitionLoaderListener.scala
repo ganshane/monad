@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import monad.face.model.ResourceDefinition
 import monad.face.services.ResourceDefinitionLoaderListener
-import monad.support.services.{MonadException, ServiceLifecycle, ServiceUtils}
+import stark.utils.services.{StarkException, ServiceLifecycle, ServiceUtils}
 import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
@@ -43,7 +43,7 @@ trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
           }
         }
       } catch {
-        case e: MonadException =>
+        case e: StarkException =>
           logger.error(e.toString)
         case NonFatal(e) =>
           logger.error("Fail to start object " + obj, e)
@@ -84,7 +84,7 @@ trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
   def directGetObject(key: String): Option[T] = {
     val obj = objects.get(key)
     Option(obj)
-    //throw new MonadException("resource:" + key + " not found", MonadFaceExceptionCode.OBJECT_NOT_LIVE)
+    //throw new StarkException("resource:" + key + " not found", MonadFaceExceptionCode.OBJECT_NOT_LIVE)
   }
 
   def onResourceUnloaded(resourceKey: String) {

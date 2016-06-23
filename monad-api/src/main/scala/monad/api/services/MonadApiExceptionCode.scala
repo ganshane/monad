@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.api.services
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * API模块部分针对异常的定义

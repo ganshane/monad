@@ -13,7 +13,7 @@ import monad.api.base.BaseApi
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, ObjectIdCreator, SearcherFacade}
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -83,7 +83,7 @@ class SearchApi extends BaseApi {
     */
     searchRequest.q = q
     if (InternalUtils.isBlank(q) && InternalUtils.isBlank(objectId)) {
-      throw new MonadException(messages.get("invalidate-query-parameter"),
+      throw new StarkException(messages.get("invalidate-query-parameter"),
         MonadApiExceptionCode.MISSING_QUERY_PARAMETER
       )
     }
@@ -124,7 +124,7 @@ class SearchApi extends BaseApi {
     //index name
     val indexName = request.getParameter("i")
     if (InternalUtils.isBlank(indexName)) {
-      throw new MonadException(messages.get("invalidate-parameter"),
+      throw new StarkException(messages.get("invalidate-parameter"),
         MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER
       )
     }
@@ -132,7 +132,7 @@ class SearchApi extends BaseApi {
     //get column definitions
     val definition = loader.getResourceDefinition(indexName)
     if (definition.isEmpty) {
-      throw new MonadException(messages.get("fail-to-find-index"),
+      throw new StarkException(messages.get("fail-to-find-index"),
         MonadApiExceptionCode.RESOURCE_NOT_FOUND
       )
     }

@@ -6,7 +6,7 @@ import java.util.concurrent.{Semaphore, TimeUnit}
 
 import monad.node.internal.InternalIndexSearcher
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.lucene.search.SearcherManager
 import org.apache.lucene.store.AlreadyClosedException
 
@@ -32,12 +32,12 @@ trait SearcherManagerSupport {
         }
       } catch {
         case e: AlreadyClosedException =>
-          throw new MonadException("Server正在关闭", MonadNodeExceptionCode.SEARCHER_CLOSING)
+          throw new StarkException("Server正在关闭", MonadNodeExceptionCode.SEARCHER_CLOSING)
       } finally {
         semaphore.release()
       }
     } else {
-      throw new MonadException("并发过高，等待获取Analyzer超时",
+      throw new StarkException("并发过高，等待获取Analyzer超时",
         MonadNodeExceptionCode.HIGH_CONCURRENT
       )
     }

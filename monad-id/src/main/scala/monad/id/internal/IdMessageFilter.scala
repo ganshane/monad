@@ -10,7 +10,7 @@ import monad.protocol.internal.InternalIdProto._
 import stark.rpc.model.RpcServerLocation
 import stark.rpc.protocol.CommandProto.BaseCommand
 import stark.rpc.services.{CommandResponse, RpcServerListener, RpcServerMessageFilter, RpcServerMessageHandler}
-import monad.support.services.ZookeeperTemplate
+import stark.utils.services.ZookeeperTemplate
 
 /**
  *

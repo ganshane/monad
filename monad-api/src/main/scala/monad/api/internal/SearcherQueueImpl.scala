@@ -14,7 +14,7 @@ import monad.face.MonadFaceConstants
 import monad.face.model.{AnalyzerCreator, ResourceDefinition, ShardResult, ShardResultCollect}
 import monad.face.services.ResourceDefinitionConversions._
 import monad.face.services.RpcSearcherFacade
-import monad.support.services.ServiceLifecycle
+import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper

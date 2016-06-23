@@ -6,7 +6,7 @@ import javax.xml.bind.annotation._
 
 import monad.core.config.{LogFileSupport, ZkClientConfigSupport}
 import monad.face.config.{ExtjsSupport, GroupConfigSupport}
-import monad.support.services.WebServerConfigSupport
+import stark.utils.services.WebServerConfigSupport
 
 /**
  * monad的组配置，通常用于某一个地方，譬如：南昌

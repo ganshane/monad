@@ -6,7 +6,7 @@ import monad.face.MonadFaceConstants
 import stark.rpc.config.RpcBindSupport
 import stark.rpc.model.RpcServerLocation
 import stark.rpc.services.RpcServerListener
-import monad.support.services.ZookeeperTemplate
+import stark.utils.services.ZookeeperTemplate
 
 /**
  * sync rpc server listener

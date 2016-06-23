@@ -14,7 +14,7 @@ import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryResponse
 import monad.protocol.internal.InternalSearchProto.InternalSearchResponse
 import stark.rpc.protocol.CommandProto.BaseCommand
 import stark.rpc.services._
-import monad.support.services.LoggerSupport
+import stark.utils.services.LoggerSupport
 import org.apache.lucene.util.BitSetIterator
 import org.jboss.netty.channel.Channel
 

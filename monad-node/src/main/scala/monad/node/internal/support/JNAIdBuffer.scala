@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import com.sun.jna.{Native, Pointer}
 import monad.face.services.DataTypeUtils
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 
 /**
  * 基于JNA的IdBuffer
@@ -18,7 +18,7 @@ class JNAIdBuffer(maxDoc: Int, blockSize: Int) extends IdBuffer {
   private val pointerValue = Native.malloc(size)
   private val pointer = new Pointer(pointerValue)
   if (pointerValue == 0) {
-    throw new MonadException(MonadNodeExceptionCode.FAIL_TO_ALLOCATE_MEMORY)
+    throw new StarkException(MonadNodeExceptionCode.FAIL_TO_ALLOCATE_MEMORY)
   }
   private var writeOffset = 0
 

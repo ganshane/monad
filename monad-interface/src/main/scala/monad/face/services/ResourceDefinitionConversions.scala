@@ -8,7 +8,7 @@ import com.google.gson.JsonObject
 import monad.face.model.ResourceDefinition.{ResourceProperty, ResourceTraitProperty}
 import monad.face.model.types._
 import monad.face.model.{ColumnType, IndexType, MonadColumnType, ResourceDefinition}
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.apache.lucene.document.Field
 
 import scala.util.control.NonFatal
@@ -102,7 +102,7 @@ trait ResourceDefinitionConversions {
         rp.columnType.getColumnType.readValueFromDfs(dbObj, rp)
       } catch {
         case NonFatal(e) =>
-          throw new MonadException("unable to read value from dfs with name:" + rp.name, e, null)
+          throw new StarkException("unable to read value from dfs with name:" + rp.name, e, null)
       }
     }
 

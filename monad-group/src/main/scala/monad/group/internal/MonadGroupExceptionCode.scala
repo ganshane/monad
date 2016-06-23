@@ -2,7 +2,7 @@
 // site: http://www.ganshane.com
 package monad.group.internal
 
-import monad.support.services.ErrorCode
+import stark.utils.services.ErrorCode
 
 /**
  * group模块的异常定义

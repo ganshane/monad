@@ -19,8 +19,8 @@ import monad.face.config.ApiConfigSupport
 import monad.face.model.ResourceDefinition
 import monad.face.services.ResourceDefinitionConversions._
 import monad.face.services.{DataTypeUtils, RpcSearcherFacade}
-import monad.support.MonadSupportConstants
-import monad.support.services.SymbolExpander
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.SymbolExpander
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
@@ -197,7 +197,7 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
     if (dbObj.isEmpty) {
       logger.warn("[{}]fetch from nosql is null with key:{}", searchRequest.resource.name, x)
     } else {
-      val json = jsonParser.parse(new String(dbObj.get, MonadSupportConstants.UTF8_ENCODING)).getAsJsonObject
+      val json = jsonParser.parse(new String(dbObj.get, StarkUtilsConstants.UTF8_ENCODING)).getAsJsonObject
       val bytes = ByteBuffer.allocate(6).putShort(serverHash).putInt(x).array()
       json.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, objectIdCreator.objectIdToString(bytes))
       val extractor = searchRequest.dbObjectExtractor.getOrElse(SearchResultExtractor.DefaultDBObjectExtractor)

@@ -7,7 +7,7 @@ import java.util.Date
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
 import monad.face.services.ResourceDefinitionLoader
-import monad.support.services.{LoggerSupport, MonadException}
+import stark.utils.services.{LoggerSupport, StarkException}
 import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
@@ -48,7 +48,7 @@ class IdSearcherApi extends LoggerSupport{
     //index name
     val indexName = request.getParameter("i")
     if (InternalUtils.isBlank(indexName)) {
-      throw new MonadException(messages.get("invalidate-parameter"),
+      throw new StarkException(messages.get("invalidate-parameter"),
         MonadApiExceptionCode.MISSING_RESOURCE_PARAMETER
       )
     }
@@ -56,7 +56,7 @@ class IdSearcherApi extends LoggerSupport{
     //get column definitions
     val definition = loader.getResourceDefinition(indexName)
     if (definition.isEmpty) {
-      throw new MonadException(messages.get("fail-to-find-index"),
+      throw new StarkException(messages.get("fail-to-find-index"),
         MonadApiExceptionCode.RESOURCE_NOT_FOUND
       )
     }

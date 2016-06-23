@@ -4,7 +4,7 @@ package monad.node.internal
 
 import com.sun.jna.Native
 import monad.node.services.MonadNodeExceptionCode
-import monad.support.services.MonadException
+import stark.utils.services.StarkException
 import org.slf4j.LoggerFactory
 
 /**
@@ -40,7 +40,7 @@ object MemoryLocker {
           case other =>
             errorMessage = "Unexpected exception with code " + lastError + "."
         }
-        throw new MonadException("Error occurred while locking memory: " + errorMessage, MonadNodeExceptionCode.FAIL_TO_LOCK_MEMORY)
+        throw new StarkException("Error occurred while locking memory: " + errorMessage, MonadNodeExceptionCode.FAIL_TO_LOCK_MEMORY)
 
       } else {
         logger.info("Memory locked successfully!")
@@ -48,7 +48,7 @@ object MemoryLocker {
 
     } catch {
       case e: UnsatisfiedLinkError =>
-        throw new MonadException("Cannot lock virtual memory. " +
+        throw new StarkException("Cannot lock virtual memory. " +
           "It seems that you OS (" + System.getProperty("os.name") + ") doesn't support ",
           MonadNodeExceptionCode.FAIL_TO_LOCK_MEMORY)
     }

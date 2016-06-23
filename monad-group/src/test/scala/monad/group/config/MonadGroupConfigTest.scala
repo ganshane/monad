@@ -4,7 +4,7 @@ package monad.group.config
 
 import java.io.ByteArrayInputStream
 
-import monad.support.services.XmlLoader
+import stark.utils.services.XmlLoader
 import org.junit.{Assert, Test}
 
 /**

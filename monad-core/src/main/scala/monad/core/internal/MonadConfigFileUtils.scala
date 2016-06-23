@@ -3,8 +3,8 @@
 package monad.core.internal
 
 import monad.core.MonadCoreSymbols
-import monad.support.MonadSupportConstants
-import monad.support.services.SymbolExpander
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.SymbolExpander
 
 import scala.io.Source
 import scala.util.control.NonFatal
@@ -23,6 +23,6 @@ object MonadConfigFileUtils {
       case NonFatal(e) => //ignore exception
     }
     filePath += "/" + configFile
-    Source.fromFile(filePath, MonadSupportConstants.UTF8_ENCODING).mkString
+    Source.fromFile(filePath, StarkUtilsConstants.UTF8_ENCODING).mkString
   }
 }

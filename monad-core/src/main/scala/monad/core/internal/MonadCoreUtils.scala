@@ -4,7 +4,7 @@ package monad.core.internal
 
 import monad.core.services.MonadCoreErrorCode
 import stark.rpc.config.RpcBindSupport
-import monad.support.services.{MonadException, MonadUtils}
+import stark.utils.services.{StarkException, StarkUtils}
 
 /**
  * utils method
@@ -23,13 +23,13 @@ object MonadCoreUtils {
     rpcBind match {
       case bindSupport: RpcBindSupport =>
         val bind = bindSupport.rpc.bind
-        val (ip, port) = MonadUtils.parseBind(bind)
-        val ipReal = MonadUtils.ip(ip)
+        val (ip, port) = StarkUtils.parseBind(bind)
+        val ipReal = StarkUtils.ip(ip)
         ipReal match {
           case Some((address, mac)) =>
             bindSupport.rpc.bind = "%s:%s".format(address, port)
           case None =>
-            throw new MonadException("ip address not found by pattern %s".format(ip), MonadCoreErrorCode.IP_NOT_FOUND)
+            throw new StarkException("ip address not found by pattern %s".format(ip), MonadCoreErrorCode.IP_NOT_FOUND)
         }
       case _ =>
     }

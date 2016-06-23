@@ -7,7 +7,7 @@ import javax.annotation.PostConstruct
 import com.google.gson.JsonObject
 import monad.core.MonadCoreConstants
 import monad.face.{CloudPathConstants, MonadFaceConstants}
-import monad.support.services.ZookeeperTemplate
+import stark.utils.services.ZookeeperTemplate
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.PeriodicExecutor

@@ -15,7 +15,7 @@ import monad.face.internal.AbstractResourceDefinitionLoaderListener
 import monad.face.model.ResourceDefinition
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader}
 import monad.protocol.internal.InternalSyncProto.{SyncRequest, SyncResponse}
-import monad.support.services.{LoggerSupport, MonadUtils}
+import stark.utils.services.{LoggerSupport, StarkUtils}
 import monad.sync.model.DataEvent
 import monad.sync.services.ResourceImporterManager
 import org.apache.tapestry5.ioc.ObjectLocator
@@ -94,7 +94,7 @@ class ResourceImporterManagerImpl(objectLocator: ObjectLocator,
       case NonFatal(e) =>
         disruptor.halt()
     }
-    MonadUtils.shutdownExecutor(dbReader, "resource importer manager")
+    StarkUtils.shutdownExecutor(dbReader, "resource importer manager")
   }
 
 

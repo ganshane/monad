@@ -16,8 +16,8 @@
   </parent>
   <dependencies>
     <dependency>
-      <groupId>com.ganshane.monad</groupId>
-      <artifactId>monad-support</artifactId>
+      <groupId>com.ganshane.stark</groupId>
+      <artifactId>stark-utils_2.11</artifactId>
     </dependency>
     <dependency>
       <groupId>com.ganshane.monad</groupId>
@@ -32,8 +32,8 @@
       <artifactId>monad-mmseg</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.ganshane.monad</groupId>
-      <artifactId>monad-rpc</artifactId>
+      <groupId>com.ganshane.stark</groupId>
+      <artifactId>stark-rpc_2.11</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>

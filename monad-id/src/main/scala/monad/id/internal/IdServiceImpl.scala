@@ -12,7 +12,7 @@ import monad.id.config.MonadIdConfig
 import monad.id.services.IdService
 import monad.jni.services.gen.{NoSQLOptions, NoSQLSupport}
 import monad.protocol.internal.InternalIdProto.IdCategory
-import monad.support.services.{LoggerSupport, ServiceUtils}
+import stark.utils.services.{LoggerSupport, ServiceUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 

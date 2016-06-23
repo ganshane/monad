@@ -12,8 +12,8 @@ import monad.face.CloudPathConstants
 import monad.face.model.ResourceEvent.ResourceEventType
 import monad.face.model.{ResourceDefinition, ResourceEvent}
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
-import monad.support.MonadSupportConstants
-import monad.support.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.apache.tapestry5.services.Core
 import org.slf4j.LoggerFactory
@@ -107,7 +107,7 @@ class ResourcesWatcher(zk: GroupZookeeperTemplate,
           if (data.isDefined) {
             val x = data.get
             logger.debug("[{}] watched resource path {}", key, path)
-            val rd = XmlLoader.parseXML[ResourceDefinition](new String(x, MonadSupportConstants.UTF8_ENCODING))
+            val rd = XmlLoader.parseXML[ResourceDefinition](new String(x, StarkUtilsConstants.UTF8_ENCODING))
             val resyncStat = zk.stat(CloudPathConstants.RESOURCE_RESYNC_PATH_FORMAT.format(key))
             val stat = zk.stat(path).get
             resyncStat match {
