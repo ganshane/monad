@@ -19,16 +19,8 @@
     <module>monad-extjs</module>
     <module>monad-group</module>
     <module>monad-interface</module>
-    <module>monad-jni</module>
     <module>monad-mmseg</module>
-    <module>monad-node</module>
-    <module>monad-id</module>
     <module>monad-protocol</module>
-    <!--
-    <module>monad-rpc</module>
-    <module>monad-support</module>
-    -->
-    <module>monad-sync</module>
   </modules>
   <scm>
     <url>https://github.com/ganshane/monad</url>

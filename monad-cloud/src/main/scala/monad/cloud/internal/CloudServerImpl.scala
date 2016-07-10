@@ -8,14 +8,13 @@ import javax.annotation.PostConstruct
 
 import monad.cloud.config.MonadCloudConfig
 import monad.cloud.services.CloudServer
-import monad.core.MonadCoreConstants
-import stark.utils.services.{LoggerSupport, ZookeeperTemplate}
 import org.apache.commons.io.FileUtils
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.server._
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.quorum.{QuorumPeer, QuorumPeerConfig}
+import stark.utils.services.{LoggerSupport, ZookeeperTemplate}
 
 import scala.collection.JavaConversions._
 
@@ -144,9 +143,9 @@ class CloudServerImpl(clusterConfig: MonadCloudConfig)
     val rootZk = new ZookeeperTemplate("localhost:" + clusterConfig.port)
     rootZk.start(null)
 
-    //Copyr from
-    rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.GROUPS_PATH)
-    rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.LIVE_PATH)
+//    //Copyr from
+//    rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.GROUPS_PATH)
+//    rootZk.createPersistPath(MonadCoreConstants.ROOT_PATH + MonadCoreConstants.LIVE_PATH)
 
     rootZk.shutdown()
   }

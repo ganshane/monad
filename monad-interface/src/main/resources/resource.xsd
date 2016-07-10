@@ -6,27 +6,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
            elementFormDefault="qualified">
   <xs:element name="resource" type="resourceType"/>
-  <!-- 资源类型定义 -->
-  <xs:simpleType name="dataType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Real"/>
-      <xs:enumeration value="Data"/>
-      <xs:enumeration value="Virtual"/>
-    </xs:restriction>
-  </xs:simpleType>
-  <!-- 同步策略 -->
-  <xs:simpleType name="syncPolicyType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Incremental"/>
-      <xs:enumeration value="Full"/>
-    </xs:restriction>
-  </xs:simpleType>
   <!-- 分词器的定义 -->
   <xs:simpleType name="analyzerType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Standard"/>
-      <xs:enumeration value="MMSeg"/>
-      <xs:enumeration value="Name"/>
+      <xs:enumeration value="SmartCN"/>
+      <xs:enumeration value="CJK"/>
     </xs:restriction>
   </xs:simpleType>
   <!-- cron Type -->
@@ -35,23 +20,14 @@
       <xs:pattern value="[\d\*\?/\s]{7,21}"/>
     </xs:restriction>
   </xs:simpleType>
-  <!-- index type -->
-  <xs:simpleType name="columnIndexType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Keyword"/>
-      <xs:enumeration value="Text"/>
-      <xs:enumeration value="UnIndexed"/>
-      <xs:enumeration value="UnStored"/>
-    </xs:restriction>
-  </xs:simpleType>
   <!-- column type -->
   <xs:simpleType name="columnType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="String"/>
+      <xs:enumeration value="Key"/>
       <xs:enumeration value="Long"/>
       <xs:enumeration value="Int"/>
       <xs:enumeration value="Date"/>
-      <xs:enumeration value="Clob"/>
+      <xs:enumeration value="Text"/>
     </xs:restriction>
   </xs:simpleType>
   <!-- 查询类型定义  -->
@@ -76,7 +52,7 @@
   <!-- 索引部分的定义 -->
   <xs:complexType name="indexType">
     <xs:sequence>
-      <xs:element type="analyzerType" name="analyzer" default="MMSeg">
+      <xs:element type="analyzerType" name="analyzer" default="Standard">
         <xs:annotation>
           <xs:documentation>索引分词器</xs:documentation>
         </xs:annotation>
@@ -99,21 +75,6 @@
   </xs:complexType>
   <xs:complexType name="syncType">
     <xs:sequence>
-      <xs:element type="cronType" name="cron" default="0 0 1 * * ? *">
-        <xs:annotation>
-          <xs:documentation>数据同步定时器</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="xs:float" name="interval" default="60" minOccurs="0" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>数据同步时间间隔</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element type="syncPolicyType" name="policy" minOccurs="0" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>数据同步策略</xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element type="xs:string" name="preprocessor" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>数据预处理器</xs:documentation>
@@ -129,16 +90,16 @@
           <xs:documentation>原始数据编码，方便进行转码维护</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element type="jdbcType" name="jdbc" minOccurs="1" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>jdbc相关定义</xs:documentation>
-        </xs:annotation>
-      </xs:element>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="propertyType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="family" use="required">
+          <xs:annotation>
+            <xs:documentation>所属列族</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
         <xs:attribute type="xs:string" name="name" use="required">
           <xs:annotation>
             <xs:documentation>属性名称</xs:documentation>
@@ -154,14 +115,9 @@
             <xs:documentation>列表展示的表头名称</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute type="columnType" name="column_type" default="String">
+        <xs:attribute type="columnType" name="column_type" default="Key">
           <xs:annotation>
             <xs:documentation>列的类型</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute type="columnIndexType" name="index_type" default="Text">
-          <xs:annotation>
-            <xs:documentation>索引类型</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute type="xs:boolean" name="default_query" use="optional">
@@ -179,16 +135,6 @@
             <xs:documentation>该项对应的字典</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute type="xs:boolean" name="primary_key" use="optional">
-          <xs:annotation>
-            <xs:documentation>是否为主键</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute type="xs:boolean" name="modify_key" use="optional">
-          <xs:annotation>
-            <xs:documentation>是否为增量判断字段</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
         <xs:attribute type="xs:string" name="db_format" use="optional">
           <xs:annotation>
             <xs:documentation>数据库中的格式,主要用于日期类型</xs:documentation>
@@ -197,21 +143,6 @@
         <xs:attribute type="xs:string" name="api_format" use="optional">
           <xs:annotation>
             <xs:documentation>API的输出格式,主要用于日期类型</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute type="xs:integer" name="mark" use="optional">
-          <xs:annotation>
-            <xs:documentation>
-              该属性的一些特性定义,按照从右向左二进制的位数来定义
-              第1位 是否为主键字段,兼容 3.2 以下版本的定义,将在4.0版本删除 primary_key 属性
-              第2位 是否为增量字段 在4.0版本将删除 modify_key 属性
-              第3位 是否为默认查询，用于精确查询的页面 在4.0版本将删除 default_query 属性
-              第4位 是否为身份证号码,since 3.2.1
-
-              譬如：
-              mark=5,那么二进制是 101 那么代表是主键字段，也是默认查询
-              mark=12,那么二进制是 1100 那么代表是默认查询字段，也是身份证号码字段
-            </xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute type="xs:float" name="boost" use="optional">
@@ -259,16 +190,6 @@
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="jdbcType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="driver"/>
-      <xs:element type="xs:string" name="url"/>
-      <xs:element type="xs:string" name="user"/>
-      <xs:element type="xs:string" name="password"/>
-      <xs:element type="xs:integer" name="batch_size"/>
-      <xs:element type="xs:string" name="sql"/>
-    </xs:sequence>
-  </xs:complexType>
   <xs:complexType name="relType">
     <xs:sequence>
       <xs:element type="traitType" name="property" maxOccurs="unbounded" minOccurs="1">
@@ -290,7 +211,7 @@
   </xs:complexType>
   <xs:complexType name="searchType">
     <xs:sequence>
-      <xs:element type="analyzerType" name="analyzer" default="MMSeg">
+      <xs:element type="analyzerType" name="analyzer" default="Standard">
         <xs:annotation>
           <xs:documentation>索引分词器</xs:documentation>
         </xs:annotation>
@@ -335,21 +256,6 @@
         <xs:documentation>资源名称</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute type="dataType" name="type" use="optional" default="Real">
-      <xs:annotation>
-        <xs:documentation>
-          资源类型
-          Real (默认) 正常资源
-          Data 仅仅提供数据的资源，配置此属性后，要与下方的target共同配置起作用
-          Virtual 虚拟资源，相当于只提供前台的查询功能，由其他资源提供数据
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute type="xs:string" name="target" use="optional">
-      <xs:annotation>
-        <xs:documentation>配置本资源将导入到的目标资源</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute type="xs:string" name="cn_name" use="required">
       <xs:annotation>
         <xs:documentation>资源中文名称</xs:documentation>
@@ -363,11 +269,6 @@
     <xs:attribute type="xs:boolean" name="share" default="false">
       <xs:annotation>
         <xs:documentation>资源是否为共享资源</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute type="xs:boolean" name="save" default="true">
-      <xs:annotation>
-        <xs:documentation>是否在抽取的时候保存本资源内容</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
