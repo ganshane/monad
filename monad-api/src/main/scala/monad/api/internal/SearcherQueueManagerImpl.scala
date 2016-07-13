@@ -8,9 +8,8 @@ package monad.api.internal
 
 import monad.api.services.{ResourceRequest, SearcherQueue}
 import monad.face.internal.AbstractResourceDefinitionLoaderListener
-import monad.face.model.ResourceType
 import monad.face.services.RpcSearcherFacade
-import roar.api.meta.ResourceDefinition
+import roar.api.meta.{ResourceType, ResourceDefinition}
 import stark.utils.services.ZookeeperTemplate
 
 /**

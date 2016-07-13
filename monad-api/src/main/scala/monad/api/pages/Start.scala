@@ -7,13 +7,12 @@
 
 package monad.api.pages
 
-import monad.face.model.ResourceType
 import monad.face.services.ResourceDefinitionLoader
 import org.apache.tapestry5.annotations.{Cached, Property}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.services.{Request, Response}
 import org.apache.tapestry5.util.TextStreamResponse
-import roar.api.meta.ResourceDefinition
+import roar.api.meta.{ResourceType, ResourceDefinition}
 
 import scala.collection.JavaConversions._
 
