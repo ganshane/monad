@@ -4,19 +4,21 @@ package monad.group.internal
 
 import java.io.File
 
-import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
+import monad.face.model.{DynamicResourceDefinition, ResourceRelation}
 import monad.face.services.{GroupServerApi, GroupZookeeperTemplate}
 import monad.group.config.MonadGroupConfig
-import stark.utils.services.XmlLoader
 import org.apache.commons.io.FileUtils
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog
 import org.apache.zookeeper.server.{ServerCnxnFactory, ServerConfig, ZooKeeperServer}
 import org.junit.{After, Assert, Before, Test}
 import org.mockito.Mockito
+import roar.api.meta.ResourceDefinition
+import stark.utils.services.XmlLoader
 
 /**
  * monad group manager
+ *
  * @author jcai
  */
 class MonadGroupManagerTest {

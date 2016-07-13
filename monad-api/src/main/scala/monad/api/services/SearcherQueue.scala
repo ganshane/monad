@@ -9,12 +9,14 @@ package monad.api.services
 
 import monad.api.model.SearchResult
 import monad.face.model.IdShardResult
-import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.search.highlight.Highlighter
+import roar.protocol.generated.RoarProtos.SearchResponse
+import stark.utils.services.ServiceLifecycle
 
 /**
  * 搜索队列
+ *
  * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
  * @version $Revision$
  * @since 0.3
@@ -22,6 +24,7 @@ import org.apache.lucene.search.highlight.Highlighter
 trait SearcherQueue extends ServiceLifecycle {
   /**
    * 返回总的文档数目
+ *
    * @return 文档数目
    * @since 0.1
    */
@@ -29,6 +32,7 @@ trait SearcherQueue extends ServiceLifecycle {
 
   /**
    * 进行搜索
+ *
    * @param q 关键词
    * @param start 起始位置
    * @param offset 偏移量
@@ -37,12 +41,13 @@ trait SearcherQueue extends ServiceLifecycle {
    * @since 0.1
    * @see SearchResult
    */
-  def search(q: String, start: Int, offset: Int, sortStr: String): SearchResult
+  def search(q: String, start: Int, offset: Int, sortStr: String): SearchResponse
 
   def idSearch(q: String): IdShardResult
 
   /**
    * 频次分析
+ *
    * @param q 查询语句
    * @param field 频次分析的字段
    * @param upper 频次的上限
@@ -54,6 +59,7 @@ trait SearcherQueue extends ServiceLifecycle {
 
   /**
    * create highlighter
+ *
    * @param q query keyword
    * @return highlighter instance
    * @since 0.1

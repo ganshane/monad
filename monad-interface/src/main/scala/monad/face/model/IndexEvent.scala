@@ -3,9 +3,11 @@
 package monad.face.model
 
 import com.google.gson.JsonObject
+import roar.api.meta.ResourceDefinition
 
 /**
  * 索引的事件
+ *
  * @author jcai
  */
 class IndexEvent {

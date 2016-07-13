@@ -4,18 +4,21 @@ package monad.group.internal.local
 
 import monad.core.config.ZkClientConfigSupport
 import monad.face.config.GroupConfigSupport
-import monad.face.model.{GroupConfig, ResourceDefinition}
+import monad.face.model.GroupConfig
 import monad.face.services.GroupServerApi
 import monad.group.internal.MonadGroupUpNotifier
+import roar.api.meta.ResourceDefinition
 import stark.utils.services.XmlLoader
 
 /**
  * 本地化的monad组配置
+ *
  * @author jcai
  */
 class LocalGroupServiceApiImpl(config: GroupConfigSupport, cloudManager: MonadGroupUpNotifier) extends GroupServerApi {
   /**
    * 得到自己组的配置
+ *
    * @return 自身组的配置
    */
   def GetSelfGroupConfig = {
@@ -29,12 +32,14 @@ class LocalGroupServiceApiImpl(config: GroupConfigSupport, cloudManager: MonadGr
 
   /**
    * 得到其他组的配置
+ *
    * @return 其他组的配置
    */
   def GetOtherGroups = cloudManager.getLiveGroups
 
   /**
    * 得到所有资源的集合
+ *
    * @param group 组名称
    * @return 所有资源列表
    */
@@ -47,6 +52,7 @@ class LocalGroupServiceApiImpl(config: GroupConfigSupport, cloudManager: MonadGr
 
   /**
    * 得到云服务器地址
+ *
    * @return 云服务器地址
    */
   def GetCloudAddress = config.asInstanceOf[ZkClientConfigSupport].zk.address

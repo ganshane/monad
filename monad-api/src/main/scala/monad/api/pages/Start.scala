@@ -7,18 +7,20 @@
 
 package monad.api.pages
 
-import monad.face.model.{ResourceDefinition, ResourceType}
+import monad.face.model.ResourceType
 import monad.face.services.ResourceDefinitionLoader
 import org.apache.tapestry5.annotations.{Cached, Property}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.services.{Request, Response}
 import org.apache.tapestry5.util.TextStreamResponse
+import roar.api.meta.ResourceDefinition
 
 import scala.collection.JavaConversions._
 
 /**
  * init page
- * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
+  *
+  * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
  * @version $Revision$
  * @since 0.3
  */

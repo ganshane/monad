@@ -3,10 +3,11 @@
 package monad.api.model
 
 import monad.api.services.DBObjectExtractor
-import monad.face.model.ResourceDefinition
+import roar.api.meta.ResourceDefinition
 
 /**
  * 搜索请求
+ *
  * @author jcai
  */
 class SearchRequest {

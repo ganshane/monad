@@ -7,11 +7,12 @@ import java.util.Date
 
 import monad.core.config.ZkClientConfigSupport
 import monad.face.CloudPathConstants
-import monad.face.model.{DynamicResourceDefinition, ResourceDefinition, ResourceRelation}
+import monad.face.model.{DynamicResourceDefinition, ResourceRelation}
 import monad.face.services.{DataTypeUtils, GroupZookeeperTemplate}
+import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
 import stark.utils.StarkUtilsConstants
 import stark.utils.services.XmlLoader
-import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
 
@@ -22,7 +23,6 @@ import scala.util.control.NonFatal
  * /groups/xx/resources/yy 为组内某一资源的数据定义
  * /groups/xx/resources/yy/max 为组内某一资源的数据的最大值
  * /groups/xx/relations 为组内关系定义
- *
  *
  * @author jcai
  */

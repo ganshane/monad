@@ -11,16 +11,18 @@ import java.util
 import monad.api.model.SearchResult
 import monad.api.services.SearcherQueue
 import monad.face.MonadFaceConstants
-import monad.face.model.{AnalyzerCreator, ResourceDefinition, ShardResult, ShardResultCollect}
-import monad.face.services.ResourceDefinitionConversions._
+import monad.face.model.{ShardResult, ShardResultCollect}
 import monad.face.services.RpcSearcherFacade
-import stark.utils.services.ServiceLifecycle
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
 import org.apache.lucene.search.highlight.{Highlighter, QueryTermScorer, SimpleHTMLFormatter}
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinitionConversions._
+import roar.api.meta.{AnalyzerCreator, ResourceDefinition}
+import roar.protocol.generated.RoarProtos.SearchResponse
+import stark.utils.services.ServiceLifecycle
 
 import scala.collection.JavaConversions._
 
@@ -78,12 +80,11 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     result
   }
 
-  def search(q: String, start: Int, offset: Int, sortStr: String): SearchResult = {
+  def search(q: String, start: Int, offset: Int, sortStr: String): SearchResponse= {
     //进行搜索的时候，为了提高缓存的命中率，提高offset
     var topN = start + offset
     if (topN < 1000) topN = 1000
-    val searchResults = resourceSearcher.collectSearch(rd.name, q, sortStr, topN)
-    internalSearch(searchResults, start, offset)
+    resourceSearcher.collectSearch(rd.name, q, sortStr, start,offset)
   }
 
   private def internalSearch(searchResults: ShardResult, start: Int, offset: Int): SearchResult = {

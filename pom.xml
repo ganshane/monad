@@ -91,6 +91,14 @@
         <artifactId>servlet-api</artifactId>
         <version>2.5</version>
       </dependency>
+      <!-- roar -->
+      <dependency>
+        <groupId>com.ganshane.roar</groupId>
+        <artifactId>roar-api_2.11</artifactId>
+        <version>0.0.5</version>
+      </dependency>
+
+
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>

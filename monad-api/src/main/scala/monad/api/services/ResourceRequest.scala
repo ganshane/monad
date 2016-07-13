@@ -2,12 +2,13 @@
 // site: http://www.ganshane.com
 package monad.api.services
 
-import monad.face.model.ResourceDefinition
 import org.apache.tapestry5.ioc.ScopeConstants
 import org.apache.tapestry5.ioc.annotations.Scope
+import roar.api.meta.ResourceDefinition
 
 /**
  * 资源请求的线程绑定类，方便进行处理
+ *
  * @author jcai
  */
 @Scope(ScopeConstants.PERTHREAD)

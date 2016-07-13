@@ -9,20 +9,22 @@ import javax.annotation.PostConstruct
 import com.lmax.disruptor.dsl.Disruptor
 import com.lmax.disruptor.{EventFactory, EventTranslator}
 import monad.face.CloudPathConstants
+import monad.face.model.ResourceEvent
 import monad.face.model.ResourceEvent.ResourceEventType
-import monad.face.model.{ResourceDefinition, ResourceEvent}
 import monad.face.services.{GroupZookeeperTemplate, ResourceDefinitionLoader, ResourceDefinitionLoaderListener}
-import stark.utils.StarkUtilsConstants
-import stark.utils.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
 import org.apache.tapestry5.ioc.services.{ParallelExecutor, RegistryShutdownHub}
 import org.apache.tapestry5.services.Core
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
+import stark.utils.StarkUtilsConstants
+import stark.utils.services.{ChildrenDataWatcher, NodeDataWatcher, XmlLoader}
 
 import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
 /**
  * 针对资源的监控
+ *
  * @author jcai
  */
 //@EagerLoad

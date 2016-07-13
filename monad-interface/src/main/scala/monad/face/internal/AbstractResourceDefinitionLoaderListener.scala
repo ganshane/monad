@@ -5,15 +5,16 @@ package monad.face.internal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 
-import monad.face.model.ResourceDefinition
 import monad.face.services.ResourceDefinitionLoaderListener
-import stark.utils.services.{StarkException, ServiceLifecycle, ServiceUtils}
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
+import stark.utils.services.{ServiceLifecycle, ServiceUtils, StarkException}
 
 import scala.util.control.NonFatal
 
 /**
  * 抽象的资源定义加载监听器
+ *
  * @author jcai
  */
 trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
@@ -55,6 +56,7 @@ trait AbstractResourceDefinitionLoaderListener[T <: ServiceLifecycle]
 
   /**
    * 重新抽取的动作
+ *
    * @param resourceName
    */
   def onRemove(resourceName: String) {

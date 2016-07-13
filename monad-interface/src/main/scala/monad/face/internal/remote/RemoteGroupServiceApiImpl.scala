@@ -11,16 +11,18 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.{Gson, JsonParser}
 import monad.face.ApiConstants
 import monad.face.config.GroupApiSupport
-import monad.face.model.{GroupConfig, ResourceDefinition}
+import monad.face.model.GroupConfig
 import monad.face.services.{GroupServerApi, MonadFaceExceptionCode}
-import stark.utils.services.{HttpRestClient, StarkException, XmlLoader}
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
+import stark.utils.services.{HttpRestClient, StarkException, XmlLoader}
 
 import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
 /**
  * 远程组服务API的实现类
+ *
  * @author jcai
  */
 class RemoteGroupServiceApiImpl(groupApiSupport: GroupApiSupport, httpRestClient: HttpRestClient) extends GroupServerApi {

@@ -3,10 +3,11 @@
 package monad.api.internal
 
 import monad.api.services.ResourceRequest
-import monad.face.model.ResourceDefinition
+import roar.api.meta.ResourceDefinition
 
 /**
  * 实现resource request
+ *
  * @author jcai
  */
 class ResourceRequestImpl extends ResourceRequest {

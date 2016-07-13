@@ -7,37 +7,39 @@
 package monad.api.internal
 
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.google.gson.{JsonArray, JsonObject, JsonParser}
+import com.google.protobuf.ByteString
 import monad.api.MonadApiConstants
-import monad.api.model.{SearchRequest, SearchResult}
+import monad.api.model.SearchRequest
 import monad.api.services.{DBObjectExtractor, MemcachedClient, ObjectIdCreator}
 import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
-import monad.face.model.ResourceDefinition
-import monad.face.services.ResourceDefinitionConversions._
-import monad.face.services.{DataTypeUtils, RpcSearcherFacade}
-import stark.utils.StarkUtilsConstants
-import stark.utils.services.SymbolExpander
+import monad.face.services.RpcSearcherFacade
 import org.apache.commons.codec.digest.DigestUtils
+import org.apache.hadoop.hbase.client.Result
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
+import roar.api.meta.ResourceDefinitionConversions._
+import roar.protocol.generated.RoarProtos.SearchResponse
+import stark.utils.services.SymbolExpander
 
 import scala.collection.JavaConversions._
 
 /**
  * 针对搜索结果的二次处理
- * @author jcai
+  *
+  * @author jcai
  */
 object SearchResultExtractor {
   private val DEFAULT_CREATE_FORMATTER = "yyyy-MM-dd HH:mm:ss"
 
   object DefaultDBObjectExtractor extends DBObjectExtractor {
-    def extract(resource: ResourceDefinition, dbObj: JsonObject, highlighterObj: Option[ResultHighlighter] = None) = {
+    def extract(resource: ResourceDefinition, dbObj: Result, highlighterObj: Option[ResultHighlighter] = None) = {
       val row = new JsonObject()
-      row.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, dbObj.get(MonadFaceConstants.OBJECT_ID_FIELD_NAME).getAsString)
+//      row.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, dbObj.get(MonadFaceConstants.OBJECT_ID_FIELD_NAME).getAsString)
       resource.properties.foreach { col =>
         val v = col.readApiValue(dbObj)
         if (v.isDefined) {
@@ -49,6 +51,7 @@ object SearchResultExtractor {
         }
       }
       //如果有创建时间，需要格式化输出
+      /*
       val createTimeFlag = dbObj.has(MonadFaceConstants.UPDATE_TIME_FIELD_NAME)
       if (createTimeFlag) {
         val formatter = new SimpleDateFormat(DEFAULT_CREATE_FORMATTER)
@@ -56,16 +59,19 @@ object SearchResultExtractor {
           MonadFaceConstants.UPDATE_TIME_FIELD_NAME,
           formatter.format(new Date(DataTypeUtils.convertIntAsDate(dbObj.get(MonadFaceConstants.UPDATE_TIME_FIELD_NAME).getAsInt))))
       }
+      */
 
       Some(row)
     }
   }
 
   object DynamicDBObjectExtractor extends DBObjectExtractor {
-    def extract(resource: ResourceDefinition, dbObj: JsonObject, highlighterObj: Option[ResultHighlighter] = None) = {
+    def extract(resource: ResourceDefinition, dbObj: Result, highlighterObj: Option[ResultHighlighter] = None) = {
       val row = new JsonObject()
+      /*
       row.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME,
         dbObj.get(MonadFaceConstants.OBJECT_ID_FIELD_NAME).getAsString)
+      */
 
       val dpMap = resource.dynamicType.properties.foldLeft(Map[String, String]()) { (map, x) =>
         map + (x.name -> x.traitProperty)
@@ -107,7 +113,7 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
   private val logger = LoggerFactory getLogger getClass
 
   def extract(searchRequest: SearchRequest,
-              searchFunction: (SearchRequest) => SearchResult,
+              searchFunction: (SearchRequest) => SearchResponse,
               highlighterObj: Option[ResultHighlighter] = None): JsonObject = {
     logger.info("[{}] searching [{}] ....", searchRequest.resourceName, searchRequest.q)
     val startTime = new Date().getTime
@@ -134,7 +140,7 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
   }
 
   private def directQuery(searchRequest: SearchRequest,
-                          searchFunction: (SearchRequest) => SearchResult,
+                          searchFunction: (SearchRequest) => SearchResponse,
                           highlighterObj: Option[ResultHighlighter] = None): JsonObject = {
     val json = new JsonObject
     //查询某一具体数据
@@ -143,9 +149,8 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
       val serverHash: Short = buffer.getShort
       //DataTypeUtils.convertAsShort(searchRequest.objectId)
       //System.arraycopy(searchRequest.objectId, 2, objId, 0, 4)
-      val objId = buffer.getInt
-
-      val row = findData(searchRequest, serverHash, objId, highlighterObj)
+      val objId = searchRequest.objectId
+      val row = findData(searchRequest, serverHash, ByteString.copyFrom(objId), highlighterObj)
       row match {
         case Some(x) =>
           json.addProperty(MonadApiConstants.JSON_KEY_TOTAL, 1)
@@ -159,12 +164,12 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
     //执行全文检索
     val result = searchFunction(searchRequest)
 
-    json.addProperty(MonadApiConstants.JSON_KEY_ALL, result.all)
-    json.addProperty(MonadApiConstants.JSON_KEY_TOTAL, result.hitCount)
-    json.addProperty(MonadApiConstants.JSON_KEY_NODE_ALL, result.nodeAll)
-    json.addProperty(MonadApiConstants.JSON_KEY_NODE_SUCCESS, result.nodeSuccess)
-    json.add(MonadApiConstants.JSON_KEY_NODE_SUCCESS_INFO, result.nodeSuccessInfo)
-    json.addProperty(MonadApiConstants.JSON_KEY_NODE_ERROR, result.nodeError)
+    json.addProperty(MonadApiConstants.JSON_KEY_ALL, result.getTotal)
+    json.addProperty(MonadApiConstants.JSON_KEY_TOTAL, result.getCount)
+//    json.addProperty(MonadApiConstants.JSON_KEY_NODE_ALL, result.nodeAll)
+//    json.addProperty(MonadApiConstants.JSON_KEY_NODE_SUCCESS, result.nodeSuccess)
+//    json.add(MonadApiConstants.JSON_KEY_NODE_SUCCESS_INFO, result.nodeSuccessInfo)
+//    json.addProperty(MonadApiConstants.JSON_KEY_NODE_ERROR, result.nodeError)
 
     //convert to JsonObject
     if (searchRequest.includeData || cacheSupport.api.enableMemcachedCache) {
@@ -173,18 +178,20 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
     json
   }
 
-  private[api] def appendData(result: SearchResult, json: JsonObject, searchRequest: SearchRequest, highlighterObj: Option[ResultHighlighter] = None) = {
+  private[api] def appendData(result: SearchResponse, json: JsonObject, searchRequest: SearchRequest, highlighterObj: Option[ResultHighlighter] = None) = {
     val data = new JsonArray()
-    val faceCountData = result.facetCount
-    val servers = result.servers
-    for (i <- 0 until result.hits.length) {
-      val x = result.hits(i)
-      val row = findData(searchRequest, servers(i), x, highlighterObj)
+    val faceCountData = None //result.facetCount
+//    val servers = result.servers
+    for (i <- 0 until result.getRowCount) {
+      val x = result.getRow(i).getRowId
+      val row = findData(searchRequest, 0,x, highlighterObj)
       if (row.isDefined) {
         val rowData = row.get
+        /*
         if (faceCountData.isDefined) {
           rowData.addProperty(MonadFaceConstants.FACET_COUNT, faceCountData.get(i))
         }
+        */
         data.add(rowData)
       }
     }
@@ -192,16 +199,18 @@ class SearchResultExtractor(noSQL: RpcSearcherFacade,
   }
 
   //从dfs中抓取数据
-  private def findData(searchRequest: SearchRequest, serverHash: Short, x: Int, highlighterObj: Option[ResultHighlighter] = None): Option[JsonObject] = {
+  private def findData(searchRequest: SearchRequest, serverHash: Short, x: ByteString, highlighterObj: Option[ResultHighlighter] = None): Option[JsonObject] = {
     val dbObj = noSQL.findObject(serverHash, searchRequest.resourceName, x)
     if (dbObj.isEmpty) {
       logger.warn("[{}]fetch from nosql is null with key:{}", searchRequest.resource.name, x)
     } else {
+      /*
       val json = jsonParser.parse(new String(dbObj.get, StarkUtilsConstants.UTF8_ENCODING)).getAsJsonObject
       val bytes = ByteBuffer.allocate(6).putShort(serverHash).putInt(x).array()
       json.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, objectIdCreator.objectIdToString(bytes))
+      */
       val extractor = searchRequest.dbObjectExtractor.getOrElse(SearchResultExtractor.DefaultDBObjectExtractor)
-      return extractor.extract(searchRequest.resource, json, highlighterObj)
+      return extractor.extract(searchRequest.resource, dbObj.get, highlighterObj)
     }
     None
   }

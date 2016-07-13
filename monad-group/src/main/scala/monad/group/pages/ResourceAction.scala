@@ -5,17 +5,18 @@ package monad.group.pages
 import com.google.gson.JsonObject
 import monad.extjs.annotations.ExtDirectMethod
 import monad.extjs.model.ExtStreamResponse
-import monad.face.model.ResourceDefinition
 import monad.group.internal.{MonadGroupExceptionCode, MonadGroupManager}
-import stark.utils.services.{StarkException, XmlLoader}
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
+import roar.api.meta.ResourceDefinition
+import stark.utils.services.{StarkException, XmlLoader}
 
 import scala.util.control.NonFatal
 
 /**
  * resource action
+ *
  * @author jcai
  */
 class ResourceAction {

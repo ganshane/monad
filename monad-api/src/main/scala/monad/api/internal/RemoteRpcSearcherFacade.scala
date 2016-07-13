@@ -2,25 +2,32 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
+import com.google.protobuf.ByteString
 import monad.face.MonadFaceConstants
 import monad.face.model.{IdShardResult, ShardResult}
 import monad.face.services.RpcSearcherFacade
-import monad.protocol.internal.InternalFindDocProto.{InternalFindDocRequest, InternalFindDocResponse}
 import monad.protocol.internal.InternalIdProto._
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
-import monad.protocol.internal.InternalSearchProto.InternalSearchRequest
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.Result
+import roar.api.services.RoarClient
+import roar.protocol.generated.RoarProtos.SearchResponse
 import stark.rpc.services.RpcClient
 
 /**
  * implements rpc searcher facade
- * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
+  *
+  * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-26
  */
 class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
+  val conf = HBaseConfiguration.create()
+  private val roarClient = new RoarClient(conf)
   /**
    * search index with index name and keyword
    */
-  override def collectSearch(resourceName: String, q: String, sort: String, topN: Int): ShardResult = {
+  override def collectSearch(resourceName: String, q: String, sort: String, offset: Int,size:Int): SearchResponse = {
+    /*
     val builder = InternalSearchRequest.newBuilder()
     builder.setResourceName(resourceName)
     builder.setQ(q)
@@ -30,11 +37,14 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
     builder.setTopN(topN)
     val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createCollectSearchMerger(), InternalSearchRequest.cmd, builder.build())
     future.get()
+    */
+    roarClient.search(resourceName,q,Option(sort),offset,size)
   }
 
   /**
    * 搜索对象
-   * @param resourceName 资源名称
+    *
+    * @param resourceName 资源名称
    * @param q 搜索条件
    * @return 搜索比中结果
    */
@@ -52,25 +62,14 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
 
   /**
    * 查找对象的详细信息
-   * @param serverId 服务器的Hash值
+    *
+    * @param serverId 服务器的Hash值
    * @param resourceName 资源名称
    * @param key 键值
    * @return 数据值
    */
-  override def findObject(serverId: Short, resourceName: String, key: Int): Option[Array[Byte]] = {
-    val builder = InternalFindDocRequest.newBuilder()
-    builder.setId(key)
-    builder.setResourceName(resourceName)
-    val future = rpcClient.writeMessageWithBlocking(MonadFaceConstants.MACHINE_NODE_FORMAT.format(serverId), InternalFindDocRequest.cmd, builder.build)
-    val resultCommand = future.get
-    if (resultCommand == null)
-      return None
-
-    val findDocResponse = resultCommand.getExtension(InternalFindDocResponse.cmd)
-    if (findDocResponse.hasJson)
-      Some(findDocResponse.getJson.toByteArray)
-    else
-      None
+  override def findObject(serverId: Short, resourceName: String, key: ByteString): Option[Result] = {
+    roarClient.findRow(resourceName,key.toByteArray)
   }
 
   override def maxDoc(resourceName: String): Long = {

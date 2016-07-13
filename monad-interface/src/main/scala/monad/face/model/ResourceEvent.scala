@@ -3,9 +3,11 @@
 package monad.face.model
 
 import monad.face.model.ResourceEvent.ResourceEventType
+import roar.api.meta.ResourceDefinition
 
 /**
  * 资源事件类型
+ *
  * @author jcai
  */
 class ResourceEvent {

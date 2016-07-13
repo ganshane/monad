@@ -9,8 +9,8 @@ import com.google.gson.JsonObject
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade, SearcherQueue}
 import monad.face.config.ApiConfigSupport
-import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
+import stark.utils.services.StarkException
 
 /**
  * 搜索的实现
@@ -23,9 +23,12 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   def getDocumentNum: Long = searcherQueue.getDocumentNum
 
   def facetSearch(searchRequest: SearchRequest): JsonObject = {
+    /*
     extractor.extract(searchRequest, { request =>
       searcherQueue.facetSearch(request.q, searchRequest.facetField, searchRequest.facetUpper, searchRequest.facetLower)
     })
+    */
+    throw new UnsupportedOperationException()
   }
 
   def search(searchRequest: SearchRequest): JsonObject = {

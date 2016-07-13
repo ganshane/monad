@@ -4,12 +4,14 @@ package monad.face.services
 
 import java.util.concurrent.ExecutorService
 
-import monad.face.model.{IdShardResult, ResourceDefinition, ShardResult}
-import stark.utils.services.ServiceLifecycle
+import monad.face.model.{IdShardResult, ShardResult}
 import org.apache.lucene.index.IndexWriter
+import roar.api.meta.ResourceDefinition
+import stark.utils.services.ServiceLifecycle
 
 /**
  * 搜索的plugin
+ *
  * @author jcai
  */
 trait ResourceSearcherSupport {

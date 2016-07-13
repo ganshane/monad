@@ -2,10 +2,11 @@
 // site: http://www.ganshane.com
 package monad.face.model
 
-import monad.face.model.ResourceDefinition.ResourceDynamicType
-import monad.face.services.ResourceDefinitionConversions._
-import stark.utils.services.XmlLoader
 import org.junit.{Assert, Test}
+import roar.api.meta.ResourceDefinition
+import roar.api.meta.ResourceDefinition.ResourceDynamicType
+import roar.api.meta.ResourceDefinitionConversions._
+import stark.utils.services.XmlLoader
 
 /**
  *

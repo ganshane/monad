@@ -4,11 +4,12 @@ package monad.api.internal
 
 import com.google.gson.JsonObject
 import monad.api.services.SearcherFacade
-import monad.face.model.ResourceDefinition
 import monad.face.services.GroupZookeeperTemplate
+import roar.api.meta.ResourceDefinition
 
 /**
  * 针对资源的状态进行统计
+ *
  * @author jcai
  */
 class ResourceStater(searcherFacade: SearcherFacade, groupZk: GroupZookeeperTemplate) {

@@ -32,6 +32,10 @@
       <artifactId>monad-mmseg</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.ganshane.roar</groupId>
+      <artifactId>roar-api_2.11</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-highlighter</artifactId>
     </dependency>
