@@ -21,7 +21,12 @@ import stark.rpc.services.RpcClient
  * @since 2015-02-26
  */
 class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
-  val conf = HBaseConfiguration.create()
+  private val conf = HBaseConfiguration.create()
+  conf.set("hbase.zookeeper.property.clientPort", "2181")
+  conf.set("hbase.zookeeper.quorum", "localhost")
+  conf.set("hbase.master", "localhost:60000")
+  conf.set("zookeeper.znode.parent","/groups/test")
+
   private val roarClient = new RoarClient(conf)
   /**
    * search index with index name and keyword

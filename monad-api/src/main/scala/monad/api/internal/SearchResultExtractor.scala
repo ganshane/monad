@@ -19,6 +19,7 @@ import monad.face.config.ApiConfigSupport
 import monad.face.services.RpcSearcherFacade
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.util.Bytes
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.slf4j.LoggerFactory
 import roar.api.meta.ResourceDefinition
@@ -39,7 +40,8 @@ object SearchResultExtractor {
   object DefaultDBObjectExtractor extends DBObjectExtractor {
     def extract(resource: ResourceDefinition, dbObj: Result, highlighterObj: Option[ResultHighlighter] = None) = {
       val row = new JsonObject()
-//      row.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, dbObj.get(MonadFaceConstants.OBJECT_ID_FIELD_NAME).getAsString)
+      val rowId = Bytes.toString(dbObj.getRow)
+      row.addProperty(MonadFaceConstants.OBJECT_ID_FIELD_NAME, rowId)
       resource.properties.foreach { col =>
         val v = col.readApiValue(dbObj)
         if (v.isDefined) {
