@@ -6,13 +6,13 @@ import com.google.gson.{GsonBuilder, JsonObject}
 import monad.api.MonadApiConstants
 import monad.api.services.MonadApiExceptionCode
 import monad.face.MonadFaceConstants
-import stark.utils.services.StarkException
 import org.apache.tapestry5.EventContext
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
 import org.apache.tapestry5.util.TextStreamResponse
 import org.slf4j.Logger
+import stark.utils.services.StarkException
 
 import scala.util.control.NonFatal
 
@@ -50,10 +50,10 @@ abstract class BaseApi {
         json.addProperty(MonadApiConstants.JSON_KEY_SUCCESS, false)
         json.addProperty(MonadApiConstants.STATUS, MonadApiConstants.ERROR_STATUS)
         if (e.isInstanceOf[StarkException]) {
-          json.addProperty(MonadApiConstants.MSG, e.toString)
+          json.addProperty(MonadApiConstants.MSG, e.getMessage)
         } else {
           logger.error(e.toString, e)
-          json.addProperty(MonadApiConstants.MSG, e.getMessage)
+          json.addProperty(MonadApiConstants.MSG, e.toString)
         }
     }
     val callback = request.getParameter("callback")
