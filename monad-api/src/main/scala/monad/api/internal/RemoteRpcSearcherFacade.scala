@@ -3,12 +3,13 @@
 package monad.api.internal
 
 import com.google.protobuf.ByteString
+import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
 import monad.face.model.{IdShardResult, ShardResult}
-import monad.face.services.RpcSearcherFacade
+import monad.face.services.{GroupServerApi, RpcSearcherFacade}
 import monad.protocol.internal.InternalIdProto._
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
-import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.{HConstants, HBaseConfiguration}
 import org.apache.hadoop.hbase.client.Result
 import roar.api.services.RoarClient
 import roar.protocol.generated.RoarProtos.SearchResponse
@@ -20,12 +21,13 @@ import stark.rpc.services.RpcClient
   * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-26
  */
-class RemoteRpcSearcherFacade(rpcClient: RpcClient) extends RpcSearcherFacade {
+class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) extends RpcSearcherFacade {
   private val conf = HBaseConfiguration.create()
-  conf.set("hbase.zookeeper.property.clientPort", "2181")
-  conf.set("hbase.zookeeper.quorum", "localhost")
-  conf.set("hbase.master", "localhost:60000")
-  conf.set("zookeeper.znode.parent","/groups/test")
+  conf.set(HConstants.ZOOKEEPER_QUORUM, groupApi.GetCloudAddress)
+  conf.set(HConstants.HBASE_CLIENT_RETRIES_NUMBER,"3")
+  conf.set(HConstants.HBASE_RPC_TIMEOUT_KEY,"30000")
+//  conf.set(HConstants.HBASE_CLIENT_IPC_POOL_SIZE)
+  conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT,MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)
 
   private val roarClient = new RoarClient(conf)
   /**
