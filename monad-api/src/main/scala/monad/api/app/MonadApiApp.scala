@@ -21,7 +21,7 @@ object MonadApiApp
     val serverHome = System.getProperty(MonadCoreSymbols.SERVER_HOME, "support")
     System.setProperty(MonadCoreSymbols.SERVER_HOME, serverHome)
     val config = MonadApiModule.buildMonadApiConfig(serverHome)
-    configLogger(config.logFile, "API", "monad", "ganshane")
+    configLogger(config.logFile, "API", "monad", "ganshane","roar")
 
     val logger = LoggerFactory getLogger getClass
     logger.info("Starting api server ....")
