@@ -2,15 +2,17 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.google.protobuf.ByteString
 import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
-import monad.face.model.{IdShardResult, ShardResult}
+import monad.face.model.{IdShardResult, IdShardResultCollect, ShardResult}
 import monad.face.services.{GroupServerApi, RpcSearcherFacade}
-import monad.protocol.internal.InternalIdProto._
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
-import org.apache.hadoop.hbase.{HConstants, HBaseConfiguration}
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.{HBaseConfiguration, HConstants}
 import roar.api.services.RoarClient
 import roar.protocol.generated.RoarProtos.SearchResponse
 import stark.rpc.services.RpcClient
@@ -29,6 +31,8 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) exte
 //  conf.set(HConstants.HBASE_CLIENT_IPC_POOL_SIZE)
   conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT,MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)
 
+  private val regionMapping = new ConcurrentHashMap[String,Int]()
+  private val seq = new AtomicInteger(1)
   private val roarClient = new RoarClient(conf)
   /**
    * search index with index name and keyword
@@ -56,11 +60,26 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) exte
    * @return 搜索比中结果
    */
   override def searchObjectId(resourceName: String, q: String): IdShardResult = {
-    val builder = IdSearchRequest.newBuilder()
-    builder.setResourceName(resourceName)
-    builder.setQ(q)
-    val future = rpcClient.writeMessageToMultiServer(MonadFaceConstants.MACHINE_NODES, ApiMessageFilter.createIdSearchMerger(), IdSearchRequest.cmd, builder.build())
-    future.get()
+    val result = roarClient.idSearch(resourceName,"object_id",q)
+    val collect = new IdShardResultCollect
+    collect.results = result.map{response=>
+      val shard = new IdShardResult
+      shard.data = response.getData
+
+      val regionKey = response.getRegionId.toString
+      var regionId = 0
+      if(regionMapping.contains(regionKey)) {
+        regionId = regionMapping.get(regionKey)
+      }else{
+        regionId = seq.incrementAndGet()
+        regionMapping.put(regionKey,regionId)
+      }
+      shard.region = regionId
+
+      shard
+    }
+
+    collect
   }
 
   override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {

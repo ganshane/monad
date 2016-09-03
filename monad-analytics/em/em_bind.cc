@@ -263,29 +263,38 @@ namespace monad {
     uint8_t** bb = (uint8_t**) &buffer;
     uint32_t offset = 0;
 
-    int length = ReadUint32(bb);
-    int nonZeroLongCount = ReadUint32(bb);
+
     SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
+    //read length
+    uint32_t seg_len = ReadUint32(bb);
+    for(int i=0;i<seg_len;i++) {
+      //regionId
+      int regionId = ReadUint32(bb);
 
-    wrapper->NewSeg(1,length);
-    wrapper->ReadNonZero(nonZeroLongCount);
+      int length = ReadUint32(bb);
+      int nonZeroLongCount = ReadUint32(bb);
 
-    int arrayLength =  ReadUint32(bb);
-    for(int i=0;i<arrayLength;i++){
-      wrapper->ReadIndice(i,ReadUint64(bb));
-    }
-    int bitLength = 0;
-    for(int i=0;i<arrayLength;i++){
-      bitLength = ReadUint32(bb);
-      if(bitLength > 0)
-        wrapper->CreateBit(i,bitLength);
+      printf("regionId %d length:%d nonzero:%d \n",regionId,length,nonZeroLongCount);
+      wrapper->NewSeg(regionId, length);
+      wrapper->ReadNonZero(nonZeroLongCount);
 
-      for(int j=0;j<bitLength;j++){
-        wrapper->ReadBitBlock(i,j,ReadUint64(bb));
+      int arrayLength = ReadUint32(bb);
+      for (int i = 0; i < arrayLength; i++) {
+        wrapper->ReadIndice(i, ReadUint64(bb));
       }
-    }
+      int bitLength = 0;
+      for (int i = 0; i < arrayLength; i++) {
+        bitLength = ReadUint32(bb);
+        if (bitLength > 0)
+          wrapper->CreateBit(i, bitLength);
 
-    uint64_t ramBytesUsed = ReadUint64(bb);
+        for (int j = 0; j < bitLength; j++) {
+          wrapper->ReadBitBlock(i, j, ReadUint64(bb));
+        }
+      }
+
+      uint64_t ramBytesUsed = ReadUint64(bb);
+    }
     //printf("bitCount:%d\n",wrapper->BitCount());
     std::vector<val> args_ = *(std::vector<val>*)arg;
     uint32_t weight = args_[4].as<uint32_t>();

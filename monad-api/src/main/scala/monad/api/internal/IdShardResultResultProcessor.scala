@@ -4,19 +4,21 @@ package monad.api.internal
 //package org.apache.lucene.util
 
 import java.io.OutputStream
+import java.nio.ByteBuffer
 
 import monad.api.MonadApiConstants
-import monad.face.model.IdShardResult
-import monad.face.services.BitSetUtils
+import monad.face.model.IdShardResultCollect
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, Response}
+import stark.utils.services.LoggerSupport
 
 /**
  * 针对ID搜索返回的结果进行处理
- * @author jcai
+  *
+  * @author jcai
  */
-class IdShardResultResultProcessor(response: Response) extends ComponentEventResultProcessor[IdShardResult] {
-  def processResultValue(collect: IdShardResult) {
+class IdShardResultResultProcessor(response: Response) extends ComponentEventResultProcessor[IdShardResultCollect] with LoggerSupport {
+  def processResultValue(collect: IdShardResultCollect) {
     var os: OutputStream = null;
 
     // The whole point is that the response is in the hands of the StreamResponse;
@@ -44,7 +46,21 @@ class IdShardResultResultProcessor(response: Response) extends ComponentEventRes
 
       //os = new DeflaterOutputStream(response.getOutputStream("application/octet-stream"),true)
       os = response.getOutputStream("application/octet-stream")
-      BitSetUtils.serialize(collect.data,os)
+      val length = collect.results.length
+
+      val buffer = ByteBuffer.allocate(4)
+
+      val lengthData = buffer.putInt(length).array()
+      os.write(lengthData)
+
+      collect.results.foreach{shard=>
+        buffer.clear()
+        info("shard region:{}",shard.region)
+        buffer.putInt(shard.region)
+        os.write(buffer.array())
+
+        shard.data.writeTo(os)
+      }
 
       /*
       val byteBuffer = ByteBuffer.allocate(8)

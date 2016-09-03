@@ -28,7 +28,8 @@ class ImportIdCardsApi {
     ids.foreach(x=> if(x!=MonadFaceConstants.UNKNOWN_ID_SEQ) bitSet.set(x))
 
     val collect = new IdShardResult()
-    collect.data = bitSet
+//    collect.data = bitSet
+    throw new UnsupportedOperationException()
 
     collect
   }

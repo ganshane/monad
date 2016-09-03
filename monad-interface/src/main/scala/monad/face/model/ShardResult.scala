@@ -3,11 +3,12 @@
 package monad.face.model
 
 import com.google.gson.JsonArray
-import monad.face.internal.MonadSparseFixedBitSet
+import com.google.protobuf.ByteString
 
 /**
  * shard result
- * @author jcai
+  *
+  * @author jcai
  * @version 0.1
  */
 class ShardResult extends Serializable{
@@ -26,8 +27,8 @@ class ShardResultCollect extends ShardResult{
     var nodesError:Int = 0
 }
 class IdShardResult extends Serializable{
-    var data: MonadSparseFixedBitSet = _
-    var region:Short = 0
+    var data: ByteString = _
+    var region:Int = 0
 }
 class IdShardResultCollect extends IdShardResult{
     var results:Array[IdShardResult] = _

@@ -12,13 +12,13 @@ import monad.api.internal._
 import monad.api.services._
 import monad.face.config.ApiConfigSupport
 import monad.face.internal.RemoteIdFacade
-import monad.face.model.{IdShardResult, OpenBitSetWithNodes}
+import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
 import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
 import monad.protocol.internal.{InternalFindDocProto, InternalIdProto, InternalMaxdocQueryProto, InternalSearchProto}
-import stark.rpc.services.ProtobufExtensionRegistryConfiger
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, RequestFilter, RequestHandler}
+import stark.rpc.services.ProtobufExtensionRegistryConfiger
 
 /**
  * API Module
@@ -67,7 +67,7 @@ object LocalMonadApiModule {
   @Contribute(classOf[ComponentEventResultProcessor[_]])
   def provideOpenBitSetResultProcessor(configuration: MappedConfiguration[Class[_ <: AnyRef], ComponentEventResultProcessor[_ <: AnyRef]]) {
     configuration.addInstance(classOf[OpenBitSetWithNodes], classOf[OpenBitSetResultProcessor])
-    configuration.addInstance(classOf[IdShardResult], classOf[IdShardResultResultProcessor])
+    configuration.addInstance(classOf[IdShardResultCollect], classOf[IdShardResultResultProcessor])
   }
 
   @Contribute(classOf[ExtensionRegistry])

@@ -19,7 +19,7 @@
     <!${useBrowserHistory} END Browser History required section -->
     <script type="text/javascript">
         function analytics_onready(){
-            Module.SetApiUrl("http://localhost:9081/api");
+            Module.SetApiUrl("http://keyten:9081/api");
         }
     </script>
 
@@ -104,7 +104,7 @@
 <br>
 <div id="msg" style="border:1px solid green"></div>
 <div>
-    <h3>api:query</h3><br/> q:<input type="text" id="q" value="test"/>,resource:<input type="text" id="i" value="test_10000"/>,save key:<input type="text" id="qk" value="1"/>
+    <h3>api:query</h3><br/> q:<input type="text" id="q" value="test"/>,resource:<input type="text" id="i" value="trace"/>,save key:<input type="text" id="qk" value="1"/>
     <input type="button" onClick="javascript:testQuery();" value="query"/><br/>
 </div>
 <h3>merge</h3><br/>keys:<input type="text" id="keys"/> ,save key:<input type="text" id="keySaved"/>

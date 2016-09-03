@@ -39,7 +39,7 @@ class IdSearcherApi extends LoggerSupport{
     val begin = new Date().getTime
     val r = searchFacade.idSearch(searchRequest)
     val end = new Date().getTime
-    info("[" + searchRequest.resourceName + "] idsearch q:[{}],hits:{} time:{}ms ", q,r.data.cardinality(),(end - begin))
+    info("[" + searchRequest.resourceName + "] idsearch q:[{}], time:{}ms ", q,end - begin)
 
     r
   }
