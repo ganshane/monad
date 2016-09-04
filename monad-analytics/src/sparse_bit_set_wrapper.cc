@@ -51,6 +51,9 @@ namespace monad {
       (*it)->bit_set->SetWeight(_weight);
   }
 
+  uint32_t SparseBitSetWrapper::SegCount(){
+    return _data.size();
+  }
   int32_t SparseBitSetWrapper::BitCount() {
     std::vector<BitSetRegion<SparseBitSet>*>::iterator it = _data.begin();
     int32_t r = 0;

@@ -47,6 +47,10 @@ namespace monad {
     void SetWeight(int32_t weight);
     int32_t BitCount();
     /**
+     * 得到段的数量
+     */
+    uint32_t SegCount();
+    /**
      * 读取集合中的前N个
      * @param result 传入的结果的对象
      * @param n 取前N个

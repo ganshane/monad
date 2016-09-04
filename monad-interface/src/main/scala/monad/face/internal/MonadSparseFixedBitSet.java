@@ -61,7 +61,7 @@ public class MonadSparseFixedBitSet extends BitSet implements Bits, Accountable 
     final long[] indices;
     final long[][] bits;
     final int length;
-    int nonZeroLongCount;
+    public int nonZeroLongCount;
     long ramBytesUsed;
 
     /** Create a {@link MonadSparseFixedBitSet} that can contain bits between

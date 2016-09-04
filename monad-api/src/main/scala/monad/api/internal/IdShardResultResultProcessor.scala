@@ -55,10 +55,15 @@ class IdShardResultResultProcessor(response: Response) extends ComponentEventRes
 
       collect.results.foreach{shard=>
         buffer.clear()
-        info("shard region:{}",shard.region)
+        info("shard region:{},size:{}bytes",shard.region,shard.data.size())
         buffer.putInt(shard.region)
         os.write(buffer.array())
 
+        /*
+        val outBytes = Snappy.compress(shard.data.toByteArray)
+        info("shard region:{},size:{}bytes after:{} bytes",shard.region,shard.data.size(),outBytes.length)
+        os.write(outBytes)
+        */
         shard.data.writeTo(os)
       }
 

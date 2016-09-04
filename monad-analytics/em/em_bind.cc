@@ -267,14 +267,13 @@ namespace monad {
     SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
     //read length
     uint32_t seg_len = ReadUint32(bb);
-    for(int i=0;i<seg_len;i++) {
+    for(int seg=0;seg<seg_len;seg++) {
       //regionId
       int regionId = ReadUint32(bb);
 
       int length = ReadUint32(bb);
       int nonZeroLongCount = ReadUint32(bb);
 
-      printf("regionId %d length:%d nonzero:%d \n",regionId,length,nonZeroLongCount);
       wrapper->NewSeg(regionId, length);
       wrapper->ReadNonZero(nonZeroLongCount);
 
@@ -283,6 +282,7 @@ namespace monad {
         wrapper->ReadIndice(i, ReadUint64(bb));
       }
       int bitLength = 0;
+//      printf("regionId %d length:%d nonzero:%d bitlength :%d \n",regionId,length,nonZeroLongCount,bitLength);
       for (int i = 0; i < arrayLength; i++) {
         bitLength = ReadUint32(bb);
         if (bitLength > 0)
@@ -294,8 +294,9 @@ namespace monad {
       }
 
       uint64_t ramBytesUsed = ReadUint64(bb);
+//      printf("finish... \n");
     }
-    //printf("bitCount:%d\n",wrapper->BitCount());
+    printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
     std::vector<val> args_ = *(std::vector<val>*)arg;
     uint32_t weight = args_[4].as<uint32_t>();
     wrapper->SetWeight(weight);
@@ -424,9 +425,12 @@ namespace monad {
       printf("sparse len :%d \n",len);
       for (int i = offset; i < len; i++) {
         uint32_t doc = docs[i]->doc;
+        uint32_t region = docs[i]->region;
         val obj = val::object();
         obj.set("id",val(doc));
-        parameter << doc << ",";
+        obj.set("region",val(region));
+        parameter << doc << "@" << region <<",";
+//        parameter << doc << ",";
         data.set(i - offset, obj);
       }
       //clear
