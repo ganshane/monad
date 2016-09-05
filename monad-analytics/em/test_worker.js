@@ -1,6 +1,6 @@
 // Copyright 2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
-  var resource = "test_100000";
+  var resource = "trace";
   var key = 0;
 
   function onMessage(str){

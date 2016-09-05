@@ -1,7 +1,7 @@
 // Copyright 2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 function analytics_onready(){
-  Module.SetApiUrl("http://localhost:9081/api");
+  Module.SetApiUrl("http://keyten:9081/api");
   console.log("loaded ....")
 }
 var Module = {
@@ -66,9 +66,11 @@ function performance(callback){
   Analytics.config.progress("creating wrapper ...")
   var wrapper_object = Analytics.createBitSetWrapper();
   var bit_set_wrapper = wrapper_object.wrapper;
-  bit_set_wrapper.NewSeg(1,100000000)
-  for(i=0;i<10000000;i++ ){
-    bit_set_wrapper.FastSet(i*3);
+  for(j=0;j<50;j++){
+    bit_set_wrapper.NewSeg(j,2000000)
+    for(i=0;i<200000;i++ ){
+      bit_set_wrapper.FastSet(i*3);
+    }
   }
   bit_set_wrapper.Commit();
 

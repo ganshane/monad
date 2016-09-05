@@ -9,17 +9,25 @@ namespace monad{
   template<typename T>
   class BitSet{
   public:
+    int32_t Weight(){
+      return _weight;
+    };
+    void SetWeight(int32_t weight){
+      _weight = weight;
+    };
     //common
-    uint32_t GetWordsLength();
+//    uint32_t GetWordsLength();
     virtual BitSetIterator* ToIterator() = 0;
     virtual void And(const T& other) = 0;
     virtual void Or(const T& other) = 0;
     virtual void Remove(const T& other) = 0;
-    virtual int32_t Weight() = 0;
+//    virtual int32_t Weight() = 0;
     virtual BitSet<T>* Clone() = 0;
     virtual void operator+=(const T& other){ Or(other);}
     virtual void operator&=(const T& other){ And(other);};
     virtual void operator-=(const T& other){ Remove(other);};
+  private:
+    int32_t _weight;
   };
   class BitSetIterator {
   public:

@@ -105,7 +105,7 @@ namespace monad{
     _bits = new Uint64Array*[_blockCount];
     memset(_bits,0,sizeof(Uint64Array*)*_blockCount);
     _nonZeroLongCount = 0;
-    _weight = 1;
+    SetWeight(1);
   }
   SparseBitSet::~SparseBitSet() {
     delete[] _indices;

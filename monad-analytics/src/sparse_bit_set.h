@@ -34,12 +34,7 @@ namespace monad {
     uint32_t PreSetBit(uint32_t i);
     void Clear(uint32_t i);
     void Clear(uint32_t from, uint32_t to);
-    int32_t Weight(){
-      return _weight;
-    };
-    void SetWeight(int32_t weight){
-      _weight = weight;
-    };
+
     SparseBitSet* Clone();
 
     virtual ~SparseBitSet();
@@ -72,7 +67,6 @@ namespace monad {
     Uint64Array** _bits;
     uint32_t _length;
     uint32_t _nonZeroLongCount;
-    int32_t _weight;
   };
 }
 #endif //MONAD_SPARSE_BIT_SET_H_

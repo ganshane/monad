@@ -11,6 +11,12 @@ INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
 #INCLUDE(FindProtobuf)
 
+#build CRoaring
+SET(BUILD_STATIC true)
+SET(DISABLE_AVX OFF)
+SET(CMAKE_C_FLAGS "-std=c11 -fPIC -march=native  -Wall -Winline -Wshadow -Wextra -pedantic")
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/include)
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/src)
 
 # global config file
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -37,6 +43,7 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Linux" )
 ELSE()
   SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-Wall")
 ENDIF()
+TARGET_LINK_LIBRARIES(analytics STATIC)
 
 
 
@@ -149,3 +156,16 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Analytics Native Library")
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
 
 INCLUDE(CPack)
+
+# Being terse is good, but knowing how the build is configured is important
+# and should not be hard to figure out.
+MESSAGE( STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
+MESSAGE( STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE} ) # this tends to be "sticky" so you can remain unknowingly in debug mode
+MESSAGE( STATUS "DISABLE_AVX: " ${DISABLE_AVX} ) # options in cmake a "sticky" so old options can remain even if that is counterintuitive
+MESSAGE( STATUS "BUILD_STATIC: " ${BUILD_STATIC} )
+MESSAGE( STATUS "BUILD_LTO: " ${BUILD_LTO} )
+MESSAGE( STATUS "SANITIZE: " ${SANITIZE} )
+MESSAGE( STATUS "CMAKE_C_COMPILER: " ${CMAKE_C_COMPILER} ) # important to know which compiler is used
+MESSAGE (STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} ) # important to know the flags
+MESSAGE( STATUS "CMAKE_C_FLAGS_DEBUG: " ${CMAKE_C_FLAGS_DEBUG} )
+MESSAGE( STATUS "CMAKE_C_FLAGS_RELEASE: " ${CMAKE_C_FLAGS_RELEASE} )
