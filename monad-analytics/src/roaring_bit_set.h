@@ -16,15 +16,15 @@ namespace monad{
     void Set(uint32_t i);
     bool Get(uint32_t i);
     void Optimize();
+    uint32_t NextSetBit(uint32_t doc);
 
-    BitSetIterator* ToIterator() {}
-    void And(const RoaringBitSet& other) {}
-    void Or(const RoaringBitSet& other)  {}
-    void Remove(const RoaringBitSet& other) {}
-    int32_t Weight() {};
-    BitSet<RoaringBitSet>* Clone() {};
+    BitSetIterator* ToIterator();
+    void And(const RoaringBitSet& other) {roaring_bitmap_and_inplace(_underlying,other._underlying);}
+    void Or(const RoaringBitSet& other)  {roaring_bitmap_or_inplace(_underlying,other._underlying);}
+    void Remove(const RoaringBitSet& other) {roaring_bitmap_andnot_inplace(_underlying,other._underlying);}
 
   private:
+    friend class RoaringBitSetIterator;
     roaring_bitmap_t * _underlying;
 
   };

@@ -1,6 +1,9 @@
 // Copyright 2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 #include "roaring_bit_set.h"
+
+#include "roaring_bit_set_iterator.h"
+
 namespace monad{
   RoaringBitSet::RoaringBitSet() {
     _underlying = roaring_bitmap_create();
@@ -16,5 +19,8 @@ namespace monad{
   }
   void RoaringBitSet::Optimize() {
     roaring_bitmap_run_optimize(_underlying);
+  }
+  BitSetIterator* RoaringBitSet::ToIterator() {
+    return new RoaringBitSetIterator(this);
   }
 }

@@ -2,6 +2,7 @@
 // site: http://www.ganshane.com
 #include "gtest/gtest.h"
 #include <vector>
+#include <roaring_bit_set_iterator.h>
 
 #include "roaring_bit_set.h"
 using namespace monad;
@@ -22,6 +23,7 @@ TEST_F(RoaringBitSetTest, TestRead) {
   bit_set.Set(1000);
   bit_set.Set(3000);
   bit_set.Set(5000);
+  bit_set.Set(15000);
   bit_set.Set(40);
   /*
   bit_set.ReadNonZero(3);
@@ -45,6 +47,12 @@ TEST_F(RoaringBitSetTest, TestRead) {
   ASSERT_FALSE(bit_set.Get(2000));
   ASSERT_TRUE(bit_set.Get(3000));
   ASSERT_TRUE(bit_set.Get(5000));
+  bit_set.Optimize();
+
+  BitSetIterator* iter = bit_set.ToIterator();
+  while(iter->NextDoc() != BitSetIterator::NO_MORE_DOCS){
+    printf("%d \n",iter->DocId());
+  }
 
 }
 /*
