@@ -2,14 +2,12 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
-import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.google.protobuf.ByteString
 import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
-import monad.face.internal.MonadSparseFixedBitSet
 import monad.face.model.{IdShardResult, IdShardResultCollect, ShardResult}
 import monad.face.services.{GroupServerApi, RpcSearcherFacade}
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
@@ -78,10 +76,12 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) exte
         regionMapping.put(regionKey,regionId)
       }
       shard.region = regionId
+      /*
       val bitSet = MonadSparseFixedBitSet.deserialize(new ByteArrayInputStream(shard.data.toByteArray))
       info("region:{} regionId {} length:{} nonzero:{} cardinality:{} ",
         regionKey,
         regionId,bitSet.length(),bitSet.nonZeroLongCount,bitSet.cardinality());
+       */
 
       shard
     }
