@@ -72,9 +72,10 @@ TEST_F(RoaringBitSetTest, TestBitCount) {
   num |= 1LL << 42;
   printf("count1 %d \n",bitCount(num));
 }
+ */
 TEST_F(RoaringBitSetTest, TestGetSet) {
 
-  SparseBitSet bit_set(5000);
+  RoaringBitSet bit_set;
   bit_set.Set(4099);
   bit_set.Set(188);
   bit_set.Set(288);
@@ -87,7 +88,7 @@ TEST_F(RoaringBitSetTest, TestGetSet) {
   ASSERT_FALSE(bit_set.Get(388));
 }
 TEST_F(RoaringBitSetTest, TestUnion) {
-  SparseBitSet bit_set(10000);
+  RoaringBitSet bit_set;
   bit_set.Set(1000);
   bit_set.Set(3000);
   bit_set.Set(5000);
@@ -95,7 +96,7 @@ TEST_F(RoaringBitSetTest, TestUnion) {
   bit_set.Set(9000);
 
 
-  SparseBitSet bit_set1(10000);
+  RoaringBitSet bit_set1;
   bit_set1.Set(2000);
   bit_set1.Set(4000);
   bit_set1.Set(6000);
@@ -104,11 +105,11 @@ TEST_F(RoaringBitSetTest, TestUnion) {
 
   bit_set += bit_set1;
   
-  bit_set.Debug();
+//  bit_set.Debug();
 
   ASSERT_TRUE(bit_set.Get(1000));
   ASSERT_FALSE(bit_set.Get(1500));
-  ASSERT_EQ(1000,bit_set.PreSetBit(1500));
+//  ASSERT_EQ(1000,bit_set.PreSetBit(1500));
   ASSERT_TRUE(bit_set.Get(2000));
   ASSERT_TRUE(bit_set.Get(3000));
   ASSERT_TRUE(bit_set.Get(4000));
@@ -117,15 +118,15 @@ TEST_F(RoaringBitSetTest, TestUnion) {
   ASSERT_TRUE(bit_set.Get(7000));
   ASSERT_TRUE(bit_set.Get(8000));
   ASSERT_TRUE(bit_set.Get(8000));
-  ASSERT_EQ(9000,bit_set.NextSetBit(8001));
+//  ASSERT_EQ(9000,bit_set.NextSetBit(8001));
   ASSERT_TRUE(bit_set.Get(9000));
-  ASSERT_EQ(9000,bit_set.PreSetBit(9500));
+//  ASSERT_EQ(9000,bit_set.PreSetBit(9500));
   ASSERT_FALSE(bit_set.Get(9900));
 }
 
 TEST_F(RoaringBitSetTest, TestAnd) {
 
-  SparseBitSet bit_set(10000);
+  RoaringBitSet bit_set;
   bit_set.Set(1000);
   bit_set.Set(3000);
   bit_set.Set(5000);
@@ -133,7 +134,7 @@ TEST_F(RoaringBitSetTest, TestAnd) {
   bit_set.Set(9000);
 
 
-  SparseBitSet bit_set1(10000);
+  RoaringBitSet bit_set1;
   bit_set1.Set(2000);
   bit_set1.Set(3000);
   bit_set1.Set(4000);
@@ -144,7 +145,7 @@ TEST_F(RoaringBitSetTest, TestAnd) {
 
   bit_set &= bit_set1;
 
-  bit_set.Debug();
+//  bit_set.Debug();
 
   ASSERT_FALSE(bit_set.Get(1000));
   ASSERT_TRUE(bit_set.Get(3000));
@@ -154,7 +155,7 @@ TEST_F(RoaringBitSetTest, TestAnd) {
 }
 TEST_F(RoaringBitSetTest, TestNot) {
 
-  SparseBitSet bit_set(10000);
+  RoaringBitSet bit_set;
   bit_set.Set(1000);
   bit_set.Set(1500);
   bit_set.Set(3000);
@@ -164,7 +165,7 @@ TEST_F(RoaringBitSetTest, TestNot) {
   bit_set.Set(9000);
 
 
-  SparseBitSet bit_set1(10000);
+  RoaringBitSet bit_set1;
   bit_set1.Set(2000);
   bit_set1.Set(3000);
   bit_set1.Set(4000);
@@ -175,7 +176,7 @@ TEST_F(RoaringBitSetTest, TestNot) {
 
   bit_set -= bit_set1;
   
-  bit_set.Debug();
+//  bit_set.Debug();
 
   ASSERT_TRUE(bit_set.Get(1000));
   ASSERT_TRUE(bit_set.Get(3500));
@@ -184,5 +185,4 @@ TEST_F(RoaringBitSetTest, TestNot) {
   ASSERT_FALSE(bit_set.Get(7000));
   ASSERT_FALSE(bit_set.Get(9000));
 }
-*/
 

@@ -9,14 +9,16 @@
 #include "bit_set.h"
 
 namespace monad{
-  class RoaringBitSet:BitSet<RoaringBitSet>{
+  class RoaringBitSet:public BitSet<RoaringBitSet>{
   public:
     RoaringBitSet();
     virtual ~RoaringBitSet();
     void Set(uint32_t i);
     bool Get(uint32_t i);
     void Optimize();
-    uint32_t NextSetBit(uint32_t doc);
+    uint32_t Cardinality(){
+      return roaring_bitmap_get_cardinality(_underlying);
+    }
 
     BitSetIterator* ToIterator();
     void And(const RoaringBitSet& other) {roaring_bitmap_and_inplace(_underlying,other._underlying);}
