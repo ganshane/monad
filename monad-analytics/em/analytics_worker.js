@@ -1,7 +1,7 @@
 // Copyright 2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
 function analytics_onready(){
-  Module.SetApiUrl("http://keyten:9081/api");
+  Module.SetApiUrl("http://localhost:9081/api");
   console.log("loaded ....")
 }
 var Module = {
@@ -28,8 +28,8 @@ onmessage=function(event){
      postMessage({op:op,result:result})
   };
   switch(op){
-    case OP_CLEAR_ALL_COLLECTION:
-      Analytics.clearAllCollection();
+    case OP_INIT_URL:
+      Module.SetApiUrl(event.data.url);
       break;
     case OP_TOP:
       Analytics.top(client_callback,event.data.parameters)
@@ -42,7 +42,14 @@ onmessage=function(event){
       var condition_objects = [];
       for(i =0;i<conditions.length;i++){
         var condition = Analytics.createCondition();
-        Analytics.extend(condition,conditions[i])
+        var query_object = conditions[i];
+        if(query_object.key){
+          //此行支持使用key:id进行确认集合
+          condition.query_objects.push(query_object);
+        }else {
+          //此处支持使用多种条件的延迟加载
+          Analytics.extend(condition, query_object);
+        }
         condition_objects[i]=condition;
       }
 

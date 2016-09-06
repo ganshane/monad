@@ -48,9 +48,19 @@ function createQueryFunction(query_object,iterator_callback){
       query_object.execute(function(coll){query_callback(null,coll)})
     })
   }else if(is_json(query_object)){
-    iterator_callback(null,function(query_callback){
-      Analytics.query(query_object,function(coll){query_callback(null,coll)});
-    });
+    if(query_object.key){
+      iterator_callback(null, function (query_callback) {
+        Analytics.getCollection(query_object.key, function (coll) {
+          query_callback(null, coll)
+        });
+      });
+    }else {
+      iterator_callback(null, function (query_callback) {
+        Analytics.query(query_object, function (coll) {
+          query_callback(null, coll)
+        });
+      });
+    }
   }else{
     iterator_callback(null,function(query_callback){
       query_callback(null,Module.getCollectionProperties(query_object));
@@ -91,9 +101,18 @@ extend(Analytics,{
   },
   //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
   query:function(parameters,callback){
-    var op={weight:1}
-    extend(op,parameters)
-    Module.query({i:op.i,q:op.q},++key,callback,config.fail,config.progress,op.weight);
+    console.log("parameters",parameters);
+    if(parameters.key){
+      this.getCollection(parameters.key,callback);
+    }else {
+      var op = {weight: 1}
+      extend(op, parameters)
+      Module.query({i: op.i, q: op.q}, ++key, callback, config.fail, config.progress, op.weight);
+    }
+  },
+  getCollection:function(key,callback){
+    var coll = Module.getCollectionProperties(key)
+    callback(coll);
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceAndTop:function(args,callback,freq){
@@ -130,6 +149,7 @@ extend(Analytics,{
       _freq = freq;
 
     async.map(args,function(query_object,iterator_callback){
+          if(query_object.op =='') query_object.op = OP_QUERY;
           query_object.execute(function(coll){iterator_callback(null,coll)})
       },function(err,task_results){
   		  if(err){
@@ -188,10 +208,10 @@ Conditions.prototype = {
         Analytics.inPlaceAndTopWithPositionMerged(this.query_objects,callback,this.freq);
         break
       case (OP_QUERY):
-        Analytics.query(this.query_objects[0],callback)
+        Analytics.query(this.query_objects[0],callback);
         break;
       case (OP_FULL_TEXT_QUERY):
-        Analytics.fullTextQuery(this.query_objects[0],callback)
+        Analytics.fullTextQuery(this.query_objects[0],callback);
         break;
       default:
         config.fail("op ["+this.op+"] unrecognized!")

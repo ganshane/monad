@@ -1,5 +1,6 @@
 // Copyright 2016 the original author or authors. All rights reserved.
 // site: http://www.ganshane.com
+var OP_INIT_URL='init';
 var OP_QUERY = 'query';
 var OP_FULL_TEXT_QUERY = 'fullTextQuery';
 var OP_IN_PLACE_AND  = 'inPlaceAnd';

@@ -88,7 +88,7 @@ namespace monad {
   template<typename T>
   inline static T* FindWrapper(std::map<val,T*,KEY>& map, const val& key){
     typename std::map<val ,T*>::iterator it;
-    printf("find wrapper container size:%d \n",map.size());
+//    printf("find wrapper container size:%d \n",map.size());
     it = map.find(key);
     if(it == map.end()){
       return NULL;
@@ -309,7 +309,7 @@ namespace monad {
     }
      */
     wrapper->Commit();
-    printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
+//    printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
     std::vector<val> args_ = *(std::vector<val>*)arg;
     uint32_t weight = args_[4].as<uint32_t>();
     wrapper->SetWeight(weight);

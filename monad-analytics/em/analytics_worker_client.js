@@ -91,6 +91,9 @@ extend(AnalyticsClient,{
     current_task_callback = callback;
     worker.postMessage({op:OP_PERFORMANCE});
   },
+  init:function(apiUrl){
+    worker.postMessage({op:OP_INIT_URL,url:apiUrl});
+  },
   clearAllCollection:function(){
     worker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
   },
@@ -121,6 +124,11 @@ Conditions.prototype = {
   fullTextQuery:function(query_object){
     this.query_objects.push(query_object);
     this.op = OP_FULL_TEXT_QUERY;
+    return this;
+  },
+  collection:function(collectionKey){
+    this.query_objects.push({key:parseInt(collectionKey)});
+    this.op = OP_QUERY;
     return this;
   },
   query:function(query_object){

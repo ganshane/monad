@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+    <title>${title}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style type="text/css" media="screen">
+        html, body	{ height:100%; }
+        body { margin:0; padding:0; overflow:auto; text-align:left;
+            background-color: ${bgcolor}; }
+        object:focus { outline:none; }
+        #flashContent { display:none; }
+    </style>
+    <script src="ops.js"></script>
+    <script src="qunit-1.18.0.js"></script>
+    <script src="analytics_worker_client.js"></script>
+
+    <script type="text/javascript">
+
+        function f(n){
+            return document.getElementById(n).value;
+        }
+        function sf(n,v){
+            document.getElementById(n).value = v;
+        }
+        function onMessage(str){
+            var el = document.createElement("div");
+            el.appendChild(document.createTextNode(str));
+            document.getElementById("msg").appendChild(el);
+        }
+        function onData(obj){
+            onMessage("分析结果数:"+obj.count);
+        }
+        function onFail(msg){
+            onMessage(msg);
+        }
+        function onProgress(msg){
+            onMessage(msg);
+        }
+        function testFlex(){
+            alert(Module.test("hehe"));
+        }
+
+
+
+        Analytics.config.fail = onFail;
+        Analytics.config.progress= onProgress;
+        Analytics.init("http://keyten:9081/api");
+
+        function testQuery(){
+            var json = {i:f('i'),q:f('q')}
+            var k = f('qk');
+            Analytics.createCondition().query(json).execute(function(r){
+                onData(r);
+                sf('qk', r.key);
+            })
+
+        }
+        function baseQuery(){
+            var keys = f('keys').split(',');
+            var q = Analytics.createCondition();
+            for(var i=0;i < keys.length;i++){
+                q.collection(keys[i]);
+            }
+            return q;
+        }
+        function onOperate(r){ onData(r); sf('keySaved', r.key); }
+        function testAnd(){
+            baseQuery().inPlaceAnd().execute(onOperate);
+        }
+        function testAndTop(){
+            baseQuery().inPlaceAndTop().execute(onOperate);
+        }
+        function testAndTopWithPositionMerged(){
+            baseQuery().inPlaceAndTopWithPositionMerged().execute(onOperate);
+        }
+        function testAndNot(){
+            baseQuery().andNot().execute(onOperate);
+        }
+        function testOr(){
+            baseQuery().inPlaceOr().execute(onOperate);
+        }
+        function testTop(){
+            var topk = document.getElementById("topK").value;
+            Analytics.createCondition().collection(topk).top(onTop);
+//            Module.top(Module.IdCategory.Person,topk,100,onTop,0,onFail,onProgress);
+        }
+        function testGetCollectionProperties(){
+            var k= document.getElementById("k9").value;
+            Analytics.createCondition().collection(k).execute(onData)
+        }
+        function testClear(){
+            Analytics.clearAllCollection();
+        }
+        function onTop(obj,key){
+            var str="len:"+obj.length;
+            for(var i=0;i<obj.length;i++){
+                str+=obj[i].id+","
+            }
+            onMessage(str);
+        }
+
+    </script>
+</head>
+<br>
+<div id="msg" style="border:1px solid green"></div>
+<div>
+    <h3>api:query</h3><br/> q:<input type="text" id="q" value="test"/>,resource:<input type="text" id="i" value="trace"/>,save key:<input type="text" id="qk" value="" readonly/>
+    <input type="button" onClick="javascript:testQuery();" value="query"/><br/>
+</div>
+<h3>merge</h3><br/>keys:<input type="text" id="keys"/> ,save key:<input type="text" id="keySaved" readonly/>
+<input type="button" onClick="javascript:testAnd();" value="And"/>
+<input type="button" onClick="javascript:testAndTop();" value="AndTop"/>
+<input type="button" onClick="javascript:testAndTopWithPositionMerged();" value="AndTopWithPositionMerged"/>
+<input type="button" onClick="javascript:testOr();" value="Or"/>
+<input type="button" onClick="javascript:testAndNot();" value="AndNot"/>
+<br/>
+<h3>api:top</h3><br/>top k:<input type="text" id="topK">
+<input type="button" onClick="javascript:testTop();" value="top"/>
+<input type="button" onClick="javascript:testFlex();" value="testFlex"/>
+<br/>
+<input type="text" id="k9"/>
+<input type="button" onClick="javascript:testGetCollectionProperties();" value="getCollectionProperties"/>
+<br/>
+<input type="text" id="clear"/>
+<input type="button" onClick="javascript:testClear();" value="ClearCollection"/>
+<br/>
+</body>
+</html>
