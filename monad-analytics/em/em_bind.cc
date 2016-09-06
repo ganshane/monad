@@ -308,6 +308,7 @@ namespace monad {
 //      printf("finish... \n");
     }
      */
+    wrapper->Commit();
     printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
     std::vector<val> args_ = *(std::vector<val>*)arg;
     uint32_t weight = args_[4].as<uint32_t>();

@@ -28,7 +28,7 @@ namespace monad{
   //对BitSet按照区域进行排序
   template<typename T>
   bool SortBitSetRegion(BitSetRegion<T>* a, BitSetRegion<T>* b) {
-    return a->region <= b->region;
+    return a->region < b->region;
   };
 }//namespace monad
 #endif //MONAD_OPEN_BIT_SET_REGION_H_
