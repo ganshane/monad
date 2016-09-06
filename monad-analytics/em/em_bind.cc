@@ -13,7 +13,8 @@
 #include "bit_set_wrapper.h"
 //#include "sparse_bit_set.h"
 //#include "sparse_bit_set_wrapper.h"
-#include "sparse_bit_set_wrapper.h"
+#include "roaring_bit_set_wrapper.h"
+
 #include "top_bit_set_wrapper.h"
 
 
@@ -50,20 +51,20 @@ namespace monad {
     }
   };
   typedef ValComp KEY;
-  //记录SparseBitSetWrapper的容器
-  static std::map<val,SparseBitSetWrapper*,KEY> container;
+  //记录RoaringBitSetWrapper的容器
+  static std::map<val,RoaringBitSetWrapper*,KEY> container;
   //记录TopBitSetWrapper的容器
   static std::map<val,TopBitSetWrapper*,KEY> top_container;
 
-  //操作SparseBitSetWrapper的函数对象
-  typedef SparseBitSetWrapper* (*Action)(SparseBitSetWrapper**,size_t);
+  //操作RoaringBitSetWrapper的函数对象
+  typedef RoaringBitSetWrapper* (*Action)(RoaringBitSetWrapper**,size_t);
   void ClearCollection(const val& key);
 
   /**
    * 从buffer中读取一个32bit的整数
    */
-  inline static uint32_t ReadUint32(uint8_t** buffer){
-    uint8_t* bb = *buffer;
+  inline static uint32_t ReadUint32(char** buffer){
+    char* bb = *buffer;
     uint32_t i = 0;
     i |= bb[0] << 24;
     i |= bb[1] << 16;
@@ -76,7 +77,7 @@ namespace monad {
   /**
    * 从buffer重读取一个64bit的数
    */
-  inline static uint64_t ReadUint64(uint8_t** buffer){
+  inline static uint64_t ReadUint64(char** buffer){
     uint64_t hi = ReadUint32(buffer);
     uint64_t lo = ReadUint32(buffer);
     return  (hi << 32) | lo;
@@ -236,16 +237,16 @@ namespace monad {
 
     uint32_t length=0;
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
-    SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
+    RoaringBitSetWrapper** collections = CreateWrapperCollection<RoaringBitSetWrapper>(container,keys,args,&length);
     if(collections == NULL)
       return;
 
     ReportProgressOnOperation(on_progress,"execute ...");
-    SparseBitSetWrapper* wrapper= action(collections,length);
+    RoaringBitSetWrapper* wrapper= action(collections,length);
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     ReportProgressOnOperation(on_progress,"call callback function");
-    CallJavascriptFunction<SparseBitSetWrapper>(container,args,wrapper);
+    CallJavascriptFunction<RoaringBitSetWrapper>(container,args,wrapper);
   }
 
   /**
@@ -258,13 +259,22 @@ namespace monad {
     delete (std::vector<val>*)args;
   }
   /**
-   * 从http传输过来的buffer中解析出来SparseBitSetWrapper
+   * 从http传输过来的buffer中解析出来RoaringBitSetWrapper
    */
-  static void OnLoadSparseBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
-    uint8_t** bb = (uint8_t**) &buffer;
+  static void OnLoadRoaringBitSetBuffer(unsigned xx,void* arg,void* buffer,unsigned size){
+    char * * bb = (char**) &buffer;
     uint32_t offset = 0;
 
 
+    RoaringBitSetWrapper* wrapper = new RoaringBitSetWrapper();
+    uint32_t seg_len = ReadUint32(bb);
+    for(int seg=0;seg<seg_len;seg++) {
+      //regionId
+      int regionId = ReadUint32(bb);
+      *bb = *bb + wrapper->NewSeg(regionId,*bb);
+    }
+
+    /*
     SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
     //read length
     uint32_t seg_len = ReadUint32(bb);
@@ -297,6 +307,7 @@ namespace monad {
       uint64_t ramBytesUsed = ReadUint64(bb);
 //      printf("finish... \n");
     }
+     */
     printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
     std::vector<val> args_ = *(std::vector<val>*)arg;
     uint32_t weight = args_[4].as<uint32_t>();
@@ -334,33 +345,33 @@ namespace monad {
     p.append("q=").append(parameter["q"].as<std::string>());
     std::string query_api(api_url);
     query_api.append("/analytics/IdSearcher");
-    emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadSparseBitSetBuffer,&OnFail,&OnProgress);
+    emscripten_async_wget2_data(query_api.c_str(),"POST",p.c_str(),(void*)arg,true,&OnLoadRoaringBitSetBuffer,&OnFail,&OnProgress);
   }
 
   uint32_t ContainerSize(){
     return container.size();
   }
   void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&SparseBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
+    DoOperator(&RoaringBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
   }
   void InPlaceOr(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&SparseBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail,on_progress);
+    DoOperator(&RoaringBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail,on_progress);
   }
   void AndNot(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&SparseBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail,on_progress);
+    DoOperator(&RoaringBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail,on_progress);
   }
   void InPlaceAndTop(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
 
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
-    SparseBitSetWrapper** collections = CreateWrapperCollection<SparseBitSetWrapper>(container,keys,args,&length);
+    RoaringBitSetWrapper** collections = CreateWrapperCollection<RoaringBitSetWrapper>(container,keys,args,&length);
     if(collections == NULL)
       return;
 
     ReportProgressOnOperation(on_progress,"executing...");
-    TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTop(collections,length,min_freq);
-    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    TopBitSetWrapper* wrapper= RoaringBitSetWrapper::InPlaceAndTop(collections,length,min_freq);
+    printf("andTop result bitCount:%d \n",wrapper->BitCount());
     delete [] collections;
     ReportProgressOnOperation(on_progress,"call callback function...");
     CallJavascriptFunction<TopBitSetWrapper>(top_container,args,wrapper);
@@ -374,7 +385,7 @@ namespace monad {
     if(collections == NULL)
       return;
     ReportProgressOnOperation(on_progress,"executing...");
-    TopBitSetWrapper* wrapper= SparseBitSetWrapper::InPlaceAndTopWithPositionMerged(collections,length,min_freq);
+    TopBitSetWrapper* wrapper= RoaringBitSetWrapper::InPlaceAndTopWithPositionMerged(collections,length,min_freq);
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     ReportProgressOnOperation(on_progress,"call callback function...");
@@ -398,7 +409,7 @@ namespace monad {
         TopDoc *top_doc = docs[i]->top_doc;
         val obj = val::object();
         obj.set("id", val(top_doc->doc));
-        parameter << top_doc->doc << ",";
+        parameter << top_doc->doc <<"@" << docs[i]->region<< ",";
         obj.set("count", val(top_doc->freq));
         val p = val::array();
         //js中不能直接保存64bit的对象,拆分成两个int
@@ -420,7 +431,7 @@ namespace monad {
       delete[] docs;
     }
 
-    SparseBitSetWrapper* sparse_wrapper = FindWrapper(container,key);
+    RoaringBitSetWrapper* sparse_wrapper = FindWrapper(container,key);
     if(sparse_wrapper != NULL){
       RegionDoc** docs = sparse_wrapper->Top(query_topN,len);
       printf("sparse len :%d \n",len);
@@ -511,7 +522,7 @@ namespace monad {
    * 得到某一个集合的属性
    */
   val GetCollectionProperties(const val& key){
-    SparseBitSetWrapper* wrapper = FindWrapper(container,key);
+    RoaringBitSetWrapper* wrapper = FindWrapper(container,key);
     val result = val::object();
     if(wrapper){
       result.set("count",val(wrapper->BitCount()));
@@ -526,11 +537,11 @@ namespace monad {
     }
     return result;
   }
-  SparseBitSetWrapper* CreateBitSetWrapper(const val& key){
+  RoaringBitSetWrapper* CreateBitSetWrapper(const val& key){
     //先删除同key的集合
     ClearCollection(key);
-    SparseBitSetWrapper* wrapper = new SparseBitSetWrapper();
-    container.insert(std::pair<val,SparseBitSetWrapper*>(key,wrapper));
+    RoaringBitSetWrapper* wrapper = new RoaringBitSetWrapper();
+    container.insert(std::pair<val,RoaringBitSetWrapper*>(key,wrapper));
     return wrapper;
   }
 
@@ -560,21 +571,21 @@ namespace monad {
       function("createBitSetWrapper", &CreateBitSetWrapper,allow_raw_pointers());
 
 
-      class_<SparseBitSetWrapper>("BitSetWrapper")
+      class_<RoaringBitSetWrapper>("BitSetWrapper")
           .constructor()
-          .function("NewSeg",&monad::SparseBitSetWrapper::NewSeg)
-          .function("ReadIndice",&monad::SparseBitSetWrapper::ReadIndice)
-          .function("CreateBit",&monad::SparseBitSetWrapper::CreateBit)
-          .function("ReadBitBlock",&monad::SparseBitSetWrapper::ReadBitBlock)
-          .function("ReadNonZero",&monad::SparseBitSetWrapper::ReadNonZero)
-          .function("FastSet",&monad::SparseBitSetWrapper::FastSet)
-          .function("Set",&monad::SparseBitSetWrapper::Set)
-          .function("Commit", &monad::SparseBitSetWrapper::Commit)
-          .function("FastGet", &monad::SparseBitSetWrapper::FastGet)
-          .function("SetWeight", &monad::SparseBitSetWrapper::SetWeight)
-          .function("BitCount", &monad::SparseBitSetWrapper::BitCount);
+//          .function("NewSeg",&monad::RoaringBitSetWrapper::NewSeg)
+//          .function("ReadIndice",&monad::RoaringBitSetWrapper::ReadIndice)
+//          .function("CreateBit",&monad::RoaringBitSetWrapper::CreateBit)
+//          .function("ReadBitBlock",&monad::RoaringBitSetWrapper::ReadBitBlock)
+//          .function("ReadNonZero",&monad::RoaringBitSetWrapper::ReadNonZero)
+          .function("FastSet",&monad::RoaringBitSetWrapper::FastSet)
+          .function("Set",&monad::RoaringBitSetWrapper::Set)
+          .function("Commit", &monad::RoaringBitSetWrapper::Commit)
+          .function("FastGet", &monad::RoaringBitSetWrapper::FastGet)
+          .function("SetWeight", &monad::RoaringBitSetWrapper::SetWeight)
+          .function("BitCount", &monad::RoaringBitSetWrapper::BitCount);
           //.class_function("InPlaceAnd",method, allow_raw_pointers());
-          //.class_function("InPlaceAnd",select_overload<SparseBitSetWrapper*(SparseBitSetWrapper**,size_t)>(&monad::SparseBitSetWrapper::InPlaceAnd), allow_raw_pointers());
+          //.class_function("InPlaceAnd",select_overload<RoaringBitSetWrapper*(RoaringBitSetWrapper**,size_t)>(&monad::RoaringBitSetWrapper::InPlaceAnd), allow_raw_pointers());
 
   };
 }

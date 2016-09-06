@@ -38,6 +38,7 @@ namespace monad{
 
   private:
     friend class RoaringBitSetIterator;
+    friend class RoaringBitSetWrapper;
     roaring_bitmap_t * _underlying;
     uint32_t _num_words;
 
