@@ -11,12 +11,13 @@
 namespace monad{
   class RoaringBitSet:public BitSet<RoaringBitSet>{
   public:
-    RoaringBitSet(uint32_t i=0);
+    RoaringBitSet(uint32_t i=1);
     virtual ~RoaringBitSet();
     void Set(uint32_t i);
     bool Get(uint32_t i);
     void Optimize();
     uint32_t GetWordsLength(){
+//      return Cardinality();
       return _num_words;
     }
     uint32_t Cardinality(){
