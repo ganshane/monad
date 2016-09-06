@@ -16,6 +16,8 @@ namespace monad{
   class OpenBitSetWrapper;
   class SparseBitSet;
   class SparseBitSetWrapper;
+  class RoaringBitSet;
+  class RoaringBitSetWrapper;
   template<typename WRAPPER,typename BIT_SET>
   class BitSetWrapper;
 
@@ -36,9 +38,11 @@ namespace monad{
     BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* Iterator();
     friend class OpenBitSetWrapper;
     friend class SparseBitSetWrapper;
+    friend class RoaringBitSetWrapper;
     friend class BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>;
     friend class BitSetWrapper<OpenBitSetWrapper,OpenBitSet>;
     friend class BitSetWrapper<SparseBitSetWrapper,SparseBitSet>;
+    friend class BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>;
   }; //class TopBitSetWrapper
 } //namespace monad
 #endif //MONAD_TOP_BIT_SET_WRAPPER_H_

@@ -11,13 +11,23 @@
 namespace monad{
   class RoaringBitSet:public BitSet<RoaringBitSet>{
   public:
-    RoaringBitSet();
+    RoaringBitSet(uint32_t i=0);
     virtual ~RoaringBitSet();
     void Set(uint32_t i);
     bool Get(uint32_t i);
     void Optimize();
+    uint32_t GetWordsLength(){
+      return _num_words;
+    }
     uint32_t Cardinality(){
       return roaring_bitmap_get_cardinality(_underlying);
+    }
+    RoaringBitSet* Clone(){
+      roaring_bitmap_t* dest = roaring_bitmap_copy(_underlying);
+      RoaringBitSet* bitSet = new RoaringBitSet();
+      bitSet->_underlying = dest;
+      bitSet->_num_words = _num_words;
+      return bitSet;
     }
 
     BitSetIterator* ToIterator();
@@ -28,6 +38,7 @@ namespace monad{
   private:
     friend class RoaringBitSetIterator;
     roaring_bitmap_t * _underlying;
+    uint32_t _num_words;
 
   };
 }

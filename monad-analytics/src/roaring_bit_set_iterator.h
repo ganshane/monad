@@ -25,8 +25,10 @@ namespace monad
       nextContainer();
     }
     uint32_t NextDoc(){
-      if(! iter)
-        return NO_MORE_DOCS;
+      if(! iter) {
+        _cur_doc_id = NO_MORE_DOCS;
+        return _cur_doc_id;
+      }
 
       _cur_doc_id = iter[_current_array_pos];
       _current_array_pos += 1;
@@ -59,6 +61,9 @@ private:
       container_to_uint32_array(iter,container,typecode,hs);
       _current_array_pos = 0;
       pos += 1;
+      //loop next container if current container is empty
+      if(_current_array_length == 0)
+        nextContainer();
     }
   }
 

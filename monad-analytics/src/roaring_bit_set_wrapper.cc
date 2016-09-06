@@ -15,7 +15,7 @@ namespace monad {
   void RoaringBitSetWrapper::NewSeg(int32_t region, int32_t num_words) {
     _seg = new BitSetRegion<RoaringBitSet>();
     _seg->region = static_cast<uint32_t> (region);
-    _seg->bit_set = new RoaringBitSet();
+    _seg->bit_set = new RoaringBitSet(num_words);
     _seg->bit_set->SetWeight(_weight);
 
     _data.push_back(_seg);
@@ -70,8 +70,8 @@ namespace monad {
     uint32_t doc = 0;
     uint32_t last_doc_start = 0;
     for (; it != _data.end(); it++) {
-      doc += ((*it)->bit_set->Cardinality()); // *64
-      //printf("doc %u last_doc_start %u index %u\n",doc,last_doc_start,index);
+      doc += ((*it)->bit_set->GetWordsLength()); // *64
+//      printf("doc %u last_doc_start %u index %u\n",doc,last_doc_start,index);
       if (doc > static_cast<uint32_t> (index)) {
         return (*it)->bit_set->Get(index - last_doc_start);
       }

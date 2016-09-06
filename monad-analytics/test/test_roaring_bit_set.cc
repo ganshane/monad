@@ -47,11 +47,13 @@ TEST_F(RoaringBitSetTest, TestRead) {
   ASSERT_FALSE(bit_set.Get(2000));
   ASSERT_TRUE(bit_set.Get(3000));
   ASSERT_TRUE(bit_set.Get(5000));
+  for(int i=0;i<1000000;i++)
+    bit_set.Set(i * 3);
   bit_set.Optimize();
 
   BitSetIterator* iter = bit_set.ToIterator();
   while(iter->NextDoc() != BitSetIterator::NO_MORE_DOCS){
-    printf("%d \n",iter->DocId());
+//    printf("%d \n",iter->DocId());
   }
 
 }

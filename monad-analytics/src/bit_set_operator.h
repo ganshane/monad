@@ -5,6 +5,7 @@
 
 #include "bit_set.h"
 #include "priority_queue.h"
+#include "roaring_bit_set.h"
 #include "top_bit_set.h"
 #include "top_bit_set_iterator.h"
 #include "sparse_bit_set.h"
@@ -173,7 +174,7 @@ namespace monad{
 
       for(int i=0;i<size;i++){
         tmp_doc = its[i]->DocId();
-        //printf("i:%d last min :%d next min:%d tmp doc:%d\n",i,last_min,next_min,tmp_doc);
+//        printf("i:%d last min :%d next min:%d tmp doc:%d\n",i,last_min,next_min,tmp_doc);
         if(tmp_doc == last_min){
           doc->SetDoc(last_min);
           doc->SetPosition(i);//位置信息，按照bit位来讲应该是从1开始，而非0
@@ -278,6 +279,12 @@ namespace monad{
    * 针对单一的SparseBitSet进行各种操作
    */
   class SparseBitSetOperator :public BitSetOperator<SparseBitSet>{
+  };
+  /**
+   *
+   * 针对单一的SparseBitSet进行各种操作
+   */
+  class RoaringBitSetOperator :public BitSetOperator<RoaringBitSet>{
   };
 }
 #endif //MONAD_OPEN_BIT_SET_OPERATOR_H_

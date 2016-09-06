@@ -5,8 +5,11 @@
 #include "roaring_bit_set_iterator.h"
 
 namespace monad{
-  RoaringBitSet::RoaringBitSet() {
+  RoaringBitSet::RoaringBitSet(uint32_t i) {
     _underlying = roaring_bitmap_create();
+    SetWeight(1);
+    //此处的num words仅仅是为了FastGet的时候,能够正确得到位置,真实的计算中应该是没有意义的
+    _num_words = i;
   }
   RoaringBitSet::~RoaringBitSet(){
     roaring_bitmap_free(_underlying);
