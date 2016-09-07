@@ -35,7 +35,9 @@
             onMessage(msg);
         }
         function onProgress(msg){
-            onMessage(msg);
+            //var textNode = document.createTextNode(msg);
+            document.getElementById("loading").innerHTML=msg;//.appendChild(textNode);
+//            onMessage(msg);
         }
         function testFlex(){
             alert(Module.test("hehe"));
@@ -103,6 +105,7 @@
     </script>
 </head>
 <br>
+<div id="loading" style="border:1px solid red"></div>
 <div id="msg" style="border:1px solid green"></div>
 <div>
     <h3>api:query</h3><br/> q:<input type="text" id="q" value="test"/>,resource:<input type="text" id="i" value="trace"/>,save key:<input type="text" id="qk" value="" readonly/>

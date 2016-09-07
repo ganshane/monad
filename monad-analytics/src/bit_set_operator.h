@@ -11,6 +11,21 @@
 #include "sparse_bit_set.h"
 
 namespace monad{
+  class TopDocQueue:public PriorityQueue<TopDoc>{
+  public:
+    TopDocQueue(uint32_t  num_words):PriorityQueue(){
+      _num_words = num_words;
+      this->fun = TopDocLessThanByFreq;
+      this->Initialize(1000,true);
+    }
+
+  protected:
+    virtual TopDoc* getSentinelObject(){
+      return new TopDoc(_num_words);
+    }
+  private:
+    uint32_t _num_words;
+  };
   /**
    *
    * 针对单一的BitSet进行各种操作
@@ -18,12 +33,12 @@ namespace monad{
   template<typename T>
   class BitSetOperator{
   public:
-  /**
-   * 针对集合进行And操作
-   * @param coll 集合数据集合
-   * @param size 集合的大小
-   * @return And操作后的结果集
-   */
+    /**
+     * 针对集合进行And操作
+     * @param coll 集合数据集合
+     * @param size 集合的大小
+     * @return And操作后的结果集
+     */
     static T* InPlaceAnd(T* coll[],int32_t size);
     /**
      * 使用InPlaceAndTop的进行操作
@@ -92,7 +107,7 @@ namespace monad{
       for(int i=0;i<size;i++){
         tmp_doc = its[i]->DocId();
         tmp_doc_obj = its[i]->Doc();
-        //printf("last min :%d next min:%d tmp doc:%d\n",last_min,next_min,tmp_doc);
+//        printf("last min :%d next min:%d tmp doc:%d\n",last_min,next_min,tmp_doc);
         if(tmp_doc == last_min){
           doc->SetDoc(last_min);
           doc->MergePosition(tmp_doc_obj->position,tmp_doc_obj->position_len);
@@ -163,14 +178,18 @@ namespace monad{
       delete[] its;
       return new TopBitSet(0);
     }
-    PriorityQueue<TopDoc> pq(1000,TopDocLessThanByFreq);
-    TopDoc* doc = NULL;
+    TopDocQueue pq((size >> 6)+1);
+//    PriorityQueue<TopDoc> pq(1000,TopDocLessThanByFreq,true);
+    int32_t total_hits = 0;
+    TopDoc* doc = pq.Top();
     while(true){
       next_min = BitSetIterator::NO_MORE_DOCS;
+      /*
       if(doc)
         doc->Reset();//重复利用内存块
       else
         doc = new TopDoc((size >> 6) + 1);
+      */
 
       for(int i=0;i<size;i++){
         tmp_doc = its[i]->DocId();
@@ -187,25 +206,34 @@ namespace monad{
       }
 
       if(doc->freq >= static_cast<uint32_t>(min_freq)){
-        doc= pq.InsertWithOverflow(doc); //插入到队列
+        total_hits +=  1;
+        doc = pq.UpdateTop();
+//        doc= pq.InsertWithOverflow(doc); //插入到队列
       }
       if(next_min == BitSetIterator::NO_MORE_DOCS)
         break;
       last_min = next_min;
     }
+    /*
     //删除最后一次使用的doc
     if(doc)
       delete doc;
+    */
     //清空内存
     for(int i=0;i<size;i++){
       delete its[i];
     }
     delete[] its;
+    for(int i=pq.Size() - total_hits;i>0;i--)
+      delete pq.Pop();
 
     //按照DOC进行排序
     uint32_t bit_set_size = pq.Size();
+    if(bit_set_size > total_hits)
+      bit_set_size = total_hits;
+
     PriorityQueue<TopDoc> doc_pq(bit_set_size,TopDocLessThanByDoc);
-    for(uint32_t i=0;i<bit_set_size;i++){
+    for(uint32_t i=0;i< bit_set_size ;i++){
       doc_pq.InsertWithOverflow(pq.Pop());
     }
     //构造结果
@@ -288,3 +316,4 @@ namespace monad{
   };
 }
 #endif //MONAD_OPEN_BIT_SET_OPERATOR_H_
+

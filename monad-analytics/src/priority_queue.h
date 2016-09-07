@@ -16,24 +16,37 @@ namespace monad {
     uint32_t size, max_size;
     T* *heap;
     typedef bool (*LessThanFunction)(T*,T*);
-    LessThanFunction fun;
     bool LessThan(T* a, T* b);
-    void Initialize(unsigned int max_size);
     T* Add(T* e);
-    T* UpdateTop();
     void Clear();
     void UpHeap();
     void DownHeap();
   public:
 
-    PriorityQueue(unsigned int maxLength,LessThanFunction fun) {
-      this->Initialize(maxLength);
+    PriorityQueue(unsigned int maxLength,LessThanFunction fun,bool prepopulate=false) {
+      this->Initialize(maxLength,prepopulate);
       this->fun = fun;
     }
     ~PriorityQueue();
     T* InsertWithOverflow(T* element);
     T* Pop();
     unsigned int Size();
+    T* UpdateTop();
+    /** Returns the least element of the PriorityQueue in constant time. */
+    T* Top() {
+      // We don't need to check size here: if maxSize is 0,
+      // then heap is length 2 array with both entries null.
+      // If size is 0 then heap[1] is already null.
+      return heap[1];
+    }
+
+  protected:
+    LessThanFunction fun;
+    PriorityQueue(){}
+    virtual void Initialize(unsigned int max_size,bool prepopulate);
+    virtual T* getSentinelObject() {
+      return new T();
+    }
   };
 
   template<typename T>
@@ -56,7 +69,7 @@ namespace monad {
   }
 
   template<typename T>
-  void PriorityQueue<T>::Initialize(uint32_t maxSize) {
+  void PriorityQueue<T>::Initialize(uint32_t maxSize,bool prepopulate) {
     size = 0;
     uint32_t heapSize = 0;
     if (0 == maxSize)
@@ -81,6 +94,14 @@ namespace monad {
     }
     heap = new T*[heapSize]; // T is unbounded type, so this unchecked cast works always
     memset(heap,0,heapSize*sizeof(T*));
+
+    if(prepopulate){
+      for(int i=0;i<heapSize;i++)
+        heap[i] = getSentinelObject();
+
+      size = maxSize;
+    }
+
     this->max_size = maxSize;
   }
 

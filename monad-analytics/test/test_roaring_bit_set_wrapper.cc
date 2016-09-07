@@ -238,6 +238,15 @@ TEST_F(RoaringBitSetWrapperTest, TestInPlaceAndTopWithPositionMerged) {
   TopBitSetWrapper* bit_set2 = RoaringBitSetWrapper::InPlaceAndTop(holder_,1);
   ASSERT_EQ(3,bit_set->Size());
   ASSERT_EQ(1,bit_set2->Size());
+  int datalen = 0;
+  RegionTopDoc** topN = bit_set->Top(10,datalen);
+  for(int i=0;i<datalen;i++) {
+    TopDoc* topDoc= topN[i]->top_doc;
+    printf("doc:%d freq:%d \n", topDoc->doc,topDoc->freq);
+  }
+
+
+
 
   BitSetWrapperHolder<TopBitSetWrapper> holder2;
   holder2.AddWrapper(bit_set);

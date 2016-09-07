@@ -35,6 +35,9 @@ namespace monad {
     uint32_t  position_len;//位置信息的长度
   public:
 
+    TopDoc() {
+      throw "never called!!";
+    }
     TopDoc(uint32_t size) {
       position = NULL;
       doc = 0;
