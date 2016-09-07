@@ -182,6 +182,13 @@ namespace monad{
 //    PriorityQueue<TopDoc> pq(1000,TopDocLessThanByFreq,true);
     int32_t total_hits = 0;
     TopDoc* doc = pq.Top();
+    uint32_t min_freq_ = static_cast<uint32_t>(min_freq);
+    uint32_t freq = 0;
+    uint32_t byte_len = size * sizeof (uint64_t);
+    void* mem = malloc(byte_len);
+    memset(mem, 0, byte_len);
+    uint64_t* position = static_cast<uint64_t*> (mem);
+
     while(true){
       next_min = BitSetIterator::NO_MORE_DOCS;
       /*
@@ -191,22 +198,30 @@ namespace monad{
         doc = new TopDoc((size >> 6) + 1);
       */
 
+      freq = 0;
+      memset(mem, 0, byte_len);
       for(int i=0;i<size;i++){
         tmp_doc = its[i]->DocId();
 //        printf("i:%d last min :%d next min:%d tmp doc:%d\n",i,last_min,next_min,tmp_doc);
         if(tmp_doc == last_min){
-          doc->SetDoc(last_min);
-          doc->SetPosition(i);//位置信息，按照bit位来讲应该是从1开始，而非0
+//          doc->SetPosition(i);//位置信息，按照bit位来讲应该是从1开始，而非0
           //通过给定的权重来记录频率，这样能够提升某一集合的重要度
-          doc->IncrementFreq(coll[i]->Weight());
+//          doc->IncrementFreq(coll[i]->Weight());
+          TopDoc::FastSetPosition(position,i);
+          freq += coll[i]->Weight();
           tmp_doc = its[i]->NextDoc();
         }
         if(next_min > tmp_doc)
           next_min = tmp_doc;
       }
-
-      if(doc->freq >= static_cast<uint32_t>(min_freq)){
+//      printf("freq :%d \n",freq);
+      if(freq > doc->freq && freq >= min_freq_){
         total_hits +=  1;
+
+        doc->SetDoc(last_min);
+        doc->freq = freq;
+        doc->CopyPosition(position);
+
         doc = pq.UpdateTop();
 //        doc= pq.InsertWithOverflow(doc); //插入到队列
       }
@@ -214,6 +229,7 @@ namespace monad{
         break;
       last_min = next_min;
     }
+    free(mem);
     /*
     //删除最后一次使用的doc
     if(doc)
