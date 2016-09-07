@@ -31,6 +31,7 @@ namespace monad{
     monad::RegionTopDoc** Top(int32_t n,int32_t& data_len);
     virtual ~TopBitSetWrapper();
     void Commit();
+    float elapsed_time;
   private:
     typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> TWI;
     std::vector<BitSetRegion<TopBitSet>*> _data;

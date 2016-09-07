@@ -66,7 +66,7 @@ namespace monad {
     void SetDoc(uint32_t doc) {
       this->doc = doc;
     };
-    static void FastSetPosition(uint64_t* position,uint32_t index){
+    inline static void FastSetPosition(uint64_t* position,uint32_t index){
       uint32_t i = index >> 6; // div 64
       uint32_t bit = (index & 0x3f); // mod 64
       uint64_t bitmask = 1ULL << bit;

@@ -29,7 +29,7 @@
             document.getElementById("msg").appendChild(el);
         }
         function onData(obj){
-            onMessage("分析结果数:"+obj.count);
+            onMessage("分析结果数:"+obj.count+" time:"+obj.elapsed_time);
         }
         function onFail(msg){
             onMessage(msg);

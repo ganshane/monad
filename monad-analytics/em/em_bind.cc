@@ -135,6 +135,7 @@ namespace monad {
     val json=val::object();
     json.set("key",val(id));
     json.set("count",val(wrapper->BitCount()));
+    json.set("elapsed_time",val(wrapper->elapsed_time));
     args_[1](json);
     delete (std::vector<val>*)args;
   }

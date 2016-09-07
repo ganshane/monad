@@ -257,6 +257,12 @@ namespace monad{
     for(uint32_t i=0;i<bit_set_size;i++){
       result->Add(doc_pq.Pop(),i);
     }
+    /*
+    TopBitSet* result = new TopBitSet(bit_set_size);
+    for(uint32_t i=0;i<bit_set_size;i++){
+      result->Add(pq.Pop(),i);
+    }
+    */
 
     return result;
   }

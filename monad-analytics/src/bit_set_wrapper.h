@@ -3,6 +3,8 @@
 #ifndef MONAD_BIT_SET_WRAPPER_H_
 #define MONAD_BIT_SET_WRAPPER_H_
 
+#include "time.h"
+
 #include "bit_set_operator.h"
 #include "bit_set_wrapper_holder.h"
 #include "bit_set_wrapper_iterator.h"
@@ -33,6 +35,8 @@ namespace monad{
     static WRAPPER* InPlaceOr(BitSetWrapperHolder<WRAPPER>& holder);
     static WRAPPER* InPlaceNot(BitSetWrapperHolder<WRAPPER>& holder);
 
+
+    float elapsed_time;
   protected:
     uint32_t _weight;
     BitSetRegion<BIT_SET>* _seg;
@@ -59,6 +63,9 @@ namespace monad{
   }
   template<typename WRAPPER,typename BIT_SET>
   WRAPPER* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceAnd(WRAPPER** wrappers,size_t coll_size) {
+    clock_t start, finish;
+    start = clock();
+
     if(coll_size == 0)
       return NULL;
     BitSetWrapperIterator<WRAPPER, BIT_SET>** its =
@@ -126,6 +133,8 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    float duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    wrapper->elapsed_time = duration;
     return wrapper;
   }
   template<typename WRAPPER,typename BIT_SET>
@@ -141,6 +150,8 @@ namespace monad{
   WRAPPER* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceOr(WRAPPER** wrappers,size_t coll_size) {
     if(coll_size == 0)
       return NULL;
+    clock_t start, finish;
+    start = clock();
 
     BitSetWrapperIterator<WRAPPER, BIT_SET>** its =
         new BitSetWrapperIterator<WRAPPER, BIT_SET>*[coll_size];
@@ -206,6 +217,8 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    float duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    wrapper->elapsed_time = duration;
     return wrapper;
   }
   template<typename WRAPPER,typename BIT_SET>
@@ -221,6 +234,8 @@ namespace monad{
   WRAPPER* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceNot(WRAPPER** wrappers,size_t coll_size) {
     if(coll_size == 0)
       return NULL;
+    clock_t start, finish;
+    start = clock();
     BitSetWrapperIterator<WRAPPER, BIT_SET>** its =
         new BitSetWrapperIterator<WRAPPER, BIT_SET>*[coll_size];
     uint32_t last_region = BitSetIterator::NO_MORE_DOCS;
@@ -289,6 +304,8 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    float duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    wrapper->elapsed_time = duration;
     return wrapper;
   }
 
@@ -303,6 +320,9 @@ namespace monad{
   }
   template<typename WRAPPER,typename BIT_SET>
   TopBitSetWrapper* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceAndTop(WRAPPER** wrappers,size_t coll_size, int32_t min_freq) {
+    clock_t start, finish;
+    start = clock();
+
     BitSetWrapperIterator<WRAPPER, BIT_SET>** its =
         new BitSetWrapperIterator<WRAPPER, BIT_SET>*[coll_size];
     uint32_t last_region = BitSetIterator::NO_MORE_DOCS;
@@ -372,6 +392,9 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    finish = clock();
+    float duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    wrapper->elapsed_time = duration;
     return wrapper;
   }
 
@@ -388,6 +411,9 @@ namespace monad{
   TopBitSetWrapper* BitSetWrapper<WRAPPER,BIT_SET>::InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers,size_t coll_size, int32_t min_freq) {
     if(coll_size == 0)
       return NULL;
+    clock_t start, finish;
+    start = clock();
+
     typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> BSWI;
     BSWI** its = new BSWI*[coll_size];
     uint32_t last_region = BitSetIterator::NO_MORE_DOCS;
@@ -453,6 +479,8 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    float duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    wrapper->elapsed_time = duration;
     return wrapper;
   }
 }
