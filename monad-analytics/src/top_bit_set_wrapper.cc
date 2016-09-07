@@ -9,6 +9,12 @@
 #include "top_bit_set_iterator.h"
 
 namespace monad{
+  /**
+   * 对RegionTopDoc进行排序的规则
+   * 1.频次
+   * 2.分区的ID
+   * 3.doc的序号
+   */
   bool SortRegionTopDocByFreq(RegionTopDoc* a, RegionTopDoc* b) {
     if(a->top_doc->freq == b->top_doc->freq) {
       if (a->region == b->region)
