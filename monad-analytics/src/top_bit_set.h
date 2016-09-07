@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "open_bit_set_iterator.h"
 
@@ -26,6 +27,8 @@ namespace monad {
   struct RegionTopDoc{
     TopDoc* top_doc; //TopDoc
     uint32_t region;//分区值
+  public:
+    static void Debug(RegionTopDoc** docs,int32_t data_len);
   };
 
   struct TopDoc {
@@ -156,6 +159,7 @@ namespace monad {
     uint32_t Weight() {
       return this->_weight;
     };
+    void Debug();
     static void FreeRegionTopDocArray(RegionTopDoc** docs,size_t len){
       for(uint32_t i=0;i<len;i++){
         delete docs[i];

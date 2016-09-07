@@ -10,7 +10,12 @@
 
 namespace monad{
   bool SortRegionTopDocByFreq(RegionTopDoc* a, RegionTopDoc* b) {
-    return a->top_doc->freq <= b->top_doc->freq;
+    if(a->top_doc->freq == b->top_doc->freq) {
+      if (a->region == b->region)
+        return a->top_doc->doc <= a->top_doc->doc;
+      else return a->region > b->region;
+    } else
+      return a->top_doc->freq < b->top_doc->freq;
   };
   TopBitSetWrapper::~TopBitSetWrapper() {
     std::vector<BitSetRegion<TopBitSet>*>::iterator it = _data.begin();

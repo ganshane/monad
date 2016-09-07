@@ -342,8 +342,8 @@ TEST_F(RoaringBitSetWrapperTest, TestInPlaceAndTop) {
   ASSERT_EQ(2,top_doc->top_doc->freq);
   ASSERT_EQ(3,top_doc->top_doc->position[0]);
   top_doc = docs[1];
-  ASSERT_EQ(2,top_doc->region);
-  ASSERT_EQ(106,top_doc->top_doc->doc);
+  ASSERT_EQ(1,top_doc->region);
+  ASSERT_EQ(38,top_doc->top_doc->doc);
   ASSERT_EQ(1,top_doc->top_doc->freq);
 
   for(int i=0;i<data_len;i++)

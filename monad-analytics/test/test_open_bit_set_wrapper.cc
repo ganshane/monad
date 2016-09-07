@@ -253,14 +253,15 @@ TEST_F(OpenBitSetWrapperTest, TestInPlaceAndTop) {
 
   int32_t data_len=0;
   RegionTopDoc** docs = bit_set->Top(10,data_len);
+  RegionTopDoc::Debug(docs,data_len);
   RegionTopDoc* top_doc = docs[0];
   ASSERT_EQ(2,top_doc->region);
   ASSERT_EQ(40,top_doc->top_doc->doc);
   ASSERT_EQ(2,top_doc->top_doc->freq);
   ASSERT_EQ(3,top_doc->top_doc->position[0]);
   top_doc = docs[1];
-  ASSERT_EQ(2,top_doc->region);
-  ASSERT_EQ(106,top_doc->top_doc->doc);
+  ASSERT_EQ(1,top_doc->region);
+  ASSERT_EQ(38,top_doc->top_doc->doc);
   ASSERT_EQ(1,top_doc->top_doc->freq);
 
   for(int i=0;i<data_len;i++)
