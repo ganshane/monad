@@ -97,9 +97,9 @@
         function onTop(obj,key){
             var str="len:"+obj.length;
             for(var i=0;i<obj.length;i++){
-                str+=obj[i].id+","
+                str+=obj[i].id+" # "+obj[i].count +" <br/>"
             }
-            onMessage(str);
+            onMessage(str)
         }
 
     </script>

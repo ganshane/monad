@@ -2,17 +2,13 @@
 // site: http://www.ganshane.com
 package monad.api.internal
 
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
-
 import com.google.protobuf.ByteString
-import monad.core.MonadCoreConstants
 import monad.face.MonadFaceConstants
+import monad.face.internal.HBaseRegionMapping
 import monad.face.model.{IdShardResult, IdShardResultCollect, ShardResult}
-import monad.face.services.{GroupServerApi, RpcSearcherFacade}
+import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import org.apache.hadoop.hbase.client.Result
-import org.apache.hadoop.hbase.{HBaseConfiguration, HConstants}
 import roar.api.services.RoarClient
 import roar.protocol.generated.RoarProtos.SearchResponse
 import stark.rpc.services.RpcClient
@@ -24,17 +20,8 @@ import stark.utils.services.LoggerSupport
   * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
  * @since 2015-02-26
  */
-class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) extends RpcSearcherFacade with LoggerSupport{
-  private val conf = HBaseConfiguration.create()
-  conf.set(HConstants.ZOOKEEPER_QUORUM, groupApi.GetCloudAddress)
-  conf.set(HConstants.HBASE_CLIENT_RETRIES_NUMBER,"3")
-  conf.set(HConstants.HBASE_RPC_TIMEOUT_KEY,"30000")
-//  conf.set(HConstants.HBASE_CLIENT_IPC_POOL_SIZE)
-  conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT,MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)
+class RemoteRpcSearcherFacade(rpcClient: RpcClient,roarClient: RoarClient) extends RpcSearcherFacade with LoggerSupport{
 
-  private val regionMapping = new ConcurrentHashMap[String,Int]()
-  private val seq = new AtomicInteger(1)
-  private val roarClient = new RoarClient(conf)
   /**
    * search index with index name and keyword
    */
@@ -68,13 +55,7 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,groupApi:GroupServerApi) exte
       shard.data = response.getData
 
       val regionKey = response.getRegionId
-      var regionId = 0
-      if(regionMapping.containsKey(regionKey)) {
-        regionId = regionMapping.get(regionKey)
-      }else{
-        regionId = seq.incrementAndGet()
-        regionMapping.put(regionKey,regionId)
-      }
+      val regionId = HBaseRegionMapping.getRegionMappingId(regionKey)
       shard.region = regionId
       /*
       val bitSet = MonadSparseFixedBitSet.deserialize(new ByteArrayInputStream(shard.data.toByteArray))

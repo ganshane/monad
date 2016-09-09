@@ -10,19 +10,23 @@ package monad.api
 import com.google.protobuf.ExtensionRegistry
 import monad.api.internal._
 import monad.api.services._
+import monad.core.MonadCoreConstants
 import monad.face.config.ApiConfigSupport
 import monad.face.internal.RemoteIdFacade
 import monad.face.model.{IdShardResultCollect, OpenBitSetWithNodes}
-import monad.face.services.{IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
+import monad.face.services.{GroupServerApi, IdFacade, ResourceDefinitionLoaderListener, RpcSearcherFacade}
 import monad.protocol.internal.{InternalFindDocProto, InternalIdProto, InternalMaxdocQueryProto, InternalSearchProto}
+import org.apache.hadoop.hbase.{HBaseConfiguration, HConstants}
 import org.apache.tapestry5.ioc._
 import org.apache.tapestry5.ioc.annotations._
 import org.apache.tapestry5.services.{ComponentEventResultProcessor, RequestFilter, RequestHandler}
+import roar.api.services.RoarClient
 import stark.rpc.services.ProtobufExtensionRegistryConfiger
 
 /**
  * API Module
- * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
+  *
+  * @author <a href="mailto:jun.tsai@gmail.com">Jun Tsai</a>
  * @version $Revision$
  * @since 0.3
  */
@@ -80,5 +84,15 @@ object LocalMonadApiModule {
         InternalIdProto.registerAllExtensions(registry)
       }
     })
+  }
+  def buildRoarClient(groupApi:GroupServerApi):RoarClient={
+    val conf = HBaseConfiguration.create()
+    conf.set(HConstants.ZOOKEEPER_QUORUM, groupApi.GetCloudAddress)
+    conf.set(HConstants.HBASE_CLIENT_RETRIES_NUMBER,"3")
+    conf.set(HConstants.HBASE_RPC_TIMEOUT_KEY,"30000")
+    //  conf.set(HConstants.HBASE_CLIENT_IPC_POOL_SIZE)
+    conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT,MonadCoreConstants.GROUPS_PATH + "/" + groupApi.GetSelfGroupConfig.id)
+
+    new RoarClient(conf)
   }
 }

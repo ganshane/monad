@@ -19,6 +19,7 @@ trait IdFacade {
     * @return id的值
    */
   def findObjectId(category:String,ids:Array[Int]):Array[String]
+  def findObjectId(tableName:String,regionId:Int,category:String,ids:Int):String
   def batchAddId(category:String,labels:Array[String]):Array[Int]
   def putIfAbsent(category:String,label:String):Int
 }

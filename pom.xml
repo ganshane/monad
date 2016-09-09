@@ -95,7 +95,7 @@
       <dependency>
         <groupId>com.ganshane.roar</groupId>
         <artifactId>roar-api_2.11</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.5</version>
       </dependency>
 
 
