@@ -107,7 +107,13 @@ extend(Analytics,{
     }else {
       var op = {weight: 1}
       extend(op, parameters)
-      Module.query({i: op.i, q: op.q}, ++key, callback, config.fail, config.progress, op.weight);
+      var time_start = new Date().getTime();
+      var callbackWithTimed = function(r){
+        var time_end = new Date().getTime();
+        r.elapsed_time = time_end - time_start;
+        callback(r);
+      };
+      Module.query({i: op.i, q: op.q}, ++key, callbackWithTimed, config.fail, config.progress, op.weight);
     }
   },
   getCollection:function(key,callback){
