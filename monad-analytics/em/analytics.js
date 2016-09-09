@@ -110,7 +110,7 @@ extend(Analytics,{
       var time_start = new Date().getTime();
       var callbackWithTimed = function(r){
         var time_end = new Date().getTime();
-        r.elapsed_time = time_end - time_start;
+        r.elapsed_time = (time_end - time_start)/1000.0;
         callback(r);
       };
       Module.query({i: op.i, q: op.q}, ++key, callbackWithTimed, config.fail, config.progress, op.weight);
