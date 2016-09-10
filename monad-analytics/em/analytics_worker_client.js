@@ -177,11 +177,11 @@ Conditions.prototype = {
     this.freq = freq;
     return this;
   },
-  inPlaceOr:function(callback){
+  inPlaceOr:function(){
     this.op = OP_IN_PLACE_OR;
     return this;
   },
-  andNot:function(callback){
+  andNot:function(){
     this.op = OP_AND_NOT;
     return this;
   },
