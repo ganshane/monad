@@ -45,9 +45,13 @@
 
 
 
-        Analytics.config.fail = onFail;
-        Analytics.config.progress= onProgress;
-        Analytics.init("http://keyten:9081/api");
+        var parameters={
+            fail:onFail,
+            progress:onProgress,
+            apiUrl:"http://keyten:9081/api",
+            coreJsPath:"../build-em/em/monad_analytics.js"
+        }
+        Analytics.init(parameters);
 
         function testQuery(){
             var json = {i:f('i'),q:f('q')}

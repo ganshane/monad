@@ -27,7 +27,8 @@ function extend( a, b, undefOnly ) {
 }
 
 extend(AnalyticsClient,{
-  createCondition:function(){ return new Conditions();},
+  backendWorker:{},
+  createCondition:function(){ return new Conditions(this.backendWorker);},
   /*
   top:function(callback,options){
     var _options = {category:Module.IdCategory.Person,top:100,offset:0}
@@ -89,35 +90,39 @@ extend(AnalyticsClient,{
   */
   performance:function(callback){
     current_task_callback = callback;
-    worker.postMessage({op:OP_PERFORMANCE});
+    this.backendWorker.postMessage({op:OP_PERFORMANCE});
   },
-  init:function(apiUrl){
-    worker.postMessage({op:OP_INIT_URL,url:apiUrl});
+  init:function(parameters){
+    config.fail = parameters.fail;
+    config.progress = parameters.progress;
+    var apiUrl = parameters.apiUrl;
+    var coreJsPath = parameters.coreJsPath;
+    this.backendWorker = new Worker(coreJsPath);
+    this.backendWorker.addEventListener("message",function(event) {
+      switch(event.data.op){
+        case OP_FAIL:
+          onFail(event.data.message)
+          break;
+        case OP_PROGRESS:
+          onProgress(event.data.message)
+          break;
+        default:
+          current_task_callback(event.data.result)
+          break;
+      }
+    });
+    this.backendWorker.postMessage({op:OP_INIT_URL,url:apiUrl});
   },
   clearAllCollection:function(){
-    worker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
+    this.backendWorker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
   },
   extend:extend
 });
 
 var current_task_callback = null
-var worker = new Worker("analytics_worker.js")
-worker.addEventListener("message",function(event) {
-  switch(event.data.op){
-    case OP_FAIL:
-      onFail(event.data.message)
-      break;
-    case OP_PROGRESS:
-      onProgress(event.data.message)
-      break;
-    default:
-      current_task_callback(event.data.result)
-      break;
-  }
-});
 
 //DSL mode
-function Conditions(){this.query_objects=[];}
+function Conditions(worker){this.worker = worker; this.query_objects=[];}
 Conditions.prototype = {
   op:'',
   freq:1,
@@ -145,8 +150,8 @@ Conditions.prototype = {
       var _options = {key:coll.key}
       extend(_options,options)
       current_task_callback = callback;
-      worker.postMessage({op:OP_TOP,parameters:_options})
-    }
+      this.worker.postMessage({op:OP_TOP,parameters:_options})
+    };
     this.execute(top_func)
   },
   execute:function(callback){
@@ -154,7 +159,7 @@ Conditions.prototype = {
     switch(this.op){
       default:
         var message= {op:this.op,parameters:this.toWorkerParameter()};
-        worker.postMessage(message);
+        this.worker.postMessage(message);
         break;
     }
   },

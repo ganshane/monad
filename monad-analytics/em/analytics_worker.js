@@ -1,18 +1,10 @@
-// Copyright 2016 the original author or authors. All rights reserved.
-// site: http://www.ganshane.com
-function analytics_onready(){
-  Module.SetApiUrl("http://localhost:9081/api");
-  console.log("loaded ....")
-}
-var Module = {
-    filePackagePrefixURL: "../build-em/em/",
-    memoryInitializerPrefixURL: "../build-em/em/"
-}
 
+/*
 importScripts("async.min.js")
 importScripts('../build-em/em/monad_analytics.js');
 importScripts('analytics.js');
 importScripts('ops.js');
+*/
 
 Analytics.config.fail = function(fail_message){
   postMessage({op:OP_FAIL,message:fail_message})
