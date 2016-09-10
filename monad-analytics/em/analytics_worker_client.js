@@ -25,7 +25,8 @@ function extend( a, b, undefOnly ) {
 
 	return a;
 }
-
+//TODO using AnalyticsClient member variable
+var current_task_callback = null
 extend(AnalyticsClient,{
   backendWorker:{},
   createCondition:function(){ return new Conditions(this.backendWorker);},
@@ -119,10 +120,13 @@ extend(AnalyticsClient,{
   extend:extend
 });
 
-var current_task_callback = null
 
 //DSL mode
-function Conditions(worker){this.worker = worker; this.query_objects=[];}
+function Conditions(worker){
+  this.worker = worker;
+  this.query_objects=[];
+}
+
 Conditions.prototype = {
   op:'',
   freq:1,
@@ -146,12 +150,12 @@ Conditions.prototype = {
     return this;
   },
   top:function(callback,options){
-    var top_func = function(coll){
+    var top_func = (function(coll){
       var _options = {key:coll.key}
       extend(_options,options)
       current_task_callback = callback;
       this.worker.postMessage({op:OP_TOP,parameters:_options})
-    };
+    }).bind(this);
     this.execute(top_func)
   },
   execute:function(callback){
