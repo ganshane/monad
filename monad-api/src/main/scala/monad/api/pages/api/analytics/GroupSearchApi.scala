@@ -2,7 +2,8 @@ package monad.api.pages.api.analytics
 
 import java.util.Date
 
-import monad.api.MonadApiConstants
+import com.google.gson.JsonObject
+import monad.api.base.BaseApi
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade}
 import monad.face.services.ResourceDefinitionLoader
@@ -10,7 +11,6 @@ import org.apache.tapestry5.ioc.Messages
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
-import org.apache.tapestry5.util.TextStreamResponse
 import stark.utils.services.{LoggerSupport, StarkException}
 
 /**
@@ -19,7 +19,7 @@ import stark.utils.services.{LoggerSupport, StarkException}
   * @author <a href="mailto:jcai@ganshane.com">Jun Tsai</a>
   * @since 2016-09-12
   */
-class GroupSearchApi extends LoggerSupport{
+class GroupSearchApi extends BaseApi with LoggerSupport{
   @Inject
   private var searchFacade: SearcherFacade = _
   @Inject
@@ -29,7 +29,14 @@ class GroupSearchApi extends LoggerSupport{
   @Inject
   private var messages: Messages = _
 
-  def onActivate() = {
+
+  /**
+    * 执行对应的ＡＰＩ
+    *
+    * @return api return result
+    * @since 0.1
+    */
+  override protected def doExecuteApi(): JsonObject = {
     val searchRequest = new SearchRequest
     searchRequest.includeData = false
     //search query keyword
@@ -43,8 +50,9 @@ class GroupSearchApi extends LoggerSupport{
     val r = searchFacade.facetSearch(searchRequest)
     val end = new Date().getTime
     info("[" + searchRequest.resourceName + "] group search q:[{}], time:{}ms ", q,end - begin)
+    r.addProperty("time",end-begin)
 
-    new TextStreamResponse(MonadApiConstants.JSON_MIME_TYPE, r.toString)
+    r
   }
 
   protected def initResource(searchRequest: SearchRequest) {
