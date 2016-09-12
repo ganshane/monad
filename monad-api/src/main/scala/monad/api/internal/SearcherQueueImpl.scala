@@ -21,7 +21,7 @@ import org.apache.lucene.search.highlight.{Highlighter, QueryTermScorer, SimpleH
 import org.slf4j.LoggerFactory
 import roar.api.meta.ResourceDefinitionConversions._
 import roar.api.meta.{AnalyzerCreator, ResourceDefinition}
-import roar.protocol.generated.RoarProtos.SearchResponse
+import roar.protocol.generated.RoarProtos.{GroupCountSearchResponse, SearchResponse}
 import stark.utils.services.ServiceLifecycle
 
 import scala.collection.JavaConversions._
@@ -50,9 +50,8 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     }
   })
 
-  def facetSearch(q: String, field: String, upper: Int, lower: Int): SearchResult = {
-    val searchResults = resourceSearcher.facetSearch(rd.name, q, field, upper, lower)
-    internalFacetSearch(searchResults, field)
+  def facetSearch(q: String, field: String, minFreq:Int,topN:Int): GroupCountSearchResponse = {
+    resourceSearcher.facetSearch(rd.name, q, field, minFreq,topN)
   }
 
   private def internalFacetSearch(searchResults: ShardResult, field: String): SearchResult = {

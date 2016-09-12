@@ -3,9 +3,9 @@
 package monad.face.services
 
 import com.google.protobuf.ByteString
-import monad.face.model.{IdShardResult, ShardResult}
+import monad.face.model.IdShardResult
 import org.apache.hadoop.hbase.client.Result
-import roar.protocol.generated.RoarProtos.SearchResponse
+import roar.protocol.generated.RoarProtos.{GroupCountSearchResponse, SearchResponse}
 
 /**
   * nosql 的调用
@@ -30,7 +30,7 @@ trait RpcSearcherFacade {
    */
   def collectSearch(resourceName: String, q: String, sort: String, offset: Int,size:Int): SearchResponse
 
-  def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult
+  def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int=100): GroupCountSearchResponse
 
   def maxDoc(resourceName: String): Long
 

@@ -5,16 +5,18 @@ package monad.api.internal
 import java.io.StringReader
 import java.util.concurrent.{Semaphore, TimeUnit}
 
-import com.google.gson.JsonObject
+import com.google.gson.{JsonArray, JsonObject}
 import monad.api.model.SearchRequest
 import monad.api.services.{MonadApiExceptionCode, SearcherFacade, SearcherQueue}
+import monad.face.MonadFaceConstants
 import monad.face.config.ApiConfigSupport
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import stark.utils.services.StarkException
 
 /**
  * 搜索的实现
- * @author jcai
+  *
+  * @author jcai
  */
 class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: SearcherQueue, apiConfig: ApiConfigSupport) extends SearcherFacade {
   private final val ONE_MINUTE = 60
@@ -23,12 +25,21 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   def getDocumentNum: Long = searcherQueue.getDocumentNum
 
   def facetSearch(searchRequest: SearchRequest): JsonObject = {
-    /*
-    extractor.extract(searchRequest, { request =>
-      searcherQueue.facetSearch(request.q, searchRequest.facetField, searchRequest.facetUpper, searchRequest.facetLower)
-    })
-    */
-    throw new UnsupportedOperationException()
+      val response = searcherQueue.facetSearch(searchRequest.q, searchRequest.facetField,0)
+    val it = response.getResultList.iterator()
+    val result = new JsonArray()
+    while(it.hasNext){
+      val g = it.next()
+      val gc = new JsonObject
+      gc.addProperty(MonadFaceConstants.FACET_NAME,g.getName.toStringUtf8)
+      gc.addProperty(MonadFaceConstants.FACET_COUNT,g.getCount)
+
+      result.add(gc)
+    }
+    val data = new JsonObject
+    data.add("data",result)
+
+    data
   }
 
   def search(searchRequest: SearchRequest): JsonObject = {
@@ -81,7 +92,8 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   */
   /**
    * 针对id的搜索服务
-   * @param searchRequest 搜索请求
+    *
+    * @param searchRequest 搜索请求
    * @return
    */
   def idSearch(searchRequest: SearchRequest) = {

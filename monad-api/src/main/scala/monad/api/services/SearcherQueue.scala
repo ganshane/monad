@@ -7,11 +7,10 @@
 package monad.api.services
 
 
-import monad.api.model.SearchResult
 import monad.face.model.IdShardResult
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.search.highlight.Highlighter
-import roar.protocol.generated.RoarProtos.SearchResponse
+import roar.protocol.generated.RoarProtos.{GroupCountSearchResponse, SearchResponse}
 import stark.utils.services.ServiceLifecycle
 
 /**
@@ -50,12 +49,10 @@ trait SearcherQueue extends ServiceLifecycle {
  *
    * @param q 查询语句
    * @param field 频次分析的字段
-   * @param upper 频次的上限
-   * @param lower 频次的下限
    * @return 频次分析结果
    * @since 2.1
    */
-  def facetSearch(q: String, field: String, upper: Int, lower: Int): SearchResult
+  def facetSearch(q: String, field: String, minFreq: Int=0, topN: Int=100): GroupCountSearchResponse
 
   /**
    * create highlighter

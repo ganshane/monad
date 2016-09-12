@@ -5,14 +5,17 @@ package monad.api.internal
 import com.google.protobuf.ByteString
 import monad.face.MonadFaceConstants
 import monad.face.internal.HBaseRegionMapping
-import monad.face.model.{IdShardResult, IdShardResultCollect, ShardResult}
+import monad.face.model.{IdShardResult, IdShardResultCollect}
 import monad.face.services.RpcSearcherFacade
 import monad.protocol.internal.InternalMaxdocQueryProto.MaxdocQueryRequest
 import org.apache.hadoop.hbase.client.Result
+import org.apache.lucene.util.PriorityQueue
 import roar.api.services.RoarClient
-import roar.protocol.generated.RoarProtos.SearchResponse
+import roar.protocol.generated.RoarProtos.{GroupCountSearchResponse, SearchResponse}
 import stark.rpc.services.RpcClient
 import stark.utils.services.LoggerSupport
+
+import scala.collection.mutable
 
 /**
  * implements rpc searcher facade
@@ -70,8 +73,44 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,roarClient: RoarClient) exten
     collect
   }
 
-  override def facetSearch(resourceName: String, q: String, field: String, upper: Int, lower: Int): ShardResult = {
-    throw new UnsupportedOperationException
+  override def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int): GroupCountSearchResponse = {
+
+    val results = roarClient.groupSearch(resourceName,q,field,topN)
+    val groupMap = new mutable.HashMap[ByteString,GroupCount]()
+    results.foreach{gc=>
+      val it = gc.getResultList.iterator()
+      while(it.hasNext){
+        val g = it.next()
+        val groupCount = groupMap.getOrElseUpdate(g.getName,GroupCount(g.getName))
+        groupCount.count += g.getCount
+      }
+    }
+
+    val pq = new FacetQueue(topN)
+    val it = groupMap.values.iterator
+    while(it.hasNext){
+      pq.insertWithOverflow(it.next())
+    }
+    val size = pq.size()
+
+    val groupCountResponse = GroupCountSearchResponse.newBuilder()
+    val gcs = Range(0,size).map{i=>
+      val gc = pq.pop()
+      val resultBuilder = GroupCountSearchResponse.GroupCount.newBuilder()
+      resultBuilder.setName(gc.name)
+      resultBuilder.setCount(gc.count)
+
+      resultBuilder.build()
+    }.reverseIterator
+    gcs.foreach(groupCountResponse.addResult)
+
+    groupCountResponse.build()
+  }
+  case class GroupCount(name:ByteString){
+    var count = 0
+  }
+  class FacetQueue(size:Int) extends PriorityQueue[GroupCount](size){
+    override def lessThan(a: GroupCount, b: GroupCount): Boolean = a.count <= b.count
   }
 
   /**

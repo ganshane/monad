@@ -64,7 +64,8 @@ object MonadFaceConstants {
   final val OBJECT_ID_PAYLOAD_VALUE = "_UID"
   final val DELETED_SID = java.lang.Integer.MIN_VALUE
   //进行频次搜索时候，输出结果中的次数
-  final val FACET_COUNT = "_count"
+  final val FACET_NAME= "group"
+  final val FACET_COUNT = "count"
   final val DYNAMIC_DESC = "_desc"
 
   /** 结果中的字符串高亮显示 **/
