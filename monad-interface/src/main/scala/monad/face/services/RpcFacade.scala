@@ -30,7 +30,7 @@ trait RpcSearcherFacade {
    */
   def collectSearch(resourceName: String, q: String, sort: String, offset: Int,size:Int): SearchResponse
 
-  def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int=100): GroupCountSearchResponse
+  def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int=100): (GroupCountSearchResponse,Int)
 
   def maxDoc(resourceName: String): Long
 

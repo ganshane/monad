@@ -52,7 +52,7 @@ trait SearcherQueue extends ServiceLifecycle {
    * @return 频次分析结果
    * @since 2.1
    */
-  def facetSearch(q: String, field: String, minFreq: Int=0, topN: Int=100): GroupCountSearchResponse
+  def facetSearch(q: String, field: String, minFreq: Int=0, topN: Int=100): (GroupCountSearchResponse,Int)
 
   /**
    * create highlighter

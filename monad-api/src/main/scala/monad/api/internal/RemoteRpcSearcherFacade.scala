@@ -73,12 +73,18 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,roarClient: RoarClient) exten
     collect
   }
 
-  override def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int): GroupCountSearchResponse = {
+  override def facetSearch(resourceName: String, q: String, field: String, minFreq: Int,topN:Int): (GroupCountSearchResponse,Int) = {
 
-    val results = roarClient.groupSearch(resourceName,q,field,topN)
+    val results = roarClient.groupSearch(resourceName,q,field,1000,topN)
     val groupMap = new mutable.HashMap[ByteString,GroupCount]()
+    var hitDoc = 0
+    var totalDoc = 0
+    var isParital = false
     results.foreach{gc=>
       val it = gc.getResultList.iterator()
+      hitDoc +=  gc.getHitDoc
+      totalDoc += gc.getTotalDoc
+      if(gc.getPartialGroup) isParital = true
       while(it.hasNext){
         val g = it.next()
         val groupCount = groupMap.getOrElseUpdate(g.getName,GroupCount(g.getName))
@@ -88,12 +94,18 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,roarClient: RoarClient) exten
 
     val pq = new FacetQueue(topN)
     val it = groupMap.values.iterator
+    var totalGroup = 0
     while(it.hasNext){
+      totalGroup += 1
       pq.insertWithOverflow(it.next())
     }
     val size = pq.size()
 
     val groupCountResponse = GroupCountSearchResponse.newBuilder()
+    groupCountResponse.setHitDoc(hitDoc)
+    groupCountResponse.setTotalDoc(totalDoc)
+    groupCountResponse.setPartialGroup(isParital)
+
     val gcs = Range(0,size).map{i=>
       val gc = pq.pop()
       val resultBuilder = GroupCountSearchResponse.GroupCount.newBuilder()
@@ -102,9 +114,10 @@ class RemoteRpcSearcherFacade(rpcClient: RpcClient,roarClient: RoarClient) exten
 
       resultBuilder.build()
     }.reverseIterator
+
     gcs.foreach(groupCountResponse.addResult)
 
-    groupCountResponse.build()
+    (groupCountResponse.build(),totalGroup)
   }
   case class GroupCount(name:ByteString){
     var count = 0

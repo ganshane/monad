@@ -25,8 +25,14 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
   def getDocumentNum: Long = searcherQueue.getDocumentNum
 
   def facetSearch(searchRequest: SearchRequest): JsonObject = {
-      val response = searcherQueue.facetSearch(searchRequest.q, searchRequest.facetField,0)
+      val (response,totalGroup) = searcherQueue.facetSearch(searchRequest.q, searchRequest.facetField,0)
     val it = response.getResultList.iterator()
+    val data = new JsonObject
+    data.addProperty("groups",totalGroup)
+    data.addProperty("hits",response.getHitDoc)
+    data.addProperty("total",response.getTotalDoc)
+    data.addProperty("is_partial",response.getPartialGroup)
+
     val result = new JsonArray()
     while(it.hasNext){
       val g = it.next()
@@ -36,7 +42,6 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
 
       result.add(gc)
     }
-    val data = new JsonObject
     data.add("data",result)
 
     data

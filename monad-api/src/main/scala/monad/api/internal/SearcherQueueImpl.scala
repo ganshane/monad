@@ -50,7 +50,7 @@ class SearcherQueueImpl(rd: ResourceDefinition, resourceSearcher: RpcSearcherFac
     }
   })
 
-  def facetSearch(q: String, field: String, minFreq:Int,topN:Int): GroupCountSearchResponse = {
+  def facetSearch(q: String, field: String, minFreq:Int,topN:Int): (GroupCountSearchResponse,Int) = {
     resourceSearcher.facetSearch(rd.name, q, field, minFreq,topN)
   }
 
