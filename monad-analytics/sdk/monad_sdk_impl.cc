@@ -36,7 +36,6 @@ namespace monad{
     options.create_if_missing = true;
     leveldb::Status status = leveldb::DB::Open(options, path, &db);
 
-    //TODO 1900 as constants
     struct tm y1900={0};
     y1900.tm_hour = 0;   y1900.tm_min = 0; y1900.tm_sec = 0;
     y1900.tm_year = 0; y1900.tm_mon = 0; y1900.tm_mday = 1;
@@ -71,7 +70,7 @@ namespace monad{
       leveldb::ReadOptions options;
 
       char key_data[4];
-      leveldb::Slice key=CreateRegionKey(region_id,key_data)
+      leveldb::Slice key=CreateRegionKey(region_id,key_data);
       std::string value;
       leveldb::Status status = db->Get(options,key,&value);
       roaring_bitmap_t *bitmap;

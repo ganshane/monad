@@ -30,6 +30,7 @@ TEST_F(MonadSDKTest, TestRead) {
   std::string id2("413028199009121524");
   ASSERT_FALSE(sdk->ContainId(id2.c_str(),id2.size()));
 }
+/*
 TEST_F(MonadSDKTest,TestPerformance){
   std::ifstream fin("/Users/jcai/Downloads/sfzh.txt", std::ios::in);
 
@@ -47,3 +48,4 @@ TEST_F(MonadSDKTest,TestPerformance){
   fin.clear();
   fin.close();
 }
+ */
