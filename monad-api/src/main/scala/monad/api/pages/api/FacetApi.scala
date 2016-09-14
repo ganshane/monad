@@ -5,10 +5,10 @@ package monad.api.pages.api
 import monad.api.internal.SearchResultExtractor
 import monad.api.model.SearchRequest
 import monad.api.services.MonadApiExceptionCode
-import stark.utils.services.StarkException
 import org.apache.tapestry5.ioc.annotations.Inject
 import org.apache.tapestry5.ioc.internal.util.InternalUtils
 import org.apache.tapestry5.services.Request
+import stark.utils.services.StarkException
 
 import scala.collection.JavaConversions._
 
@@ -50,6 +50,6 @@ class FacetApi extends TraceApi {
 
     //转换为动态数据资源格式
     searchRequest.dbObjectExtractor = Some(SearchResultExtractor.DynamicDBObjectExtractor)
-    getSearchFacade.facetSearch(searchRequest)
+    getSearchFacade.facetSearch(searchRequest,1,30)
   }
 }

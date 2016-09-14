@@ -40,5 +40,5 @@ trait SearcherFacade {
    * @param searchRequest 搜索的请求对象
    * @return 搜索结果
    */
-  def facetSearch(searchRequest: SearchRequest): JsonObject
+  def facetSearch(searchRequest: SearchRequest,minFreq:Int,topN:Int): JsonObject
 }

@@ -45,9 +45,13 @@ class GroupSearchApi extends BaseApi with LoggerSupport{
     initResource(searchRequest)
     val g = request.getParameter("g")
     searchRequest.facetField = g
+    val minFreqString = request.getParameter("m")
+    val minFreq = if(minFreqString == null) 1 else minFreqString.toInt
+    val topNString = request.getParameter("top")
+    val topN = if(topNString == null) 30 else  topNString.toInt
     logger.info("[" + searchRequest.resourceName + "] group search q:[{}] g:[{}]....", q,g)
     val begin = new Date().getTime
-    val r = searchFacade.facetSearch(searchRequest)
+    val r = searchFacade.facetSearch(searchRequest,minFreq,topN)
     val end = new Date().getTime
     info("[" + searchRequest.resourceName + "] group search q:[{}], time:{}ms ", q,end - begin)
     r.addProperty("time",end-begin)

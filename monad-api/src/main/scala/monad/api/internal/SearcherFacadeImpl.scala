@@ -24,8 +24,8 @@ class SearcherFacadeImpl(extractor: SearchResultExtractor, searcherQueue: Search
 
   def getDocumentNum: Long = searcherQueue.getDocumentNum
 
-  def facetSearch(searchRequest: SearchRequest): JsonObject = {
-      val (response,totalGroup) = searcherQueue.facetSearch(searchRequest.q, searchRequest.facetField,0)
+  def facetSearch(searchRequest: SearchRequest,minFreq:Int,topN:Int): JsonObject = {
+    val (response,totalGroup) = searcherQueue.facetSearch(searchRequest.q, searchRequest.facetField,minFreq,topN)
     val it = response.getResultList.iterator()
     val data = new JsonObject
     data.addProperty("groups",totalGroup)
