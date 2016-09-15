@@ -1,5 +1,7 @@
-#include <leveldb-1.18/util/coding.h>
 #include "monad_sdk.h"
+
+#include <stdint.h>
+#include <util/coding.h>
 
 #include "monad_sdk_impl.h"
 

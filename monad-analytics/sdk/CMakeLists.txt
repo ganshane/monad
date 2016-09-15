@@ -5,10 +5,14 @@ AUX_SOURCE_DIRECTORY("." ANALYTICS_SDK_SOURCE)
 
 #snappy
 INCLUDE_DIRECTORIES(../snappy ../leveldb-1.18/include ../leveldb-1.18)
-LIST(APPEND ANALYTICS_SDK_SOURCE ../snappy/snappy.cc ../snappy/snappy-sinksource.cc)
+#LIST(APPEND ANALYTICS_SDK_SOURCE ../snappy/snappy.cc ../snappy/snappy-sinksource.cc)
 
 IF(MONAD_HAVE_OSX)
     ADD_DEFINITIONS(-DOS_MACOSX -DLEVELDB_PLATFORM_POSIX)
+    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_posix.cc )
+ELSEIF(MONAD_HAVE_WINDOWS)
+    ADD_DEFINITIONS(-DOS_WINDOWS -DLEVELDB_PLATFORM_WINDOWS)
+    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_win.cc )
 ENDIF()
 
 ADD_DEFINITIONS(-DNDEBUG -DSNAPPY)
@@ -49,8 +53,8 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
     ../leveldb-1.18/util/histogram.cc 
     ../leveldb-1.18/util/logging.cc 
     ../leveldb-1.18/util/options.cc 
-    ../leveldb-1.18/util/status.cc 
-    ../leveldb-1.18/port/port_posix.cc )
+    ../leveldb-1.18/util/status.cc)
 
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
 TARGET_LINK_LIBRARIES(monad analytics)
+  SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")

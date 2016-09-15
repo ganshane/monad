@@ -27,6 +27,7 @@ ELSEIf (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ENDIF()
 IF(MINGW)
   SET(MONAD_HAVE_MINGW32 true)
+  SET(MONAD_HAVE_WINDOWS true)
 ENDIF()
 
 
@@ -64,6 +65,7 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Linux" )
 ELSE()
   SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-Wall")
 ENDIF()
+  SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-std=c++0x -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
 TARGET_LINK_LIBRARIES(analytics STATIC)
 
 

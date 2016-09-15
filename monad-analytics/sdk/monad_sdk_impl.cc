@@ -1,4 +1,11 @@
 #include <iostream>
+#include <stdio.h>
+#include <string>
+#include <cstdio>
+using namespace std;
+
+
+
 #include <roaring/roaring.h>
 #include <leveldb/cache.h>
 #include "monad_sdk_impl.h"
