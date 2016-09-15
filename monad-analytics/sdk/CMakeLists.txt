@@ -9,10 +9,10 @@ LIST(APPEND ANALYTICS_SDK_SOURCE ../snappy/snappy.cc ../snappy/snappy-sinksource
 
 IF(MONAD_HAVE_OSX)
     ADD_DEFINITIONS(-DOS_MACOSX -DLEVELDB_PLATFORM_POSIX)
-    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_posix.cc )
+    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_posix.cc ../leveldb-1.18/util/env_posix.cc)
 ELSEIF(MONAD_HAVE_WINDOWS)
     ADD_DEFINITIONS(-DOS_WINDOWS -DLEVELDB_PLATFORM_WINDOWS)
-    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_win.cc )
+    LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_win.cc ../leveldb-1.18/util/env_win.cc)
 ENDIF()
 
 ADD_DEFINITIONS(-DNDEBUG -DSNAPPY)
@@ -47,8 +47,7 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
     ../leveldb-1.18/util/comparator.cc 
     ../leveldb-1.18/util/crc32c.cc 
     ../leveldb-1.18/util/env.cc 
-    ../leveldb-1.18/util/env_posix.cc 
-    ../leveldb-1.18/util/filter_policy.cc 
+    ../leveldb-1.18/util/filter_policy.cc
     ../leveldb-1.18/util/hash.cc 
     ../leveldb-1.18/util/histogram.cc 
     ../leveldb-1.18/util/logging.cc 
