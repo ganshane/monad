@@ -1,8 +1,9 @@
 #ifndef MONAD_SDK_IMPL_H_
 #define MONAD_SDK_IMPL_H_
 
-#include "leveldb/db.h"
 #include <regex>
+#include "leveldb/db.h"
+#include "roaring/roaring.h"
 
 #include "monad_sdk_code.h"
 
@@ -20,8 +21,14 @@ namespace monad{
 
   private:
     uint32_t CalculateDays(std::smatch& results);
+    void AddCache(uint32_t region_id,roaring_bitmap_t* value);
+    void RemoveCache(uint32_t region_id);
+    roaring_bitmap_t* GetBitmapFromCache(uint32_t region_id);
+    void ClearCache();
+
     leveldb::DB* db;
     uint32_t y1900_days;
+    uint32_t max_cache_ram;
   };
 }
 #endif //MONAD_SDK_IMPL_H_

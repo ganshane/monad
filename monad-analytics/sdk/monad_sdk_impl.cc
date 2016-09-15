@@ -36,11 +36,13 @@ namespace monad{
   MonadSDK::MonadSDK(const char *path) {
     leveldb::Options options;
     options.block_size = 50 * 1024;
-    options.block_cache = leveldb::NewLRUCache(100 * 1024 * 1024);
+//    options.block_cache = leveldb::NewLRUCache(100 * 1024 * 1024);
     options.create_if_missing = true;
     leveldb::Status status = leveldb::DB::Open(options, path, &db);
 
     y1900_days = (uint32_t) rdn(1900,1,1);
+
+    max_cache_ram = 50 * 1024 * 1024;
 
   }
   MonadSDK::~MonadSDK() {
@@ -53,8 +55,10 @@ namespace monad{
     leveldb::Slice key= CreateRegionKey(region_id,key_data);
     leveldb::Slice value(data,size);
     leveldb::Status status = db->Put(options,key,value);
-    if(status.ok())
+    if(status.ok()) {
+      RemoveCache(region_id);
       return MONAD_OK;
+    }
     else
       return MONAD_FAIL_PUT_COLLECTION;
   }
@@ -104,24 +108,30 @@ namespace monad{
        */
 
       uint32_t region_id = (uint32_t) std::stoi(result[1]);
-      char key_data[4];
-      leveldb::Slice key = CreateRegionKey(region_id,key_data);
-      std::string value;
-      leveldb::ReadOptions options;
-      options.fill_cache = true;
-      leveldb::Status status = db->Get(options,key,&value);
 
-      /*
-      finish = clock();
-      duration = finish-start;
-      total1 += duration;
-      std::cout << "total 1:"<< total1 << " " <<duration << std::endl;
-       */
+      roaring_bitmap_t* bitmap = GetBitmapFromCache(region_id);
 
-      if(!status.ok())
-        return false;
+      if(bitmap == NULL) {
+        char key_data[4];
+        leveldb::Slice key = CreateRegionKey(region_id, key_data);
+        std::string value;
+        leveldb::ReadOptions options;
+        options.fill_cache = true;
+        leveldb::Status status = db->Get(options, key, &value);
 
-      roaring_bitmap_t* bitmap = roaring_bitmap_portable_deserialize(value.c_str());
+        /*
+        finish = clock();
+        duration = finish-start;
+        total1 += duration;
+        std::cout << "total 1:"<< total1 << " " <<duration << std::endl;
+         */
+
+        if (!status.ok())
+          return false;
+
+        bitmap = roaring_bitmap_portable_deserialize(value.c_str());
+        AddCache(region_id,bitmap);
+      }
       /*
       finish = clock();
       duration = finish-start;
@@ -130,7 +140,8 @@ namespace monad{
        */
       uint32_t id_seq = CalculateDays(result);
       bool r = roaring_bitmap_contains(bitmap,id_seq);
-      roaring_bitmap_free(bitmap);
+      //don't free ,because the bitmap in cache
+//      roaring_bitmap_free(bitmap);
       /*
       finish = clock();
       duration = finish - start;

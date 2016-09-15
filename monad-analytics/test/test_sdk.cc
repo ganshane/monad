@@ -82,8 +82,10 @@ TEST_F(MonadSDKTest,TestPerformance){
     bool flag =  sdk->ContainId(id.c_str(),id.size());
     if(flag) true_int++;else false_int++;
     i++;
-    if(i >100000)
+    /*
+    if(i >1000000)
       break;
+      */
   }
   fin.close();
   finish = clock();
