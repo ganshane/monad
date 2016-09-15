@@ -43,7 +43,17 @@
 #if 1
 #include <stddef.h>
 #endif
+
+#ifdef __WIN32__
+// Windows does not have an iovec type, yet the concept is universally useful.
+// It is simple to define it ourselves, so we put it inside our own namespace.
+struct iovec {
+	void* iov_base;
+	size_t iov_len;
+};
+#else
 #include <sys/uio.h>
+#endif
 
 #define SNAPPY_MAJOR 1
 #define SNAPPY_MINOR 1
