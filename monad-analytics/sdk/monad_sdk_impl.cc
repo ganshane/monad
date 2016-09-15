@@ -122,5 +122,21 @@ namespace monad{
     options.create_if_missing = true;
     return DestroyDB(path, options);
   }
+  MONAD_CODE MonadSDK::PutKV(const leveldb::Slice &key, const leveldb::Slice &value) {
+    leveldb::WriteOptions options;
+    leveldb::Status status = db->Put(options,key,value);
+    if(status.ok())
+      return MONAD_OK;
+    else
+      return MONAD_FAIL_PUT_KV;
+  }
+  MONAD_CODE MonadSDK::GetKV(const leveldb::Slice &key, std::string *value) {
+    leveldb::ReadOptions options;
+    leveldb::Status status = db->Get(options,key,value);
+    if(status.ok())
+      return MONAD_OK;
+    else
+      return MONAD_FAIL_GET_KV;
+  }
 }
 

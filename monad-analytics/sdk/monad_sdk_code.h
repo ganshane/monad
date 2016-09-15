@@ -7,6 +7,8 @@ enum MONAD_CODE{
     MONAD_OK = 0,
     MONAD_FAIL_PUT_COLLECTION,
     MONAD_WRONG_ID_NUM,/* 错误的身份证号码 */
+    MONAD_FAIL_PUT_KV,
+    MONAD_FAIL_GET_KV,
     MONAD_LAST /* never use */
 };
 #ifdef __cplusplus

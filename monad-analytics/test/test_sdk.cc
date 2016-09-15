@@ -30,6 +30,23 @@ TEST_F(MonadSDKTest, TestRead) {
   std::string id2("413028199009121524");
   ASSERT_FALSE(sdk->ContainId(id2.c_str(),id2.size()));
 }
+TEST_F(MonadSDKTest,TestKVPerformance){
+  std::ifstream fin("/Users/jcai/Downloads/sfzh.txt", std::ios::in);
+
+  char line[1024]={0};
+  std::string id;
+  auto i = 0;
+  while(fin.getline(line, sizeof(line))){
+    id.assign(line);
+    sdk->PutKV(id,id);
+    i++;
+//    std::cout << i << " --> "<< id << std::endl;
+    //if(i >100000)
+    // break;
+  }
+  fin.clear();
+  fin.close();
+}
 /*
 TEST_F(MonadSDKTest,TestPerformance){
   std::ifstream fin("/Users/jcai/Downloads/sfzh.txt", std::ios::in);
