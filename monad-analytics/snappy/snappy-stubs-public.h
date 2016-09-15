@@ -43,14 +43,7 @@
 #if 1
 #include <stddef.h>
 #endif
-/*
-#ifdef __WIN32__
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
 #include <sys/uio.h>
-#endif
-*/
 
 #define SNAPPY_MAJOR 1
 #define SNAPPY_MINOR 1

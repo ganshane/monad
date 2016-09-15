@@ -1,10 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
-#include <cstdio>
-using namespace std;
-
-
+#include <sstream>
 
 #include <roaring/roaring.h>
 #include <leveldb/cache.h>
@@ -25,16 +22,28 @@ namespace monad{
     return 365*y + y/4 - y/100 + y/400 + (153*m - 457)/5 + d - 306;
   }
 
+  static uint32_t convert(std::string str){
+    return atoi(str.c_str());
+    /*
+    return std::stoi(str);
+    std::stringstream stream(str);
+    uint32_t  result;
+    stream >> result;
+    return result;
+     */
+  }
 
   static inline leveldb::Slice CreateRegionKey(uint32_t region_id,char* key_data){
     leveldb::EncodeFixed32(key_data,region_id);
     return leveldb::Slice(key_data,4);
   }
   uint32_t MonadSDK::CalculateDays(std::smatch& result){
-    uint32_t year = (uint32_t) std::stoi(result[2]);
-    uint32_t month = (uint32_t) std::stoi(result[3]);
-    uint32_t day = (uint32_t) std::stoi(result[4]);
-    uint32_t seq = (uint32_t) std::stoi(result[5]);
+
+
+    uint32_t year = (uint32_t) convert(result[2]);
+    uint32_t month = (uint32_t) convert(result[3]);
+    uint32_t day = (uint32_t) convert(result[4]);
+    uint32_t seq = (uint32_t) convert(result[5]);
 
     uint32_t days = (uint32_t) rdn(year,month,day);
 
@@ -76,7 +85,7 @@ namespace monad{
     bool match = std::regex_search(id, result, PATTERN);
     if(match)
     {
-      uint32_t region_id = (uint32_t) std::stoi(result[1]);
+      uint32_t region_id = (uint32_t) convert(result[1]);
       uint32_t id_seq = CalculateDays(result);
 
       leveldb::ReadOptions options;
@@ -116,7 +125,7 @@ namespace monad{
       start = clock();
        */
 
-      uint32_t region_id = (uint32_t) std::stoi(result[1]);
+      uint32_t region_id = (uint32_t) convert(result[1]);
 
       roaring_bitmap_t* bitmap = GetBitmapFromCache(region_id);
 

@@ -5,7 +5,7 @@ AUX_SOURCE_DIRECTORY("." ANALYTICS_SDK_SOURCE)
 
 #snappy
 INCLUDE_DIRECTORIES(../snappy ../leveldb-1.18/include ../leveldb-1.18)
-#LIST(APPEND ANALYTICS_SDK_SOURCE ../snappy/snappy.cc ../snappy/snappy-sinksource.cc)
+LIST(APPEND ANALYTICS_SDK_SOURCE ../snappy/snappy.cc ../snappy/snappy-sinksource.cc)
 
 IF(MONAD_HAVE_OSX)
     ADD_DEFINITIONS(-DOS_MACOSX -DLEVELDB_PLATFORM_POSIX)
