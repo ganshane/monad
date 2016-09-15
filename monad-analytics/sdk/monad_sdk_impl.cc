@@ -1,5 +1,6 @@
 #include <iostream>
 #include <roaring/roaring.h>
+#include <leveldb/cache.h>
 #include "monad_sdk_impl.h"
 #include "util/coding.h"
 
@@ -17,30 +18,27 @@ namespace monad{
     uint32_t month = (uint32_t) std::stoi(result[3]);
     uint32_t day = (uint32_t) std::stoi(result[4]);
     uint32_t seq = (uint32_t) std::stoi(result[5]);
-    struct tm birth = {0};
-    birth.tm_hour = 0;   birth.tm_min = 0; birth.tm_sec = 0;
-    birth.tm_year = (year - 1900); birth.tm_mon = month - 1; birth.tm_mday = day;
-    /*
-    struct tm y1900={0};
-    y1900.tm_hour = 0;   y1900.tm_min = 0; y1900.tm_sec = 0;
-    y1900.tm_year = 0; y1900.tm_mon = 0; y1900.tm_mday = 1;
-     */
 
-    uint32_t seconds = (uint32_t) difftime(mktime(&birth),this->y1900_time);
-    uint32_t days = seconds/60 / 60 / 24;
+    uint32_t days = (year - 1900) * 366 + (month -1)*31 + day;
+//    uint32_t days = seconds/60 / 60 / 24;
     days |= (seq << 16);
     return days;
   }
   MonadSDK::MonadSDK(const char *path) {
     leveldb::Options options;
+    options.block_size = 50 * 1024;
+    options.block_cache = leveldb::NewLRUCache(100 * 1024 * 1024);
     options.create_if_missing = true;
     leveldb::Status status = leveldb::DB::Open(options, path, &db);
 
     struct tm y1900={0};
     y1900.tm_hour = 0;   y1900.tm_min = 0; y1900.tm_sec = 0;
-    y1900.tm_year = 0; y1900.tm_mon = 0; y1900.tm_mday = 1;
+    y1900.tm_year = 70+70; y1900.tm_mon = 0; y1900.tm_mday = 1;
+    std::cout << asctime(&y1900) << std::endl;
 
-    this->y1900_time = mktime(&y1900);
+
+
+    this->y1900_time = std::mktime(&y1900);
 
   }
   MonadSDK::~MonadSDK() {
@@ -96,21 +94,48 @@ namespace monad{
     std::smatch result;
     bool match = std::regex_search(id, result, PATTERN);
     if(match){
+      /*
+      clock_t   start,   finish;
+      double     duration;
+      static double total1=0,total2=0,total3=0;
+      start = clock();
+       */
+
       uint32_t region_id = (uint32_t) std::stoi(result[1]);
       char key_data[4];
       leveldb::Slice key = CreateRegionKey(region_id,key_data);
       std::string value;
       leveldb::ReadOptions options;
+      options.fill_cache = true;
       leveldb::Status status = db->Get(options,key,&value);
+
+      /*
+      finish = clock();
+      duration = finish-start;
+      total1 += duration;
+      std::cout << "total 1:"<< total1 << " " <<duration << std::endl;
+       */
 
       if(!status.ok())
         return false;
 
       roaring_bitmap_t* bitmap = roaring_bitmap_portable_deserialize(value.c_str());
-
+      /*
+      finish = clock();
+      duration = finish-start;
+      total2 += duration;
+      std::cout << "total 2:"<<total2-total1 << " " <<duration << std::endl;
+       */
       uint32_t id_seq = CalculateDays(result);
       bool r = roaring_bitmap_contains(bitmap,id_seq);
       roaring_bitmap_free(bitmap);
+      /*
+      finish = clock();
+      duration = finish - start;
+      total3 += duration;
+      std::cout << total3 << " " <<duration << std::endl;
+      */
+
       return r;
     }else{
       return false;
