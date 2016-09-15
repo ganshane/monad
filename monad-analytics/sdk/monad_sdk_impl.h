@@ -10,7 +10,7 @@
 namespace monad{
   class MonadSDK{
   public:
-    MonadSDK(const char* path);
+    MonadSDK(const char* path,uint32_t cache_ram=50 * 1024 * 1024);
     MONAD_CODE PutCollection(uint32_t region_id,const char* data,const size_t size);
     MONAD_CODE PutId(const char* id_card ,size_t size);
     MONAD_CODE PutKV(const leveldb::Slice& key,const leveldb::Slice& value);

@@ -33,7 +33,7 @@ namespace monad{
 
     return (days - y1900_days) | (seq << 16);
   }
-  MonadSDK::MonadSDK(const char *path) {
+  MonadSDK::MonadSDK(const char *path,const uint32_t cache_ram) {
     leveldb::Options options;
     options.block_size = 50 * 1024;
 //    options.block_cache = leveldb::NewLRUCache(100 * 1024 * 1024);
@@ -42,7 +42,7 @@ namespace monad{
 
     y1900_days = (uint32_t) rdn(1900,1,1);
 
-    max_cache_ram = 50 * 1024 * 1024;
+    max_cache_ram = cache_ram;
 
   }
   MonadSDK::~MonadSDK() {
