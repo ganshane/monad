@@ -21,7 +21,7 @@ namespace monad{
   private:
     uint32_t CalculateDays(std::smatch& results);
     leveldb::DB* db;
-    time_t y1900_time;
+    uint32_t y1900_days;
   };
 }
 #endif //MONAD_SDK_IMPL_H_

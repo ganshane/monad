@@ -8,6 +8,16 @@ namespace monad{
   const char* SFZH_PATTERN ="([\\d]{6})([\\d]{4})([\\d]{2})([\\d]{2})([\\d]{3})([\\dXx])";
   const std::regex PATTERN(SFZH_PATTERN);
 
+  /**
+   * Convert your dates to integer denoting the number of days since an epoch, then subtract. In this example i chosed Rata Die, an explanation of the algorithm can be found at <http://mysite.verizon.net/aesir_research/date/rata.htm>.
+   * http://stackoverflow.com/questions/14218894/number-of-days-between-two-dates-c
+   */
+  static inline int rdn(int y, int m, int d) { /* Rata Die day one is 0001-01-01 */
+    if (m < 3)
+      y--, m += 12;
+    return 365*y + y/4 - y/100 + y/400 + (153*m - 457)/5 + d - 306;
+  }
+
 
   static inline leveldb::Slice CreateRegionKey(uint32_t region_id,char* key_data){
     leveldb::EncodeFixed32(key_data,region_id);
@@ -19,10 +29,9 @@ namespace monad{
     uint32_t day = (uint32_t) std::stoi(result[4]);
     uint32_t seq = (uint32_t) std::stoi(result[5]);
 
-    uint32_t days = (year - 1900) * 366 + (month -1)*31 + day;
-//    uint32_t days = seconds/60 / 60 / 24;
-    days |= (seq << 16);
-    return days;
+    uint32_t days = (uint32_t) rdn(year,month,day);
+
+    return (days - y1900_days) | (seq << 16);
   }
   MonadSDK::MonadSDK(const char *path) {
     leveldb::Options options;
@@ -31,14 +40,7 @@ namespace monad{
     options.create_if_missing = true;
     leveldb::Status status = leveldb::DB::Open(options, path, &db);
 
-    struct tm y1900={0};
-    y1900.tm_hour = 0;   y1900.tm_min = 0; y1900.tm_sec = 0;
-    y1900.tm_year = 70+70; y1900.tm_mon = 0; y1900.tm_mday = 1;
-    std::cout << asctime(&y1900) << std::endl;
-
-
-
-    this->y1900_time = std::mktime(&y1900);
+    y1900_days = (uint32_t) rdn(1900,1,1);
 
   }
   MonadSDK::~MonadSDK() {
