@@ -48,6 +48,7 @@ namespace monad{
   MonadSDK::~MonadSDK() {
     if(db)
       delete db;
+    ClearCache();
   }
   MONAD_CODE MonadSDK::PutCollection(uint32_t region_id, const char *data, const size_t size) {
     leveldb::WriteOptions options;
@@ -90,6 +91,7 @@ namespace monad{
       this->PutCollection(region_id,serializedbytes,expectedsize);
       roaring_bitmap_free(bitmap);
       free(serializedbytes);
+      RemoveCache(region_id);
       return MONAD_OK;
     }else{
       return MONAD_WRONG_ID_NUM;
