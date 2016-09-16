@@ -11,7 +11,7 @@ IF(MONAD_HAVE_OSX)
     ADD_DEFINITIONS(-DOS_MACOSX -DLEVELDB_PLATFORM_POSIX)
     LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_posix.cc ../leveldb-1.18/util/env_posix.cc)
 ELSEIF(MONAD_HAVE_WINDOWS)
-    ADD_DEFINITIONS(-DOS_WINDOWS -DLEVELDB_PLATFORM_WINDOWS)
+    ADD_DEFINITIONS(-DOS_WINDOWS -DLEVELDB_PLATFORM_WINDOWS -DDLL_EXPORT)
     LIST(APPEND ANALYTICS_SDK_SOURCE ../leveldb-1.18/port/port_win.cc ../leveldb-1.18/util/env_win.cc)
 ENDIF()
 
@@ -57,3 +57,7 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
 TARGET_LINK_LIBRARIES(monad analytics)
   SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
+IF(MONAD_HAVE_WINDOWS)
+    ET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definitio
+n -Wl,--exclude-all-symbols")
+ENDIF()
