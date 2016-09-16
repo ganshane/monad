@@ -37,17 +37,25 @@ namespace monad{
     leveldb::EncodeFixed32(key_data,region_id);
     return leveldb::Slice(key_data,4);
   }
-  uint32_t MonadSDK::CalculateDays(std::smatch& result){
+  MONAD_CODE MonadSDK::CalculateDays(const char* id_card,const size_t size,uint32_t& days,uint32_t& region_id){
+    std::string id(id_card,size);
+    std::smatch result;
+    bool match = std::regex_search(id, result, PATTERN);
+    if(match) {
+      region_id = (uint32_t) convert(result[1]);
+      uint32_t year = (uint32_t) convert(result[2]);
+      uint32_t month = (uint32_t) convert(result[3]);
+      uint32_t day = (uint32_t) convert(result[4]);
+      uint32_t seq = (uint32_t) convert(result[5]);
 
+      days = (uint32_t) rdn(year, month, day);
+      days = (days - y1900_days) | (seq << 16);
 
-    uint32_t year = (uint32_t) convert(result[2]);
-    uint32_t month = (uint32_t) convert(result[3]);
-    uint32_t day = (uint32_t) convert(result[4]);
-    uint32_t seq = (uint32_t) convert(result[5]);
+      return MONAD_OK;
+    }else{
+      return MONAD_WRONG_ID_NUM;
+    }
 
-    uint32_t days = (uint32_t) rdn(year,month,day);
-
-    return (days - y1900_days) | (seq << 16);
   }
   MonadSDK::MonadSDK(const char *path,const uint32_t cache_ram) {
     leveldb::Options options;
@@ -80,13 +88,9 @@ namespace monad{
       return MONAD_FAIL_PUT_COLLECTION;
   }
   MONAD_CODE MonadSDK::PutId(const char *id_card, size_t size) {
-    std::string id(id_card,size);
-    std::smatch result;
-    bool match = std::regex_search(id, result, PATTERN);
-    if(match)
-    {
-      uint32_t region_id = (uint32_t) convert(result[1]);
-      uint32_t id_seq = CalculateDays(result);
+    uint32_t id_seq(0),region_id(0);
+    MONAD_CODE r = CalculateDays(id_card,size,id_seq,region_id);
+    if(r == MONAD_OK){
 
       leveldb::ReadOptions options;
 
@@ -114,18 +118,15 @@ namespace monad{
     }
   }
   bool MonadSDK::ContainId(const char *id_card, size_t size) {
-    std::string id(id_card,size);
-    std::smatch result;
-    bool match = std::regex_search(id, result, PATTERN);
-    if(match){
+    uint32_t id_seq(0),region_id(0);
+    MONAD_CODE r = CalculateDays(id_card,size,id_seq,region_id);
+    if(r == MONAD_OK){
       /*
       clock_t   start,   finish;
       double     duration;
       static double total1=0,total2=0,total3=0;
       start = clock();
        */
-
-      uint32_t region_id = (uint32_t) convert(result[1]);
 
       roaring_bitmap_t* bitmap = GetBitmapFromCache(region_id);
 
@@ -156,7 +157,6 @@ namespace monad{
       total2 += duration;
       std::cout << "total 2:"<<total2-total1 << " " <<duration << std::endl;
        */
-      uint32_t id_seq = CalculateDays(result);
       bool r = roaring_bitmap_contains(bitmap,id_seq);
       //don't free ,because the bitmap in cache
 //      roaring_bitmap_free(bitmap);

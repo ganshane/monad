@@ -34,7 +34,32 @@ TEST_F(MonadSDKTest, TestRead) {
   ASSERT_TRUE(sdk->ContainId(id.c_str(),id.size()));
   std::string id2("413028199009121524");
   ASSERT_FALSE(sdk->ContainId(id2.c_str(),id2.size()));
+
+  uint32_t days(0);
+  uint32_t region_id(0);
+  MONAD_CODE r = sdk->CalculateDays(id_.c_str(),id_.size(),days,region_id);
+  ASSERT_EQ(MONAD_OK,r);
+  ASSERT_EQ(110101,region_id);
+  ASSERT_EQ(48275022,days);
+
+  char childpath[512]="/Users/jcai/workspace/tmp/monad/110101";
+  FILE* fp = fopen(childpath,"rb");
+  fseek(fp, 0L, SEEK_END);
+  uint32_t sz = ftell(fp);// + 10 * 1024;
+  fseek(fp, 0L, SEEK_SET);
+  char* buffer = (char *) malloc(sz);
+  memset(buffer,0,sz);
+  size_t final_size = fread(buffer, sz, 1, fp);
+  fclose(fp);
+
+  roaring_bitmap_t* bm = roaring_bitmap_portable_deserialize(buffer);
+  std::cout << "bm caar "<<roaring_bitmap_get_cardinality(bm) << std::endl;
+  roaring_bitmap_free(bm);
+  sdk->PutCollection(region_id,buffer,sz);
+  free(buffer);
+
 }
+/*
 TEST_F(MonadSDKTest,TestPerformance){
   const char path[50]="/tmp/monad";
   char  childpath[512];
@@ -82,10 +107,6 @@ TEST_F(MonadSDKTest,TestPerformance){
     bool flag =  sdk->ContainId(id.c_str(),id.size());
     if(flag) true_int++;else false_int++;
     i++;
-    /*
-    if(i >1000000)
-      break;
-      */
   }
   fin.close();
   finish = clock();
@@ -94,7 +115,6 @@ TEST_F(MonadSDKTest,TestPerformance){
 
   std::cout << "time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 }
-/*
 TEST_F(MonadSDKTest,TestKVPerformance){
   std::ifstream fin("/Users/jcai/Downloads/sfzh.txt", std::ios::in);
 

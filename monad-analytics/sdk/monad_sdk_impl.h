@@ -19,9 +19,10 @@ namespace monad{
     bool ContainId(const char *id_card,size_t size);
     static leveldb::Status Destroy(const char* path);
     virtual ~MonadSDK();
+    //only for test
+    MONAD_CODE CalculateDays(const char* id_card,const size_t size,uint32_t& days,uint32_t& region_id);
 
   private:
-    uint32_t CalculateDays(std::smatch& results);
     void AddCache(uint32_t region_id,roaring_bitmap_t* value);
     void RemoveCache(uint32_t region_id);
     roaring_bitmap_t* GetBitmapFromCache(uint32_t region_id);

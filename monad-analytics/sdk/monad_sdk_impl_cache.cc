@@ -23,7 +23,7 @@ namespace monad {
       HASH_DELETE(hh, cache, entry);
       cache_ram_size -= roaring_bitmap_portable_size_in_bytes(entry->bitmap);
       free_cache_item(entry);
-      std::cout << "remove cache entry,cache count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
+      std::cout << "RC,count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << std::endl;
     }
   }
   roaring_bitmap_t* find_in_cache(uint32_t key)
@@ -49,7 +49,7 @@ namespace monad {
     size_t new_size = old_size;
     if(roaring_bitmap_run_optimize(value)){
       new_size = roaring_bitmap_portable_size_in_bytes(value);
-      std::cout << "compressed from " << old_size << " to " << new_size <<std::endl;
+      std::cout << "compressed from " << old_size << " to " << new_size << " bit count"<< roaring_bitmap_get_cardinality(value) <<std::endl;
     }
 
     HASH_ADD_INT(cache, region_id, entry);
@@ -62,7 +62,7 @@ namespace monad {
         break;
       }
     }
-    std::cout << "add cache entry, count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
+    std::cout << "AC, count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << " r: "<<region_id << " c:" << roaring_bitmap_get_cardinality(value) << std::endl;
   }
   void MonadSDK::AddCache(uint32_t region_id, roaring_bitmap_t *value) {
     add_to_cache(region_id,value,max_cache_ram);

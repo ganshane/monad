@@ -27,6 +27,7 @@ void performance(const char* path,const char* sfzh_path){
   struct stat s;
   while((ent=readdir(pDir))!=NULL)
   {
+    memset(&s, 0,sizeof(struct stat));
     stat(ent->d_name, &s);
     if (s.st_mode & S_IFDIR)
     {
@@ -48,7 +49,7 @@ void performance(const char* path,const char* sfzh_path){
       EncodeFixed32(buffer,region_id);
       fread(buffer+4, sz, 1, fp);
       fclose(fp);
-      monad_coll_put_seg(sdk,buffer,sz);
+      monad_coll_put_seg(sdk,buffer,sz+4);
       free(buffer);
     }
   }
@@ -66,12 +67,14 @@ void performance(const char* path,const char* sfzh_path){
   while(fin.getline(line, sizeof(line))){
     id.assign(line);
     bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
-    if(flag) true_int++;else false_int++;
+    if(flag) true_int++;
+    else {
+//      std::cout << "false ->" << id << std::endl;
+      false_int++;
+    }
     i++;
-    /*
-    if(i >=100000)
+    if(i >=10000000)
       break;
-      */
   }
   fin.close();
   finish = clock();
