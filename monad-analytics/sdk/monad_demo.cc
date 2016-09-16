@@ -73,8 +73,10 @@ void performance(const char* path,const char* sfzh_path){
       false_int++;
     }
     i++;
+    /*
     if(i >=10000000)
       break;
+      */
   }
   fin.close();
   finish = clock();
