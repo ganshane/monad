@@ -55,7 +55,11 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
     ../leveldb-1.18/util/status.cc)
 
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
-TARGET_LINK_LIBRARIES(monad analytics)
+IF(MONAD_HAVE_WINDOWS)
+    TARGET_LINK_LIBRARIES(monad analytics shlwapi)
+ELSE()
+    TARGET_LINK_LIBRARIES(monad analytics)
+ENDIF()
   SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
 IF(MONAD_HAVE_WINDOWS)
     SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definitio
