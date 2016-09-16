@@ -36,7 +36,7 @@ ENDIF()
 #build CRoaring
 SET(BUILD_STATIC true)
 SET(DISABLE_AVX OFF)
-SET(CMAKE_C_FLAGS "-std=c11 -fPIC -march=native  -Wall -Winline -Wshadow -Wextra -pedantic")
+#SET(CMAKE_C_FLAGS "-std=c11 -fPIC -march=native  -Wall -Winline -Wshadow -Wextra -pedantic")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/include)
 ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/src)
 
@@ -59,13 +59,11 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 
 ADD_LIBRARY(analytics STATIC ${INTERNAL_HEADERS} ${ANALYTICS_SOURCE})
-IF(CMAKE_SYSTEM_NAME MATCHES "Linux" )
+IF(MONAD_HAVE_LINUX )
   SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
-	TARGET_LINK_LIBRARIES(analytics)
-ELSE()
-  SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-Wall")
+ELSEIF(MONAD_HAVE_WINDOWS)
+  SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-std=c++0x -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing") 
 ENDIF()
-  SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-std=c++0x -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
 TARGET_LINK_LIBRARIES(analytics STATIC)
 
 

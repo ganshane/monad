@@ -57,7 +57,7 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
 IF(MONAD_HAVE_WINDOWS)
     TARGET_LINK_LIBRARIES(monad analytics shlwapi)
-    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=gnu++11 -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
+    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=gnu++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
     SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
 ELSE()
     TARGET_LINK_LIBRARIES(monad analytics)
