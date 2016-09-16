@@ -68,3 +68,6 @@ ELSE()
     TARGET_LINK_LIBRARIES(monad analytics)
     SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
 ENDIF()
+
+ADD_EXECUTABLE(monad_demo monad_demo.cc)
+TARGET_LINK_LIBRARIES(monad_demo monad)

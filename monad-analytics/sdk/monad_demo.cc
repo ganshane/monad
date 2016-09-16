@@ -1,0 +1,99 @@
+#include "monad_sdk.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <dirent.h>
+#include <time.h>
+#include <string>
+
+
+
+void* sdk=NULL;
+void EncodeFixed32(char* buf, uint32_t value) {
+  buf[0] = value & 0xff;
+  buf[1] = (value >> 8) & 0xff;
+  buf[2] = (value >> 16) & 0xff;
+  buf[3] = (value >> 24) & 0xff;
+}
+void performance(const char* path,const char* sfzh_path){
+//  const char path[50]="/tmp/monad";
+  char  childpath[512];
+
+  DIR* pDir=opendir(path);
+  struct dirent    *ent  ;
+  while((ent=readdir(pDir))!=NULL)
+  {
+    if(ent->d_type & DT_DIR)
+    {
+      if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0)
+        continue;
+//      sprintf(childpath,"%s/%s",path,ent->d_name);
+//      printf("path:%s/n",childpath);
+    }
+    else
+    {
+//      std::cout<<ent->d_name<<std::endl;
+      uint32_t region_id = atoi(ent->d_name);
+      sprintf(childpath,"%s/%s",path,ent->d_name);
+      FILE* fp = fopen(childpath,"rb");
+      fseek(fp, 0L, SEEK_END);
+      uint32_t sz = ftell(fp);
+      fseek(fp, 0L, SEEK_SET);
+      char* buffer = (char *) malloc(sz + 4);
+      EncodeFixed32(buffer,region_id);
+      fread(buffer+4, sz, 1, fp);
+      fclose(fp);
+      monad_coll_put_seg(sdk,buffer,sz);
+      free(buffer);
+    }
+  }
+
+  clock_t   start,   finish;
+  start   =   clock();
+
+  std::ifstream fin(sfzh_path, std::ios::in);
+
+  char line[1024]={0};
+  std::string id;
+  auto i = 0;
+  int32_t true_int = 0;
+  int32_t false_int = 0;
+  while(fin.getline(line, sizeof(line))){
+    id.assign(line);
+    bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
+    if(flag) true_int++;else false_int++;
+    i++;
+    if(i >=100000)
+      break;
+  }
+  fin.close();
+  finish = clock();
+  double duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
+
+
+  std::cout << "time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
+}
+int main(int argc, char *argv[]){
+  const char path[100]= "test.db";
+  monad_coll_create(&sdk,path,50 * 1024 * 1024);
+  std::string id_("110101201012167368");
+
+  monad_coll_put_id(sdk,id_.c_str(),id_.size());
+  std::string id("413028199009121514");
+  monad_coll_put_id(sdk,id.c_str(),id.size());
+
+  std::cout << monad_coll_contain_id(sdk,id.c_str(),id.size()) << std::endl;
+  std::string id2("413028199009121524");
+  std::cout << monad_coll_contain_id(sdk,id2.c_str(),id2.size()) <<std::endl;
+
+
+  if(argc == 3){
+    std::cout << "db path:" << argv[1] << " sfzh path: " << argv[2] <<std::endl;
+    performance(argv[1],argv[2]);
+  }
+  monad_coll_release(sdk);
+
+  return 0;
+}
