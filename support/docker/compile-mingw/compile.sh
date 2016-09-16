@@ -45,6 +45,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
+  -DCMAKE_BUILD_TYPE=Release \
   -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
   -DJAVA_AWT_LIBRARY=$JAVA_HOME/jre/lib/i386/libjawt.so \
@@ -83,6 +84,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
+  -DCMAKE_BUILD_TYPE=Release \
   -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
   -DJAVA_AWT_LIBRARY=$JAVA_HOME/jre/lib/amd64/libjawt.so \
