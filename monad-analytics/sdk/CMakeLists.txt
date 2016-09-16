@@ -71,4 +71,7 @@ ENDIF()
 
 ADD_EXECUTABLE(monad_demo monad_demo.cc)
 SET_TARGET_PROPERTIES(monad_demo PROPERTIES COMPILE_FLAGS "-std=gnu++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
+IF(MONAD_HAVE_WINDOWS)
+    SET_TARGET_PROPERTIES(monad_demo PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
+ENDIF()
 TARGET_LINK_LIBRARIES(monad_demo monad)

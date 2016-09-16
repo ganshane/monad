@@ -1,12 +1,13 @@
 #include "monad_sdk.h"
 
+#include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <dirent.h>
+#include <sys/stat.h>
 #include <time.h>
-#include <string>
 
 
 
@@ -23,9 +24,11 @@ void performance(const char* path,const char* sfzh_path){
 
   DIR* pDir=opendir(path);
   struct dirent    *ent  ;
+  struct stat s;
   while((ent=readdir(pDir))!=NULL)
   {
-    if(ent->d_type & DT_DIR)
+    stat(ent->d_name, &s);
+    if (s.st_mode & S_IFDIR)
     {
       if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0)
         continue;
