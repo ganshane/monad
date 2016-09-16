@@ -45,12 +45,15 @@ namespace monad {
     entry = (CacheEntry *) malloc(sizeof(struct CacheEntry));
     entry->region_id = region_id;
     entry->bitmap = value;
-    size_t old_size = roaring_bitmap_portable_size_in_bytes(value);
-    size_t new_size = old_size;
+    size_t new_size = roaring_bitmap_portable_size_in_bytes(value);
+    /*
+     * disable optimize
+    size_t old_size = new_size;
     if(roaring_bitmap_run_optimize(value)){
       new_size = roaring_bitmap_portable_size_in_bytes(value);
       std::cout << "compressed from " << old_size << " to " << new_size << " bit count"<< roaring_bitmap_get_cardinality(value) <<std::endl;
     }
+     */
 
     HASH_ADD_INT(cache, region_id, entry);
     cache_ram_size += new_size;
