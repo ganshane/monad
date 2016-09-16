@@ -1,11 +1,12 @@
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 MAINTAINER Jun Tsai <jcai@ganshane.com>
 
 ENV TEMPDIR   /tmp
 RUN dpkg --add-architecture i386
 RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com\/ubuntu\/ubuntu/g' /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y mingw-w64 g++-mingw-w64 git-core make wget cmake swig openjdk-7-jdk openjdk-7-jdk:i386
+    apt-get install -y mingw-w64 g++-mingw-w64 git-core make wget cmake swig openjdk-8-jdk openjdk-8-jdk:i386 && \
+    apt-get clean
 
 #ssh_config
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
