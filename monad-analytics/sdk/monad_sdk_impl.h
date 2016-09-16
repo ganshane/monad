@@ -8,6 +8,7 @@
 #include "monad_sdk_code.h"
 
 namespace monad{
+  struct CacheEntry;
   class MonadSDK{
   public:
     MonadSDK(const char* path,const uint32_t cache_ram=50 * 1024 * 1024);

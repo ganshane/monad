@@ -11,9 +11,20 @@ namespace monad {
   };
   struct CacheEntry *cache = NULL;
 
+  static uint32_t cache_ram_size=0;
+
   void free_cache_item(struct CacheEntry *entry){
     roaring_bitmap_free(entry->bitmap);
     free(entry);
+  }
+  void remove_cache_entry(CacheEntry *entry) {
+    if (entry) {
+      // remove it (so the subsequent add will throw it on the front of the list)
+      HASH_DELETE(hh, cache, entry);
+      cache_ram_size -= roaring_bitmap_portable_size_in_bytes(entry->bitmap);
+      free_cache_item(entry);
+      std::cout << "remove cache entry,cache count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
+    }
   }
   roaring_bitmap_t* find_in_cache(uint32_t key)
   {
@@ -34,21 +45,24 @@ namespace monad {
     entry = (CacheEntry *) malloc(sizeof(struct CacheEntry));
     entry->region_id = region_id;
     entry->bitmap = value;
+    size_t old_size = roaring_bitmap_portable_size_in_bytes(value);
+    size_t new_size = old_size;
+    if(roaring_bitmap_run_optimize(value)){
+      new_size = roaring_bitmap_portable_size_in_bytes(value);
+      std::cout << "compressed from " << old_size << " to " << new_size <<std::endl;
+    }
+
     HASH_ADD_INT(cache, region_id, entry);
-    static uint32_t cache_ram_size=0;
-    cache_ram_size += roaring_bitmap_portable_size_in_bytes(value);
-    std::cout << "cache count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
+    cache_ram_size += new_size;
 
     // prune the cache to MAX_CACHE_SIZE
     if (cache_ram_size > max_cache_ram) {
       HASH_ITER(hh, cache, entry, tmp_entry) {
-        // prune the first entry (loop is based on insertion order so this deletes the oldest item)
-        HASH_DELETE(hh, cache, entry);
-        cache_ram_size -= roaring_bitmap_portable_size_in_bytes(entry->bitmap);
-        free_cache_item(entry);
+        remove_cache_entry(entry);
         break;
       }
     }
+    std::cout << "add cache entry, count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
   }
   void MonadSDK::AddCache(uint32_t region_id, roaring_bitmap_t *value) {
     add_to_cache(region_id,value,max_cache_ram);
@@ -60,19 +74,13 @@ namespace monad {
   void MonadSDK::ClearCache() {
     struct CacheEntry *entry, *tmp_entry;
     HASH_ITER(hh, cache, entry, tmp_entry) {
-      // prune the first entry (loop is based on insertion order so this deletes the oldest item)
-      HASH_DELETE(hh, cache, entry);
-      free_cache_item(entry);
+      remove_cache_entry(entry);
     }
   }
 
   void MonadSDK::RemoveCache(uint32_t region_id) {
     struct CacheEntry *entry;
     HASH_FIND_INT(cache, &region_id, entry);
-    if (entry) {
-      // remove it (so the subsequent add will throw it on the front of the list)
-      HASH_DELETE(hh, cache, entry);
-      free_cache_item(entry);
-    }
+    remove_cache_entry(entry);
   }
 }

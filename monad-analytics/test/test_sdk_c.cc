@@ -15,7 +15,7 @@ class MonadSDKTest: public ::testing::Test {
 protected:
   void* sdk;
   MonadSDKTest() {
-    monad_coll_create(&sdk,path,50 * 1024 * 1024);
+    monad_coll_create(&sdk,path,20 * 1024 * 1024);
   }
   virtual ~MonadSDKTest() {
     monad_coll_release(sdk);
@@ -92,7 +92,7 @@ TEST_F(MonadSDKTest,TestPerformance){
     bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
     if(flag) true_int++;else false_int++;
     i++;
-    if(i >1000000)
+    if(i >10000000)
       break;
   }
   fin.close();

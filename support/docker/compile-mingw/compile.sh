@@ -45,6 +45,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
+  -DCMAKE_INSTALL_PREFIX=/dist/$ARCH \
   -DCMAKE_BUILD_TYPE=Release \
   -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
@@ -53,7 +54,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include \
   -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux \
   -DJAVA_JVM_LIBRARY=$JAVA_HOME/jre/lib/i386/libjava.so  ..
-make
+make install/strip
 cd -
 
 
@@ -84,6 +85,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
+  -DCMAKE_INSTALL_PREFIX=/dist/$ARCH \
   -DCMAKE_BUILD_TYPE=Release \
   -DHOST=$HOST  -DARCH=$ARCH \
   -DSWIG_DIR=/usr/share/swig2.0 \
@@ -92,7 +94,7 @@ LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include \
   -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux \
   -DJAVA_JVM_LIBRARY=$JAVA_HOME/jre/lib/amd64/libjava.so  ..
-make
+make install/strip
 
 mkdir -p /dist/w32
 mkdir -p /dist/w64
@@ -103,13 +105,13 @@ cp build-w64/src/*.dll /dist/w64/monad4j.dll
 cp build-w64/monad-jni-gen.tar.gz /dist
 
 cd $ROOT/monad-analytics
-cp build-w32/*.dll /dist/w32/analytics4j.dll
-cp build-w32/sdk/*.dll /dist/w32/libmonad.dll
-cp build-w32/sdk/*.exe /dist/w32/monad_demo.exe
-
-cp build-w64/*.dll /dist/w64/analytics4j.dll
-cp build-w64/sdk/*.dll /dist/w64/libmonad.dll
-cp build-w64/sdk/*.exe /dist/w64/monad_demo.exe
+#cp build-w32/*.dll /dist/w32/analytics4j.dll
+#cp build-w32/sdk/*.dll /dist/w32/libmonad.dll
+#cp build-w32/sdk/*.exe /dist/w32/monad_demo.exe
+#
+#cp build-w64/*.dll /dist/w64/analytics4j.dll
+#cp build-w64/sdk/*.dll /dist/w64/libmonad.dll
+#cp build-w64/sdk/*.exe /dist/w64/monad_demo.exe
 
 
 echo "[hit enter key to exit] or run 'docker stop <container>'"
