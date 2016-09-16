@@ -36,7 +36,6 @@ ENDIF()
 #build CRoaring
 SET(BUILD_STATIC true)
 SET(DISABLE_AVX OFF)
-#SET(CMAKE_C_FLAGS "-std=c11 -fPIC -march=native  -Wall -Winline -Wshadow -Wextra -pedantic")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/include)
 ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/src)
 

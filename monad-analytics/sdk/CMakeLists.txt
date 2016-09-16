@@ -1,7 +1,12 @@
 # Copyright 2016 the original author or authors. All rights reserved.
 # site: http://www.ganshane.com
-AUX_SOURCE_DIRECTORY("." ANALYTICS_SDK_SOURCE)
+# on mingw
+# cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
+#-DCMAKE_BUILD_TYPE=Release \
+#-DENABLE_SDK=on \
+#-DHOST=$HOST  -DARCH=$ARCH \
 
+AUX_SOURCE_DIRECTORY("." ANALYTICS_SDK_SOURCE)
 
 #snappy
 INCLUDE_DIRECTORIES(../snappy ../leveldb-1.18/include ../leveldb-1.18)
