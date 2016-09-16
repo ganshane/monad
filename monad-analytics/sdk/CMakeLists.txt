@@ -60,10 +60,12 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
     ../leveldb-1.18/util/status.cc)
 
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
+	SET_TARGET_PROPERTIES(monad PROPERTIES LINKER_LANGUAGE CXX)
 IF(MONAD_HAVE_WINDOWS)
     TARGET_LINK_LIBRARIES(monad analytics shlwapi)
-    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=gnu++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
-    SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
+    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
+#    SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
+    SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,--kill-at -fno-strict-aliasing")
 ELSE()
     TARGET_LINK_LIBRARIES(monad analytics)
     SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
@@ -72,6 +74,20 @@ ENDIF()
 ADD_EXECUTABLE(monad_demo monad_demo.cc)
 SET_TARGET_PROPERTIES(monad_demo PROPERTIES COMPILE_FLAGS "-std=gnu++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
 IF(MONAD_HAVE_WINDOWS)
-    SET_TARGET_PROPERTIES(monad_demo PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
+    SET_TARGET_PROPERTIES(monad_demo PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
 ENDIF()
 TARGET_LINK_LIBRARIES(monad_demo monad)
+
+SET(HEADERS ${PROJECT_SOURCE_DIR}/sdk/monad_sdk.h ${PROJECT_SOURCE_DIR}/sdk/monad_sdk_code.h)
+SET_TARGET_PROPERTIES(monad PROPERTIES PUBLIC_HEADER "${HEADERS}")
+  INSTALL(TARGETS monad
+     EXPORT monad-sdk 
+     RUNTIME DESTINATION bin COMPONENT runtime
+#    ARCHIVE DESTINATION lib
+#    LIBRARY DESTINATION lib
+     PUBLIC_HEADER DESTINATION include
+    )
+install(TARGETS monad_demo
+     RUNTIME DESTINATION bin COMPONENT runtime) 
+
+#INSTALL(FILES "monad_sdk.h" "monad_sdk_code.h"  DESTINATION include)
