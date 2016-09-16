@@ -68,15 +68,17 @@ void performance(const char* path,const char* sfzh_path){
     bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
     if(flag) true_int++;else false_int++;
     i++;
+    /*
     if(i >=100000)
       break;
+      */
   }
   fin.close();
   finish = clock();
   double duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
 
 
-  std::cout << "time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
+  std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 }
 int main(int argc, char *argv[]){
   const char path[100]= "test.db";
@@ -87,9 +89,11 @@ int main(int argc, char *argv[]){
   std::string id("413028199009121514");
   monad_coll_put_id(sdk,id.c_str(),id.size());
 
-  std::cout << monad_coll_contain_id(sdk,id.c_str(),id.size()) << std::endl;
+  bool r = monad_coll_contain_id(sdk,id.c_str(),id.size());
+  std::cout << "expected:" << "1 real:" << r << std::endl;
   std::string id2("413028199009121524");
-  std::cout << monad_coll_contain_id(sdk,id2.c_str(),id2.size()) <<std::endl;
+  r = monad_coll_contain_id(sdk,id2.c_str(),id2.size());
+  std::cout << "expected:" << "0 real:"<< r <<std::endl;
 
 
   if(argc == 3){

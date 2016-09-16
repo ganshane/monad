@@ -37,7 +37,7 @@ namespace monad {
     HASH_ADD_INT(cache, region_id, entry);
     static uint32_t cache_ram_size=0;
     cache_ram_size += roaring_bitmap_portable_size_in_bytes(value);
-    std::cout << "cache count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size << std::endl;
+    std::cout << "cache count:" << HASH_COUNT(cache) << " cache ram size :" << cache_ram_size <<" bytes " << std::endl;
 
     // prune the cache to MAX_CACHE_SIZE
     if (cache_ram_size > max_cache_ram) {
