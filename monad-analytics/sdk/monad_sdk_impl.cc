@@ -145,11 +145,13 @@ namespace monad{
         std::cout << "total 1:"<< total1 << " " <<duration << std::endl;
          */
 
-        if (!status.ok())
-          return false;
-
-        bitmap = roaring_bitmap_portable_deserialize(value.c_str());
+        if (!status.ok()){
+          bitmap = roaring_bitmap_create();
+        }else {
+          bitmap = roaring_bitmap_portable_deserialize(value.c_str());
+        }
         AddCache(region_id,bitmap);
+
       }
       /*
       finish = clock();

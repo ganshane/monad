@@ -23,7 +23,7 @@ namespace monad {
       HASH_DELETE(hh, cache, entry);
       cache_ram_size -= roaring_bitmap_portable_size_in_bytes(entry->bitmap);
       free_cache_item(entry);
-      std::cout << "RC,count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << std::endl;
+//      std::cout << "RC,count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << std::endl;
     }
   }
   roaring_bitmap_t* find_in_cache(uint32_t key)
