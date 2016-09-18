@@ -56,9 +56,9 @@ void performance(const char* path,const char* sfzh_path){
 
   clock_t   start,   finish;
   start   =   clock();
+  uint32_t mask = (1 << 20) -1;
 
   std::ifstream fin(sfzh_path, std::ios::in);
-
   char line[1024]={0};
   std::string id;
   auto i = 0;
@@ -74,6 +74,8 @@ void performance(const char* path,const char* sfzh_path){
       false_int++;
     }
     i++;
+    if((i & mask) == 0)
+      std::cout << i << " line processed" <<std::endl;
 //    std::cout << "i " << i<<" line::" << line << " flag:"<<flag<< std::endl;
     /*
     if(i >=10000000)
@@ -83,8 +85,34 @@ void performance(const char* path,const char* sfzh_path){
   fin.close();
   finish = clock();
   double duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
+  std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 
 
+  start   =   clock();
+  std::ifstream fin2(sfzh_path, std::ios::in);
+  true_int = 0;
+  false_int = 0;
+  while(fin.getline(line, sizeof(line))){
+    id.assign(line);
+//    std::cout << "i " << i<<" line::" << line << std::endl;
+    bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
+    if(flag) true_int++;
+    else {
+//      std::cout << "false ->" << id << std::endl;
+      false_int++;
+    }
+    i++;
+    if((i & mask) == 0)
+      std::cout << i << " line processed" <<std::endl;
+//    std::cout << "i " << i<<" line::" << line << " flag:"<<flag<< std::endl;
+    /*
+    if(i >=10000000)
+      break;
+      */
+  }
+  fin2.close();
+  finish = clock();
+  duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
   std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 }
 void performance2(char* sfzh_path){

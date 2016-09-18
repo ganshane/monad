@@ -14,6 +14,13 @@ int posix_memalign(void** mem,size_t alignment,size_t size){
   *mem = _aligned_malloc(size,alignment);
   return 0;
 }
+void memalign_free(void* mem){
+  _aligned_free(mem);
+}
+#else
+void memalign_free(void* mem){
+  free(mem);
+}
 #endif
 
 #include <roaring/portability.h>
@@ -100,7 +107,7 @@ void bitset_container_add_from_range(bitset_container_t *bitset, uint32_t min,
 
 /* Free memory. */
 void bitset_container_free(bitset_container_t *bitset) {
-    free(bitset->array);
+  memalign_free(bitset->array);
     bitset->array = NULL;
     free(bitset);
 }

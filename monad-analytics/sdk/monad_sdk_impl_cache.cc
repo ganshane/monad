@@ -65,7 +65,7 @@ namespace monad {
         break;
       }
     }
-    std::cout << "AC, count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << " r: "<<region_id << " c:" << roaring_bitmap_get_cardinality(value) << std::endl;
+//    std::cout << "AC, count:" << HASH_COUNT(cache) << " ram :" << cache_ram_size <<" " << " r: "<<region_id << " c:" << roaring_bitmap_get_cardinality(value) << std::endl;
   }
   void MonadSDK::AddCache(uint32_t region_id, roaring_bitmap_t *value) {
     add_to_cache(region_id,value,max_cache_ram);
