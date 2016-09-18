@@ -85,6 +85,58 @@ void performance(const char* path,const char* sfzh_path){
 
   std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 }
+void performance2(char* sfzh_path){
+  clock_t   start,   finish;
+  start   =   clock();
+
+  char line[1024]={0};
+  std::string id;
+  int i = 0;
+  double duration = 0;
+  int mask = (1 << 20 ) - 1;
+  /*
+  std::ifstream fin(sfzh_path, std::ios::in);
+
+  char data[12] = {0};
+  while(fin.getline(line, sizeof(line))){
+    id.assign(line);
+    monad_coll_put_kv(sdk,id.c_str(),id.size(),data,sizeof(data));
+    i++;
+    if((i&mask) == 0)
+      std::cout << "i " <<i << std::endl;
+  }
+  fin.close();
+  finish = clock();
+  duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
+  std::cout << "write:" << i <<" time::" << duration << std::endl;
+   */
+
+  start = clock();
+  std::ifstream fin2(sfzh_path, std::ios::in);
+  int32_t true_int = 0;
+  int32_t false_int = 0;
+  char* value;
+  size_t size;
+  while(fin2.getline(line, sizeof(line))){
+    id.assign(line);
+    MONAD_CODE ret= monad_coll_get_kv(sdk,id.c_str(),id.size(),&value,&size);
+    if(ret == MONAD_OK){
+      free(value);
+      true_int += 1;
+    }else false_int += 1;
+    i++;
+    if((i&mask) == 0)
+      std::cout << "i " <<i << std::endl;
+    if(i > 1000000)
+      break;
+  }
+  fin2.close();
+  finish = clock();
+  duration =    (double)(finish   -   start)/CLOCKS_PER_SEC;
+  std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
+
+
+}
 int main(int argc, char *argv[]){
   const char path[100]= "test.db";
   monad_coll_create(&sdk,path,50 * 1024 * 1024);
@@ -104,6 +156,7 @@ int main(int argc, char *argv[]){
   if(argc == 3){
     std::cout << "db path:" << argv[1] << " sfzh path: " << argv[2] <<std::endl;
     performance(argv[1],argv[2]);
+//    performance2(argv[2]);
   }
   monad_coll_release(sdk);
 

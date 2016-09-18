@@ -47,6 +47,24 @@ MONAD_EXPORT bool monad_coll_contain_id(void* handle,const char* id_card,const s
  * @param size 对象ID的长度
  */
 MONAD_EXPORT MONAD_CODE monad_coll_put_id(void* handle,const char* id_card ,const size_t size);
+/**
+ * 放入KV数据
+ * @param handle 操作的handle对象
+ * @param key 数据的Key
+ * @param key_size 数据key的长度
+ * @param value 数据
+ * @param value_size 数据长度
+ */
+MONAD_EXPORT MONAD_CODE monad_coll_put_kv(void* handle,const char* key,const size_t key_size,const char* value,size_t value_size);
+/**
+ * 得到KV数据
+ * @param handle 操作的handle对象
+ * @param key 数据的Key
+ * @param key_size 数据key的长度
+ * @param value 数据指针(输出)
+ * @param value_size 数据长度(输出)
+ */
+MONAD_EXPORT MONAD_CODE monad_coll_get_kv(void* handle,const char* key,const size_t key_size,char** value,size_t* value_size);
 
 /**
  * 释放内存空间,关闭数据库

@@ -51,6 +51,30 @@ MONAD_CODE monad_coll_put_id(void *handle,const  char *id_card, const size_t siz
   return sdk->PutId(id_card, size);
 }
 /**
+ * 放入kv数据
+ */
+MONAD_CODE monad_coll_put_kv(void* handle,const char* key,const size_t key_size,const char* value,size_t value_size){
+  MonadSDK *sdk = (MonadSDK *) handle;
+  sdk->PutKV(leveldb::Slice(key,key_size),leveldb::Slice(value,value_size));
+}
+static char* CopyString(const std::string& str) {
+  char* result = reinterpret_cast<char*>(malloc(sizeof(char) * str.size()));
+  memcpy(result, str.data(), sizeof(char) * str.size());
+  return result;
+}
+MONAD_EXPORT MONAD_CODE monad_coll_get_kv(void* handle,const char* key,const size_t key_size,char** value,size_t* value_size){
+  MonadSDK *sdk = (MonadSDK *) handle;
+  std::string dest;
+  MONAD_CODE  ret = sdk->GetKV(leveldb::Slice(key,key_size),&dest);
+  if(ret == MONAD_OK){
+    *value_size= dest.size();
+    *value = CopyString(dest);
+  }else{
+    *value_size = 0;
+  }
+  return ret;
+}
+/**
  * 释放内存空间,关闭数据库
  */
 void monad_coll_release(void *handle) {
