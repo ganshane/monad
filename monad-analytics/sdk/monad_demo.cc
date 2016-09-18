@@ -18,6 +18,41 @@ void EncodeFixed32(char* buf, uint32_t value) {
   buf[2] = (value >> 16) & 0xff;
   buf[3] = (value >> 24) & 0xff;
 }
+void execute_match(const char* prefix,const char* sfzh_path){
+  clock_t   start,   finish,seg_start,seg_finish;
+  start   =   clock();
+  seg_start = clock();
+  double duration,total_duration;
+
+  uint32_t mask = (1 << 21) -1;
+
+  std::ifstream fin(sfzh_path, std::ios::in);
+  char line[1024]={0};
+  std::string id;
+  auto i = 0;
+  int32_t true_int = 0;
+  int32_t false_int = 0;
+  while(fin.getline(line, sizeof(line))){
+    id.assign(line);
+    bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
+    if(flag) true_int++;
+    else {
+      false_int++;
+    }
+    i++;
+    if((i & mask) == 0){
+      seg_finish = clock();
+      duration = (double)(seg_finish-seg_start)/CLOCKS_PER_SEC;
+      total_duration = (double)(seg_finish-start)/CLOCKS_PER_SEC;
+      std::cout << prefix << i << " line processed " <<" seg time:" << duration <<" total time:" << total_duration <<std::endl;
+      seg_start = clock();
+    }
+  }
+  fin.close();
+  finish = clock();
+  duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
+  std::cout << prefix<<"total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
+}
 void performance(const char* path,const char* sfzh_path){
 //  const char path[50]="/tmp/monad";
   char  childpath[512];
@@ -54,39 +89,8 @@ void performance(const char* path,const char* sfzh_path){
     }
   }
 
-  clock_t   start,   finish,seg_start,seg_finish;
-  start   =   clock();
-  seg_start = clock();
-  double duration,total_duration;
-
-  uint32_t mask = (1 << 21) -1;
-
-  std::ifstream fin(sfzh_path, std::ios::in);
-  char line[1024]={0};
-  std::string id;
-  auto i = 0;
-  int32_t true_int = 0;
-  int32_t false_int = 0;
-  while(fin.getline(line, sizeof(line))){
-    id.assign(line);
-    bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
-    if(flag) true_int++;
-    else {
-      false_int++;
-    }
-    i++;
-    if((i & mask) == 0){
-      seg_finish = clock();
-      duration = (double)(seg_finish-seg_start)/CLOCKS_PER_SEC;
-      total_duration = (double)(seg_finish-start)/CLOCKS_PER_SEC;
-      std::cout << i << " line processed " <<" seg time:" << duration <<" total time:" << total_duration <<std::endl;
-      seg_start = clock();
-    }
-  }
-  fin.close();
-  finish = clock();
-  duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
-  std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
+  execute_match("first--> ",sfzh_path);
+  execute_match("second--> ",sfzh_path);
 }
 void performance2(char* sfzh_path){
   clock_t   start,   finish;
