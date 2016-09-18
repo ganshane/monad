@@ -54,8 +54,11 @@ void performance(const char* path,const char* sfzh_path){
     }
   }
 
-  clock_t   start,   finish;
+  clock_t   start,   finish,seg_start,seg_finish;
   start   =   clock();
+  seg_start = clock();
+  double duration,total_duration;
+
   uint32_t mask = (1 << 20) -1;
 
   std::ifstream fin(sfzh_path, std::ios::in);
@@ -66,52 +69,21 @@ void performance(const char* path,const char* sfzh_path){
   int32_t false_int = 0;
   while(fin.getline(line, sizeof(line))){
     id.assign(line);
-//    std::cout << "i " << i<<" line::" << line << std::endl;
     bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
     if(flag) true_int++;
     else {
-//      std::cout << "false ->" << id << std::endl;
       false_int++;
     }
     i++;
-    if((i & mask) == 0)
-      std::cout << i << " line processed" <<std::endl;
-//    std::cout << "i " << i<<" line::" << line << " flag:"<<flag<< std::endl;
-    /*
-    if(i >=10000000)
-      break;
-      */
+    if((i & mask) == 0){
+      seg_finish = clock();
+      duration = (double)(seg_finish-seg_start)/CLOCKS_PER_SEC;
+      total_duration = (double)(seg_finish-start)/CLOCKS_PER_SEC;
+      std::cout << i << " line processed " <<" seg time:" << duration <<" total time:" << total_duration <<std::endl;
+      seg_start = clock();
+    }
   }
   fin.close();
-  finish = clock();
-  double duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
-  std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
-
-
-  start   =   clock();
-  std::ifstream fin2(sfzh_path, std::ios::in);
-  true_int = 0;
-  false_int = 0;
-  i = 0;
-  while(fin2.getline(line, sizeof(line))){
-    id.assign(line);
-//    std::cout << "i " << i<<" line::" << line << std::endl;
-    bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
-    if(flag) true_int++;
-    else {
-//      std::cout << "false ->" << id << std::endl;
-      false_int++;
-    }
-    i++;
-    if((i & mask) == 0)
-      std::cout << i << " line processed" <<std::endl;
-//    std::cout << "i " << i<<" line::" << line << " flag:"<<flag<< std::endl;
-    /*
-    if(i >=10000000)
-      break;
-      */
-  }
-  fin2.close();
   finish = clock();
   duration =    (double)(finish   -   start)/CLOCKS_PER_SEC ;
   std::cout << "total:" << i <<" time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
