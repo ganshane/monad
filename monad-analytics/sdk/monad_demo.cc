@@ -66,6 +66,7 @@ void performance(const char* path,const char* sfzh_path){
   int32_t false_int = 0;
   while(fin.getline(line, sizeof(line))){
     id.assign(line);
+    std::cout << "i " << i<<" line::" << line << std::endl;
     bool flag =  monad_coll_contain_id(sdk,id.c_str(),id.size());
     if(flag) true_int++;
     else {
@@ -73,6 +74,7 @@ void performance(const char* path,const char* sfzh_path){
       false_int++;
     }
     i++;
+    std::cout << "i " << i<<" line::" << line << " flag:"<<flag<< std::endl;
     /*
     if(i >=10000000)
       break;
