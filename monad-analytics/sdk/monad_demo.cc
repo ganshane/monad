@@ -59,7 +59,7 @@ void performance(const char* path,const char* sfzh_path){
   seg_start = clock();
   double duration,total_duration;
 
-  uint32_t mask = (1 << 20) -1;
+  uint32_t mask = (1 << 21) -1;
 
   std::ifstream fin(sfzh_path, std::ios::in);
   char line[1024]={0};
