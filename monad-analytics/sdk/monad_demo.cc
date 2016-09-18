@@ -92,6 +92,7 @@ void performance(const char* path,const char* sfzh_path){
   std::ifstream fin2(sfzh_path, std::ios::in);
   true_int = 0;
   false_int = 0;
+  i = 0;
   while(fin2.getline(line, sizeof(line))){
     id.assign(line);
 //    std::cout << "i " << i<<" line::" << line << std::endl;
