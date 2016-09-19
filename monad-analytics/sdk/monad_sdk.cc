@@ -55,7 +55,7 @@ MONAD_CODE monad_coll_put_id(void *handle,const  char *id_card, const size_t siz
  */
 MONAD_CODE monad_coll_put_kv(void* handle,const char* key,const size_t key_size,const char* value,size_t value_size){
   MonadSDK *sdk = (MonadSDK *) handle;
-  sdk->PutKV(leveldb::Slice(key,key_size),leveldb::Slice(value,value_size));
+  return sdk->PutKV(leveldb::Slice(key,key_size),leveldb::Slice(value,value_size));
 }
 static char* CopyString(const std::string& str) {
   char* result = reinterpret_cast<char*>(malloc(sizeof(char) * str.size()));

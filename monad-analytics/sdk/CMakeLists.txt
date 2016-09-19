@@ -70,7 +70,7 @@ ELSE()
     TARGET_LINK_LIBRARIES(monad analytics)
     SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -Wall -Wextra -Wno-unused-parameter  -fno-omit-frame-pointer   -fno-strict-aliasing")
 ENDIF()
-SET_TARGET_PROPERTIES(monad PROPERTIES DEFINE_SYMBOL "X ${MONAD_PRE_DEFINITION}")
+SET_TARGET_PROPERTIES(monad PROPERTIES DEFINE_SYMBOL "XDUMP ${MONAD_PRE_DEFINITION}")
 
 ADD_EXECUTABLE(monad_demo monad_demo.cc)
 SET_TARGET_PROPERTIES(monad_demo PROPERTIES COMPILE_FLAGS "-std=gnu++11 -Wno-unused-parameter -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing")
