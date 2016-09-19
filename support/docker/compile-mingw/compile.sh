@@ -43,6 +43,7 @@ mkdir build-$ARCH
 cd build-$ARCH
 LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
+  -DBUILD_STATIC=on \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
   -DCMAKE_INSTALL_PREFIX=dist \
@@ -83,6 +84,7 @@ mkdir build-$ARCH
 cd build-$ARCH
 LDFLAGS="-L/build/${ARCH}" CXXFLAGS="-I/build/mingw"   \
   cmake -DCMAKE_TOOLCHAIN_FILE=/build/Toolchain-cross-mingw32-linux.cmake \
+  -DBUILD_STATIC=on \
   -DENABLE_JNI=on \
   -DENABLE_SDK=on \
   -DCMAKE_INSTALL_PREFIX=dist \
