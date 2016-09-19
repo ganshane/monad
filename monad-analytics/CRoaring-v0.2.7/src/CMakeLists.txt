@@ -27,7 +27,6 @@ set(ROARING_SRC
     roaring_priority_queue.c
     roaring_array.c)
 
-SET(CMAKE_C_FLAGS "-std=c11 -fPIC -march=native  -Wall -Winline -Wshadow -Wextra -pedantic")
 add_library(${ROARING_LIB_NAME} ${ROARING_LIB_TYPE} ${ROARING_SRC})
 install(TARGETS ${ROARING_LIB_NAME} DESTINATION lib)
 set_target_properties(${ROARING_LIB_NAME} PROPERTIES 

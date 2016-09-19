@@ -9,19 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __WIN32__
-int posix_memalign(void** mem,size_t alignment,size_t size){
-  *mem = _aligned_malloc(size,alignment);
-  return 0;
-}
-void memalign_free(void* mem){
-  _aligned_free(mem);
-}
-#else
-void memalign_free(void* mem){
-  free(mem);
-}
-#endif
 
 #include <roaring/portability.h>
 #include <roaring/bitset_util.h>
@@ -37,7 +24,7 @@ extern inline bool bitset_container_get(const bitset_container_t *bitset,
 extern int32_t bitset_container_serialized_size_in_bytes();
 extern bool bitset_container_add(bitset_container_t *bitset, uint16_t pos);
 extern bool bitset_container_remove(bitset_container_t *bitset, uint16_t pos);
-extern bool bitset_container_contains(const bitset_container_t *bitset,
+extern inline  bool bitset_container_contains(const bitset_container_t *bitset,
                                       uint16_t pos);
 
 void bitset_container_clear(bitset_container_t *bitset) {
@@ -60,8 +47,8 @@ bitset_container_t *bitset_container_create(void) {
         return NULL;
     }
     // sizeof(__m256i) == 32
-    if (posix_memalign((void **)&bitset->array, 32,
-                       sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS)) {
+    bitset->array = (uint64_t *) aligned_malloc(32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+    if (! bitset->array) {
         free(bitset);
         return NULL;
     }
@@ -107,7 +94,7 @@ void bitset_container_add_from_range(bitset_container_t *bitset, uint32_t min,
 
 /* Free memory. */
 void bitset_container_free(bitset_container_t *bitset) {
-  memalign_free(bitset->array);
+    aligned_free(bitset->array);
     bitset->array = NULL;
     free(bitset);
 }
@@ -121,8 +108,8 @@ bitset_container_t *bitset_container_clone(const bitset_container_t *src) {
         return NULL;
     }
     // sizeof(__m256i) == 32
-    if (posix_memalign((void **)&bitset->array, 32,
-                       sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS)) {
+    bitset->array = (uint64_t *) aligned_malloc(32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+    if (! bitset->array) {
         free(bitset);
         return NULL;
     }
@@ -430,16 +417,7 @@ int32_t bitset_container_serialize(bitset_container_t *container, char *buf) {
 
 int32_t bitset_container_write(const bitset_container_t *container,
                                   char *buf) {
-if( IS_BIG_ENDIAN){
-	// forcing little endian (could be faster)
-	for(int32_t i = 0 ; i < BITSET_CONTAINER_SIZE_IN_WORDS; i++) {
-		uint64_t val = container->array[i];
-		val = __builtin_bswap64(val);
-		memcpy(buf + i * sizeof(uint64_t), &val, sizeof(uint64_t));
-	}
-} else {
 	memcpy(buf, container->array, BITSET_CONTAINER_SIZE_IN_WORDS * sizeof(uint64_t));
-}
 	return bitset_container_size_in_bytes(container);
 }
 
@@ -447,8 +425,6 @@ if( IS_BIG_ENDIAN){
 int32_t bitset_container_read(int32_t cardinality, bitset_container_t *container,
 		const char *buf)  {
 	container->cardinality = cardinality;
-	assert(!IS_BIG_ENDIAN);// TODO: Implement
-
 	memcpy(container->array, buf, BITSET_CONTAINER_SIZE_IN_WORDS * sizeof(uint64_t));
 	return bitset_container_size_in_bytes(container);
 }
@@ -467,11 +443,11 @@ void* bitset_container_deserialize(const char *buf, size_t buf_len) {
   if((ptr = (bitset_container_t *)malloc(sizeof(bitset_container_t))) != NULL) {
     memcpy(ptr, buf, sizeof(bitset_container_t));
     // sizeof(__m256i) == 32
-    if(posix_memalign((void **)&ptr->array, 32, l)) {
-      free(ptr);
-      return(NULL);
+    ptr->array = (uint64_t *) aligned_malloc(32, l);
+    if (! ptr->array) {
+        free(ptr);
+        return NULL;
     }
-
     memcpy(ptr->array, buf, l);
     ptr->cardinality = bitset_container_compute_cardinality(ptr);
   }

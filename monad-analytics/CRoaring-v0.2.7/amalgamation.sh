@@ -12,10 +12,11 @@ AMAL_H="roaring.h"
 AMAL_C="roaring.c"
 
 # order does not matter
-ALLCFILES=$(find $SCRIPTPATH/src -name '*.c' )
+ALLCFILES=$( ( [ -d $SCRIPTPATH/.git ] && ( type git >/dev/null 2>&1 ) &&  ( git ls-files $SCRIPTPATH/src/*.c $SCRIPTPATH/src/**/*c ) ) ||  ( find $SCRIPTPATH/src -name '*.c' ) )
 
 # order matters
 ALLCHEADERS="
+$SCRIPTPATH/include/roaring/roaring_version.h
 $SCRIPTPATH/include/roaring/portability.h
 $SCRIPTPATH/include/roaring/containers/perfparameters.h
 $SCRIPTPATH/include/roaring/array_util.h
@@ -52,7 +53,7 @@ function stripinc()
 function dofile()
 {
     echo "/* begin file $1 */"
-    echo "#line 8 \"$1\""
+    # echo "#line 8 \"$1\"" ## redefining the line/file is not nearly as useful as it sounds for debugging. It breaks IDEs.
     stripinc < $1
     echo "/* end file $1 */"
 }
@@ -142,7 +143,7 @@ echo "Giving final instructions:"
 CBIN=${DEMOC%%.*}
 CPPBIN=${DEMOCPP%%.*}
 
-echo 
+echo
 echo "The interface is found in the file 'include/roaring/roaring.h'."
 echo
 echo "Try :"
@@ -150,3 +151,20 @@ echo "cc -march=native -O3 -std=c11  -o ${CBIN} ${DEMOC}  && ./${CBIN} "
 echo
 echo "For C++, try :"
 echo "c++ -march=native -O3 -std=c++11 -o ${CPPBIN} ${DEMOCPP}  && ./${CPPBIN} "
+
+lowercase(){
+    echo "$1" | tr 'A-Z' 'a-z'
+}
+
+OS=`lowercase \`uname\``
+
+echo
+echo "You can build a shared library with the following command :"
+
+if [ $OS == "darwin" ]; then
+  echo "cc -march=native -O3 -std=c11 -shared -o libroaring.dylib -fPIC roaring.c"
+else
+  echo "cc -march=native -O3 -std=c11 -shared -o libroaring.so -fPIC roaring.c"
+fi
+
+echo "You can try compiling with the extra flags -DDISABLEAVX or -DDISABLE_X64 to disable AVX and all x64 optimization respectively."

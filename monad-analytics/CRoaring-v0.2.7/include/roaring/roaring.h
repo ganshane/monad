@@ -9,11 +9,12 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <roaring/roaring_version.h>
 #include <roaring/roaring_array.h>
 #include <roaring/roaring_types.h>
 
 typedef struct roaring_bitmap_s {
-    roaring_array_t *high_low_container;
+    roaring_array_t high_low_container;
     bool copy_on_write; /* copy_on_write: whether you want to use copy-on-write
                          (saves memory and avoids
                          copies but needs more care in a threaded context). */
@@ -74,7 +75,7 @@ roaring_bitmap_t *roaring_bitmap_and(const roaring_bitmap_t *x1,
                                      const roaring_bitmap_t *x2);
 
 /**
- * Inplace version modifies x1.  TODO: decide whether x1 == x2 allowed
+ * Inplace version modifies x1, x1 == x2 is allowed
  */
 void roaring_bitmap_and_inplace(roaring_bitmap_t *x1,
                                 const roaring_bitmap_t *x2);
@@ -166,6 +167,13 @@ void roaring_bitmap_andnot_inplace(roaring_bitmap_t *x1,
  */
 void roaring_bitmap_free(roaring_bitmap_t *r);
 
+
+/**
+ * Add value n_args from pointer vals, faster than repeatedly calling roaring_bitmap_add
+ *
+ */
+void roaring_bitmap_add_many(roaring_bitmap_t * r, size_t n_args, const uint32_t *vals);
+
 /**
  * Add value x
  *
@@ -188,19 +196,13 @@ inline bool roaring_bitmap_contains(const roaring_bitmap_t *r,
      * here it is possible to bypass the binary search and the ra_get_index
      * call with the following call that might often come true
      */
-    int i;
-    if ((r->high_low_container->size > hb) &&
-        (r->high_low_container->keys[hb] == hb))
-        i = hb;  // we got lucky!
-    else {
-        // next call involves a binary search (maybe expensive)
-        i = ra_get_index(r->high_low_container, hb);
-        if (i < 0) return false;
-    }
+    int32_t i = ra_get_index(& r->high_low_container, hb);
+    if (i < 0) return false;
+
     uint8_t typecode;
     // next call ought to be cheap
     void *container =
-        ra_get_container_at_index(r->high_low_container, i, &typecode);
+        ra_get_container_at_index(& r->high_low_container, i, &typecode);
     // rest might be a tad expensive
     return container_contains(container, val & 0xFFFF, typecode);
 }
@@ -249,7 +251,7 @@ bool roaring_bitmap_run_optimize(roaring_bitmap_t *r);
 //
 // Returns how many bytes were written which should be
 // roaring_bitmap_size_in_bytes(ra).
-size_t roaring_bitmap_serialize(roaring_bitmap_t *ra, char *buf);
+size_t roaring_bitmap_serialize(const roaring_bitmap_t *ra, char *buf);
 
 //  use with roaring_bitmap_serialize
 // see roaring_bitmap_portable_deserialize if you want a format that's

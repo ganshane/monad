@@ -37,7 +37,7 @@ ENDIF()
 #build CRoaring
 SET(BUILD_STATIC true)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/include)
-ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1/src)
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.1)
 
 # global config file
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -63,7 +63,7 @@ IF(MONAD_HAVE_LINUX )
 ELSEIF(MONAD_HAVE_WINDOWS)
   SET_TARGET_PROPERTIES(analytics PROPERTIES COMPILE_FLAGS "-std=c++0x -fno-omit-frame-pointer -Wall -Wextra -fno-strict-aliasing") 
 ENDIF()
-TARGET_LINK_LIBRARIES(analytics STATIC)
+TARGET_LINK_LIBRARIES(analytics roaring)
 
 
 

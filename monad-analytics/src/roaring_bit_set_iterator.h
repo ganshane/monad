@@ -52,10 +52,10 @@ private:
   }
   void nextContainer() {
     clearIter();
-    if (pos < _bit_set->_underlying->high_low_container->size) {
-      void* container = this->_bit_set->_underlying->high_low_container->containers[pos];
-      uint8_t typecode = _bit_set->_underlying->high_low_container->typecodes[pos];
-      hs = _bit_set->_underlying->high_low_container->keys[pos] << 16;
+    if (pos < _bit_set->_underlying->high_low_container.size) {
+      void* container = this->_bit_set->_underlying->high_low_container.containers[pos];
+      uint8_t typecode = _bit_set->_underlying->high_low_container.typecodes[pos];
+      hs = _bit_set->_underlying->high_low_container.keys[pos] << 16;
       _current_array_length = container_get_cardinality(container,typecode);
       iter = (uint32_t*)malloc(_current_array_length * sizeof(uint32_t));
       container_to_uint32_array(iter,container,typecode,hs);

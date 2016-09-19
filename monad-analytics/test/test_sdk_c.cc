@@ -44,6 +44,7 @@ TEST_F(MonadSDKTest, TestRead) {
   std::string id2("413028199009121524");
   ASSERT_FALSE(monad_coll_contain_id(sdk,id2.c_str(),id2.size()));
 }
+/*
 TEST_F(MonadSDKTest,TestPerformance){
   const char path[50]="/tmp/monad";
   char  childpath[512];
@@ -102,3 +103,4 @@ TEST_F(MonadSDKTest,TestPerformance){
 
   std::cout << "time::" << duration << " true:::" << true_int << " false::"<< false_int << std::endl;
 }
+ */

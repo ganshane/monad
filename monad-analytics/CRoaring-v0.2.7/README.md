@@ -1,4 +1,4 @@
-# CRoaring
+# CRoaring [![Build Status](https://travis-ci.org/RoaringBitmap/CRoaring.png)](https://travis-ci.org/RoaringBitmap/CRoaring)
 Roaring bitmaps in C (and C++)
 
 # Introduction
@@ -30,11 +30,14 @@ of the latest hardware. Roaring bitmaps are already available on a variety of pl
 
 # Requirements
 
-- 64-bit Linux-like operating system (including MacOS)
+- The library should build on a  Linux-like operating system (including MacOS).
+- We also support Microsoft Visual studio, see https://github.com/mrboojum/CRoaring4VS .
 - Though most reasonable processors should be supported, we expect a recent Intel processor: Haswell (2013) or better but support all x64/x86 processors. The library should build without problem on ARM processors.
 - Recent C compiler (GCC 4.8 or better), there is also an optional C++ class that requires a C++ compiler
 - CMake (to contribute to the project, users can rely on amalgamation/unity builds)
 - clang-format (optional)
+
+Serialization on big endian hardware may not be compatible with serialization on little endian hardware.
 
 # Amalgamation/Unity Build
 
@@ -57,6 +60,12 @@ it from any directory where you want the amalgamation files to be written.
 It will generate three files for C users: ``roaring.h``, ``roaring.c`` and ``almagamation_demo.c``... as well as some brief instructions. The ``almagamation_demo.c`` file is a short example, whereas ``roaring.h`` and ``roaring.c`` are "amalgamated" files (including all source and header files for the project). This means that you can simply copy the files ``roaring.h`` and ``roaring.c`` into your project and be ready to go! No need to produce a library! See the ``almagamation_demo.c`` file.
 
 The script will also generate C++ files for C++ users, including an example.
+
+If you prefer a silent output, you can use the following command to redirect ``stdout`` :
+
+```bash
+./amalgamation.sh > /dev/null
+```
 
 # API
 
@@ -184,7 +193,7 @@ r1.setCopyOnWrite(true);
 
 uint32_t compact_size = r1.getSizeInBytes();
 std::cout << "size before run optimize " << size << " bytes, and after "
-    		<<  compact_size << " bytes." << std::endl;
+            <<  compact_size << " bytes." << std::endl;
 
 
 // create a new bitmap with varargs
@@ -195,13 +204,13 @@ printf("\n");
 
 // we can also create a bitmap from a pointer to 32-bit integers
 const uint32_t values[] = {2, 3, 4};
-Roaring r3 = Roaring::fromUint32Array(3, values);
+Roaring r3(3, values);
 
 // we can also go in reverse and go from arrays to bitmaps
 uint64_t card1 = r1.cardinality();
 uint32_t *arr1 = new uint32_t[card1];
 r1.toUint32Array(arr1);
-Roaring r1f = Roaring::fromUint32Array(card1, arr1);
+Roaring r1f(card1, arr1);
 delete[] arr1;
 
 // bitmaps shall be equal
@@ -255,18 +264,30 @@ mkdir -p build
 cd build
 cmake ..
 make
+# follow by 'make test' if you want to test.
 # you can also type 'make install' to install the library on your system
 ```
 (You can replace the ``build`` directory with any other directory name.)
 
-If wish to build an x64/x86 version while disabling AVX2 and BMI2 support at the expense of performance, you can do the following :
+If wish to build an x64 version while disabling AVX2 and BMI2 support at the expense of performance, you can do the following :
 
 ````
 mkdir -p buildnoavx
 cd buildnoavx
-cmake -DDISABLE_AVX=OFF ..
+cmake -DDISABLE_AVX=ON ..
 make
 ```
+
+If you have x64 hardware, but you wish to disable all x64-specific optimizations (including AVX), then you can
+do the following...
+
+````
+mkdir -p buildnox64
+cd buildnoavx
+cmake -DDISABLE_X64=ON ..
+make
+```
+
 
 For a debug release, starting from the root directory of the project (CRoaring), try
 
@@ -314,6 +335,13 @@ To reformat your code according to the style convention (make sure that ``clang-
 
 Tom Cornebize wrote a Python wrapper available at https://github.com/Ezibenroc/PyRoaringBitMap
 
+# C# Wrapper
+
+Brandon Smith wrote a C# wrapper available at https://github.com/RogueException/CRoaring.Net (works for Windows and Linux under x64 processors)
+
+# C++ Wrapper for Visual Studio
+
+There is C++ wrapper for Microsoft Visual Studio available at  https://github.com/mrboojum/CRoaring4VS (works under x86 and x64)
 
 # Go (golang) Wrapper
 
