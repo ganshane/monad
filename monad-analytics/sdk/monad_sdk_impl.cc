@@ -3,14 +3,18 @@
 #include <string>
 #include <sstream>
 
-#include <roaring/roaring.h>
 #include <leveldb/cache.h>
+#include "murmur3.h"
+#include <roaring/roaring.h>
 #include "monad_sdk_impl.h"
 #include "util/coding.h"
+
+
 
 namespace monad{
   const char* SFZH_PATTERN ="([\\d]{6})([\\d]{4})([\\d]{2})([\\d]{2})([\\d]{3})([\\dXx])";
   const std::regex PATTERN(SFZH_PATTERN);
+  const static uint32_t mur_seed = 0x4891;
 
   /**
    * Convert your dates to integer denoting the number of days since an epoch, then subtract. In this example i chosed Rata Die, an explanation of the algorithm can be found at <http://mysite.verizon.net/aesir_research/date/rata.htm>.
@@ -34,7 +38,8 @@ namespace monad{
   }
 
   static inline leveldb::Slice CreateRegionKey(uint32_t region_id,char* key_data){
-    leveldb::EncodeFixed32(key_data,region_id);
+    MurmurHash3_x86_32(&region_id,4,mur_seed,key_data);
+//    leveldb::EncodeFixed32(key_data,region_id);
     return leveldb::Slice(key_data,4);
   }
   MONAD_CODE MonadSDK::CalculateDays(const char* id_card,const size_t size,uint32_t& days,uint32_t& region_id){

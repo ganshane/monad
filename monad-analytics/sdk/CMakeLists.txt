@@ -61,14 +61,16 @@ LIST(APPEND ANALYTICS_SDK_SOURCE   ../leveldb-1.18/db/builder.cc
 
 ADD_LIBRARY(monad SHARED ${ANALYTICS_SDK_SOURCE})
 	SET_TARGET_PROPERTIES(monad PROPERTIES LINKER_LANGUAGE CXX)
+MESSAGE (STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} ) # important to know the flags
+
 IF(MONAD_HAVE_WINDOWS)
     TARGET_LINK_LIBRARIES(monad analytics shlwapi)
-    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall -Wextra -Wno-unused-parameter -fno-omit-frame-pointer  -fno-strict-aliasing")
+    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wno-unused-parameter -fno-omit-frame-pointer  -fno-strict-aliasing")
 #    SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,--kill-at -Wl,-allow-multiple-definition -Wl,--exclude-all-symbols")
     SET_TARGET_PROPERTIES(monad PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,--kill-at -fno-strict-aliasing")
 ELSE()
     TARGET_LINK_LIBRARIES(monad analytics)
-    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_FLAGS "-std=c++11 -fPIC -Wall -Wextra -Wno-unused-parameter  -fno-omit-frame-pointer   -fno-strict-aliasing")
+    SET_TARGET_PROPERTIES(monad PROPERTIES COMPILE_CXX_FLAGS "-std=c++11 -fPIC -Wall -Wextra -Wno-unused-parameter  -fno-omit-frame-pointer   -fno-strict-aliasing")
 ENDIF()
 SET_TARGET_PROPERTIES(monad PROPERTIES DEFINE_SYMBOL "XDUMP ${MONAD_PRE_DEFINITION}")
 
