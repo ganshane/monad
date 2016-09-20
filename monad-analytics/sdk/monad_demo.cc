@@ -1,4 +1,3 @@
-#include "monad_sdk.h"
 
 #include <dirent.h>
 #include <fstream>
@@ -8,16 +7,13 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <snappy.h>
 
+#include "monad_sdk.h"
+#include "monad_sdk_impl.h"
 
 
 void* sdk=NULL;
-void EncodeFixed32(char* buf, uint32_t value) {
-  buf[0] = value & 0xff;
-  buf[1] = (value >> 8) & 0xff;
-  buf[2] = (value >> 16) & 0xff;
-  buf[3] = (value >> 24) & 0xff;
-}
 void execute_match(const char* prefix,const char* sfzh_path){
   clock_t   start,   finish,seg_start,seg_finish;
   start   =   clock();
@@ -29,7 +25,7 @@ void execute_match(const char* prefix,const char* sfzh_path){
   std::ifstream fin(sfzh_path, std::ios::in);
   char line[1024]={0};
   std::string id;
-  auto i = 0;
+  int i = 0;
   int32_t true_int = 0;
   int32_t false_int = 0;
   while(fin.getline(line, sizeof(line))){
@@ -60,6 +56,8 @@ void performance(const char* path,const char* sfzh_path){
   DIR* pDir=opendir(path);
   struct dirent    *ent  ;
   struct stat s;
+  int before=0;
+  int after = 0;
   while((ent=readdir(pDir))!=NULL)
   {
     memset(&s, 0,sizeof(struct stat));
@@ -81,13 +79,24 @@ void performance(const char* path,const char* sfzh_path){
       uint32_t sz = ftell(fp);
       fseek(fp, 0L, SEEK_SET);
       char* buffer = (char *) malloc(sz + 4);
-      EncodeFixed32(buffer,region_id);
+      monad::MonadSDK::EncodeFixed32WithBigEndian(buffer,region_id);
       fread(buffer+4, sz, 1, fp);
       fclose(fp);
+
+      size_t input_length = sz + 4;
+      char* output = new char[snappy::MaxCompressedLength(input_length)];
+      size_t output_length;
+      snappy::RawCompress(buffer, input_length, output, &output_length);
+      delete [] output;
+
+      before += input_length;
+      after += output_length;
+
       monad_coll_put_seg(sdk,buffer,sz+4);
       free(buffer);
     }
   }
+  std::cout << " beofore size :" << before << " compressed size:"<<after<< std::endl;
 
   execute_match("first--> ",sfzh_path);
   execute_match("second--> ",sfzh_path);

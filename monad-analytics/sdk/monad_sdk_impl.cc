@@ -25,7 +25,6 @@ namespace monad{
       y--, m += 12;
     return 365*y + y/4 - y/100 + y/400 + (153*m - 457)/5 + d - 306;
   }
-
   static uint32_t convert(std::string str){
     return atoi(str.c_str());
     /*
@@ -36,10 +35,11 @@ namespace monad{
     return result;
      */
   }
-
   static inline leveldb::Slice CreateRegionKey(uint32_t region_id,char* key_data){
-    MurmurHash3_x86_32(&region_id,4,mur_seed,key_data);
-//    leveldb::EncodeFixed32(key_data,region_id);
+    char tmp[4];
+    MonadSDK::EncodeFixed32WithBigEndian(tmp,region_id);
+    MurmurHash3_x86_32(tmp,4,mur_seed,key_data);
+    //std::cout <<"murmur hash: " << MonadSDK::DecodeFixed32WithBigEndian(key_data) << std::endl;
     return leveldb::Slice(key_data,4);
   }
   MONAD_CODE MonadSDK::CalculateDays(const char* id_card,const size_t size,uint32_t& days,uint32_t& region_id){

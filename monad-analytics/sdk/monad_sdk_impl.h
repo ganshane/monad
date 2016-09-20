@@ -18,6 +18,18 @@ namespace monad{
     MONAD_CODE GetKV(const leveldb::Slice& key,std::string* value);
     bool ContainId(const char *id_card,size_t size);
     static leveldb::Status Destroy(const char* path);
+    static inline void EncodeFixed32WithBigEndian(char* buf, uint32_t value){
+      buf[3] = (char) (value & 0xff);
+      buf[2] = (char) ((value >> 8) & 0xff);
+      buf[1] = (char) ((value >> 16) & 0xff);
+      buf[0] = (char) ((value >> 24) & 0xff);
+    }
+    static inline uint32_t DecodeFixed32WithBigEndian(const char* ptr){
+      return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])))
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 8)
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 16)
+              | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])) << 24));
+    }
     virtual ~MonadSDK();
     //only for test
     MONAD_CODE CalculateDays(const char* id_card,const size_t size,uint32_t& days,uint32_t& region_id);

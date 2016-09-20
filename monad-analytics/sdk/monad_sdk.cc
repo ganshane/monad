@@ -25,7 +25,7 @@ MONAD_CODE monad_coll_create(void **handle, const char *db_path, const uint32_t 
  * @param size 分段数据的大小
  */
 void monad_coll_put_seg(void *handle, const char *data,const  size_t size) {
-  uint32_t region_id = leveldb::DecodeFixed32(data);
+  uint32_t region_id = MonadSDK::DecodeFixed32WithBigEndian(data);
   MonadSDK *sdk = (MonadSDK *) handle;
   sdk->PutCollection(region_id, data + 4, size - 4);
 }
