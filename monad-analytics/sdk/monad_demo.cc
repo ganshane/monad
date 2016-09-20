@@ -56,8 +56,8 @@ void performance(const char* path,const char* sfzh_path){
   DIR* pDir=opendir(path);
   struct dirent    *ent  ;
   struct stat s;
-  int before=0;
-  int after = 0;
+//  int before=0;
+//  int after = 0;
   while((ent=readdir(pDir))!=NULL)
   {
     memset(&s, 0,sizeof(struct stat));
@@ -83,6 +83,7 @@ void performance(const char* path,const char* sfzh_path){
       fread(buffer+4, sz, 1, fp);
       fclose(fp);
 
+      /*
       size_t input_length = sz + 4;
       char* output = new char[snappy::MaxCompressedLength(input_length)];
       size_t output_length;
@@ -91,12 +92,13 @@ void performance(const char* path,const char* sfzh_path){
 
       before += input_length;
       after += output_length;
+       */
 
       monad_coll_put_seg(sdk,buffer,sz+4);
       free(buffer);
     }
   }
-  std::cout << " beofore size :" << before << " compressed size:"<<after<< std::endl;
+//  std::cout << " beofore size :" << before << " compressed size:"<<after<< std::endl;
 
   execute_match("first--> ",sfzh_path);
   execute_match("second--> ",sfzh_path);
