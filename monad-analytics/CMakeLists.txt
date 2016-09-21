@@ -34,6 +34,11 @@ ENDIF()
 
 #INCLUDE(FindProtobuf)
 
+#build lockless-allocator
+IF(NOT MONAD_HAVE_OSX)
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/lockless-allocator)
+ENDIF()
+
 #build CRoaring
 SET(BUILD_STATIC true)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/CRoaring-v0.2.7/include)
