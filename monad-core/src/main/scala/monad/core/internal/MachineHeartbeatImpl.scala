@@ -8,12 +8,13 @@ import javax.annotation.PostConstruct
 import monad.core.MonadCoreConstants
 import monad.core.config.HeartbeatConfigSupport
 import monad.core.services.{CronScheduleWithStartModel, MachineHeartbeat, StartAtOnce}
-import stark.rpc.config.RpcBindSupport
-import stark.utils.services.{StarkUtils, ZookeeperTemplate}
 import org.apache.tapestry5.ioc.annotations.EagerLoad
 import org.apache.tapestry5.ioc.services.RegistryShutdownHub
 import org.apache.tapestry5.ioc.services.cron.{PeriodicExecutor, PeriodicJob}
 import org.apache.tapestry5.json.JSONObject
+import org.apache.zookeeper.KeeperException.NoNodeException
+import stark.rpc.config.RpcBindSupport
+import stark.utils.services.{StarkUtils, ZookeeperTemplate}
 
 /**
  * machine heartbeat
@@ -33,7 +34,8 @@ class MachineHeartbeatImpl(heartbeatConfigSupport: HeartbeatConfigSupport,
 
   /**
    * 得到机器的ID
-   * @return 机器ID信息
+    *
+    * @return 机器ID信息
    */
   override def findMachineId(): String = {
     val idOpt = store.get[String](MACHINE_ID_KEY)
@@ -94,9 +96,14 @@ class MachineHeartbeatImpl(heartbeatConfigSupport: HeartbeatConfigSupport,
   }
 
   private def update() {
-    machineInfo.timeSecs = StarkUtils.currentTimeInSecs
-    machineInfo.upSecs = machineInfo.timeSecs - startTime
-    zk.setStringData(heartPath, machineInfo.toJSON)
+    try {
+      machineInfo.timeSecs = StarkUtils.currentTimeInSecs
+      machineInfo.upSecs = machineInfo.timeSecs - startTime
+      zk.setStringData(heartPath, machineInfo.toJSON)
+    }catch{
+      case e:NoNodeException => //当出现NoNode的时候,能够再次创建该临时节点
+        zk.createEphemeralPathWithStringData(heartPath,Some(machineInfo.toJSON))
+    }
   }
 
   private def findHostName = {
