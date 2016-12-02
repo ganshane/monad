@@ -124,6 +124,8 @@ TEST_F(RoaringBitSetWrapperTest, TestEmpty) {
   RoaringBitSetWrapper* new_wrapper = RoaringBitSetWrapper::FromTopBitSetWrapper(topWrapper);
   holder3.AddWrapper(new_wrapper);
   topWrapper = RoaringBitSetWrapper::InPlaceAndTop(holder,2);
+  if(topWrapper)
+    delete topWrapper;
   delete new_wrapper;
 }
 TEST_F(RoaringBitSetWrapperTest, TestInPlaceNot) {

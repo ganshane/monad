@@ -22,6 +22,7 @@ namespace monad {
       while(tbst.NextDoc() != BitSetIterator::NO_MORE_DOCS){
         rbs_wrapper->FastSet(tbst.DocId());
       }
+      region = it->NextRegion();
     }
     delete it;
     return rbs_wrapper;
