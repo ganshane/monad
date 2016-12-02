@@ -12,6 +12,21 @@ namespace monad {
     return new BitSetWrapperIterator<RoaringBitSetWrapper, RoaringBitSet>(this);
   };
 
+  RoaringBitSetWrapper* RoaringBitSetWrapper::FromTopBitSetWrapper(TopBitSetWrapper *wrapper) {
+    RoaringBitSetWrapper* rbs_wrapper = new RoaringBitSetWrapper();
+    BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* it = wrapper->Iterator();
+    BitSetRegion<TopBitSet>* region = it->NextRegion();
+    while(region){
+      rbs_wrapper->NewSeg(region->region,1);
+      TopBitSetIterator tbst(region->bit_set);
+      while(tbst.NextDoc() != BitSetIterator::NO_MORE_DOCS){
+        rbs_wrapper->FastSet(tbst.DocId());
+      }
+    }
+    delete it;
+    return rbs_wrapper;
+  }
+
   uint32_t RoaringBitSetWrapper::NewSeg(int32_t region,const char* bb) {
     roaring_bitmap_t* underlying = roaring_bitmap_portable_deserialize(bb);
 

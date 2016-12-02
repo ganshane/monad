@@ -118,6 +118,13 @@ TEST_F(RoaringBitSetWrapperTest, TestEmpty) {
   RoaringBitSetWrapper::InPlaceAndTopWithPositionMerged(holder2,1);
   if(topWrapper)
     delete topWrapper;
+
+  BitSetWrapperHolder<RoaringBitSetWrapper> holder3;
+  holder3.AddWrapper(&wrapper);
+  RoaringBitSetWrapper* new_wrapper = RoaringBitSetWrapper::FromTopBitSetWrapper(topWrapper);
+  holder3.AddWrapper(new_wrapper);
+  topWrapper = RoaringBitSetWrapper::InPlaceAndTop(holder,2);
+  delete new_wrapper;
 }
 TEST_F(RoaringBitSetWrapperTest, TestInPlaceNot) {
   BitSetWrapperHolder<RoaringBitSetWrapper> holder;

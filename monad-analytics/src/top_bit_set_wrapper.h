@@ -27,6 +27,7 @@ namespace monad{
     int32_t Size(){
       return _data.size();
     };
+    BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* Iterator();
     int32_t BitCount();
     monad::RegionTopDoc** Top(int32_t n,int32_t& data_len);
     virtual ~TopBitSetWrapper();
@@ -36,7 +37,6 @@ namespace monad{
     typedef BitSetWrapperIterator<TopBitSetWrapper,TopBitSet> TWI;
     std::vector<BitSetRegion<TopBitSet>*> _data;
     uint32_t _total_doc;
-    BitSetWrapperIterator<TopBitSetWrapper,TopBitSet>* Iterator();
     friend class OpenBitSetWrapper;
     friend class SparseBitSetWrapper;
     friend class RoaringBitSetWrapper;

@@ -46,6 +46,12 @@ namespace monad {
      * @return 实际取到的个数
      */
     monad::RegionDoc** Top(int32_t n, int32_t& data_len);
+    /**
+     * 通过给定的 TopBitSetWrapper来创建一个BitSEtWrapper
+     * @param wrapper  topBitSetWrapper
+     * @return RoaringBitSetWrapper
+     */
+    static RoaringBitSetWrapper* FromTopBitSetWrapper(TopBitSetWrapper* wrapper);
 
   private:
     BitSetWrapperIterator<RoaringBitSetWrapper, RoaringBitSet>* Iterator();
