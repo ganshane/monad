@@ -159,7 +159,7 @@ namespace monad {
   /**
    * 当加载id的具体数据时候执行的操作
    */
-  void OnLoadIdLable(unsigned task_id,void* args,void* buffer,size_t size){
+  void OnLoadIdLabel(unsigned task_id,void* args,void* buffer,size_t size){
     std::vector<val> args_ = *(std::vector<val>*)args;
     val data=args_[4];
     std::string result((char*)buffer,size);
@@ -500,7 +500,7 @@ namespace monad {
                                   "POST",
                                   parameter.str().c_str(),
                                   (void *) args, true,
-                                  &OnLoadIdLable,
+                                  &OnLoadIdLabel,
                                   &OnFail, &OnProgress);
     }else{
       ((val)callback)(data,key);
