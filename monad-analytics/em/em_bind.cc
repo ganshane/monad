@@ -11,6 +11,7 @@
 
 
 #include "bit_set_wrapper.h"
+#include "collection_helper.h"
 #include "collection_info.h"
 //#include "sparse_bit_set.h"
 //#include "sparse_bit_set_wrapper.h"
@@ -51,28 +52,6 @@ namespace monad {
   typedef RoaringBitSetWrapper* (*Action)(RoaringBitSetWrapper**,size_t);
   void ClearCollection(const val& key);
 
-  /**
-   * 从buffer中读取一个32bit的整数
-   */
-  inline static uint32_t ReadUint32(char** buffer){
-    char* bb = *buffer;
-    uint32_t i = 0;
-    i |= bb[0] << 24;
-    i |= bb[1] << 16;
-    i |= bb[2] << 8;
-    i |= bb[3] ;
-    *buffer = bb+4;
-
-    return i;
-  }
-  /**
-   * 从buffer重读取一个64bit的数
-   */
-  inline static uint64_t ReadUint64(char** buffer){
-    uint64_t hi = ReadUint32(buffer);
-    uint64_t lo = ReadUint32(buffer);
-    return  (hi << 32) | lo;
-  }
   /**
    * 回调javascript中函数
    */
@@ -370,6 +349,15 @@ namespace monad {
       if(tbsw) wrappers[i]=tbsw;
       else {
         delete[] wrappers;
+        char message[100];
+        val key = keys[i];
+        std::string type = key.typeof().as<std::string>();
+        //printf("type:%s \n",type.c_str());
+        if(type == "number")
+          sprintf(message,"collection is not top wrapper, key is %d",key.as<int>());
+        else
+          sprintf(message,"collection is not top wrapper,key is %s",key.as<std::string>().c_str());
+        OnFail(0,args,52,message);
         return;
       }
     }
