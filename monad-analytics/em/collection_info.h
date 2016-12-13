@@ -2,6 +2,7 @@
 #define MONAD_COLLECTION_INFO_H_
 
 #include <map>
+#include <sstream>
 
 #include "bit_set_wrapper.h"
 #include "roaring_bit_set_wrapper.h"
@@ -78,6 +79,12 @@ namespace monad {
         _container.erase(key);
         delete wrapper;
       }
+    }
+    void AddWrapper(const K& key,CollectionInfo& info){
+      _container.insert(std::pair<K,CollectionInfo*>(key,&info));
+    }
+    int32_t Size(){
+      return _container.size();
     }
   };
 }

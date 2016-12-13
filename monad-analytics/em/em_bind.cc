@@ -45,7 +45,7 @@ namespace monad {
   };
   typedef ValComp KEY;
   //记录BitSetWrapper的容器
-  static std::map<val,CollectionInfo*,KEY> container;
+  static CollectionContainer<val,KEY> container;
 
   //操作RoaringBitSetWrapper的函数对象
   typedef RoaringBitSetWrapper* (*Action)(RoaringBitSetWrapper**,size_t);
@@ -74,43 +74,6 @@ namespace monad {
     return  (hi << 32) | lo;
   }
   /**
-   * 查找map中的wrapper对象
-   */
-  template<typename T>
-  inline static T* FindWrapper(std::map<val,T*,KEY>& map, const val& key){
-    typename std::map<val ,T*>::iterator it;
-//    printf("find wrapper container size:%d \n",map.size());
-    it = map.find(key);
-    if(it == map.end()){
-      return NULL;
-    }else{
-      return it->second;
-    }
-  }
-  /**
-   * 清空某一个容器
-   */
-  template<typename T>
-  inline static void ClearContainer(std::map<val,T*,KEY>& map){
-    for (typename std::map<val,T*>::iterator it=map.begin(); it!=map.end(); ++it){
-      delete it->second;
-    }
-    typename std::map<val ,T*>::iterator it;
-    it = map.begin();
-    map.erase(it,map.end());
-  }
-  /**
-   * 通过给定的key,删除某一个wrapper
-   */
-  template<typename T>
-  inline static void RemoveWrapper(std::map<val,T*,KEY>& map, const val& key){
-    T* wrapper = FindWrapper(map,key);
-    if(wrapper){
-      map.erase(key);
-      delete wrapper;
-    }
-  }
-  /**
    * 回调javascript中函数
    */
   template<typename T>
@@ -122,7 +85,8 @@ namespace monad {
     ClearCollection(id);
 
     CollectionInfo* info = new CollectionInfo(wrapper);
-    container.insert(std::pair<val,CollectionInfo*>(id,info));
+    container.AddWrapper(id,*info);
+    //container.insert(std::pair<val,CollectionInfo*>(id,info));
     //printf("insert wrapper id %d \n",id);
 
     val json=val::object();
@@ -173,14 +137,14 @@ namespace monad {
    * 通过给定的key来构造一个wrapper集合
    */
   template<typename T>
-  static T** CreateWrapperCollection(std::map<val,T*,KEY>& map,const val& keys,std::vector<val>* args,uint32_t* len){
+  static T** CreateWrapperCollection(const val& keys,std::vector<val>* args,uint32_t* len){
     unsigned length = keys["length"].as<unsigned>();
     T** collections = new T*[length];
     //printf("length:%d \n",length);
     T* wrapper;
     for(unsigned i=0;i<length;i++){
       val key = keys[i];
-      wrapper = FindWrapper(map,key);
+      wrapper = container.FindWrapper(key);
       if(wrapper == NULL){
         delete [] collections;
         char message[100];
@@ -231,7 +195,7 @@ namespace monad {
 
     uint32_t length=0;
     ReportProgressOnOperation(on_progress,"creating collection info ...");
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(container,keys,args,&length);
+    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
     if(collections == NULL)
       return;
 
@@ -358,7 +322,7 @@ namespace monad {
   }
 
   uint32_t ContainerSize(){
-    return container.size();
+    return container.Size();
   }
   void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
     DoOperator(&RoaringBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
@@ -374,7 +338,7 @@ namespace monad {
 
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(container,keys,args,&length);
+    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
     if(collections == NULL)
       return;
     RoaringBitSetWrapper** wrappers = new RoaringBitSetWrapper*[length]();
@@ -397,7 +361,7 @@ namespace monad {
 
     ReportProgressOnOperation(on_progress,"creating top wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(container,keys,args,&length);
+    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
     if(collections == NULL)
       return;
     TopBitSetWrapper** wrappers = new TopBitSetWrapper*[length]();
@@ -428,7 +392,7 @@ namespace monad {
     parameter <<"q=";
 
     //TOP
-    CollectionInfo* ci =FindWrapper(container,key);
+    CollectionInfo* ci =container.FindWrapper(key);
 
     if(ci != NULL) {
       if (ci->IsTopCollection()) {
@@ -531,22 +495,10 @@ namespace monad {
     }
   }
   /**
-   * 清空所有的集合
-   */
-  void ClearAllCollection(){
-    ClearContainer(container);
-  }
-  /**
-   * 清空某一个集合
-   */
-  void ClearCollection(const val& key){
-    RemoveWrapper(container,key);
-  }
-  /**
    * 得到某一个集合的属性
    */
   val GetCollectionProperties(const val& key){
-    CollectionInfo* ci = FindWrapper(container,key);
+    CollectionInfo* ci = container.FindWrapper(key);
     val result = val::object();
     if(ci){
       result.set("count",val(ci->BitCount()));
@@ -560,9 +512,22 @@ namespace monad {
     ClearCollection(key);
     RoaringBitSetWrapper* wrapper = new RoaringBitSetWrapper();
     CollectionInfo* ci = new CollectionInfo(wrapper);
-    container.insert(std::pair<val,CollectionInfo*>(key,ci));
+    container.AddWrapper(key,*ci);
     return wrapper;
   }
+  /**
+   * 清空所有的集合
+   */
+  void ClearAllCollection(){
+    container.ClearContainer();
+  }
+  /**
+   * 清空某一个集合
+   */
+  void ClearCollection(const val& key){
+    container.RemoveWrapper(key);
+  }
+
 
 
   // Binding code
