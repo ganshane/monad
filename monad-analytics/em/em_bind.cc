@@ -46,7 +46,7 @@ namespace monad {
   };
   typedef ValComp KEY;
   //记录BitSetWrapper的容器
-  static CollectionContainer<val,KEY> container;
+  static CollectionContainer<val,KEY,RoaringBitSetWrapper> container;
 
   //操作RoaringBitSetWrapper的函数对象
   typedef RoaringBitSetWrapper* (*Action)(RoaringBitSetWrapper**,size_t);
@@ -56,22 +56,22 @@ namespace monad {
    * 回调javascript中函数
    */
   template<typename T>
-  inline static void CallJavascriptFunction(void* args,T* wrapper){
+  inline static void CallJavascriptFunction(void* args,CollectionInfo<T>* info){
     std::vector<val> args_ = *(std::vector<val>*)args;
 
     val id = args_[0];
     //先删除同key的集合
     ClearCollection(id);
 
-    CollectionInfo* info = new CollectionInfo(wrapper);
+    //CollectionInfo<T>* info = new CollectionInfo<T>(wrapper);
     container.AddWrapper(id,*info);
     //container.insert(std::pair<val,CollectionInfo*>(id,info));
     //printf("insert wrapper id %d \n",id);
 
     val json=val::object();
     json.set("key",val(id));
-    json.set("count",val(wrapper->BitCount()));
-    json.set("elapsed_time",val(wrapper->elapsed_time));
+    json.set("count",val(info->BitCount()));
+    json.set("elapsed_time",val(info->ElapsedTime()));
     args_[1](json);
     delete (std::vector<val>*)args;
   }
@@ -169,19 +169,20 @@ namespace monad {
   static void ReportProgressOnOperation(const val& on_progress,const std::string& message){
     ((val)on_progress)(val(message));
   }
+  template<typename T>
   void DoOperator(const Action action,const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
 
     uint32_t length=0;
     ReportProgressOnOperation(on_progress,"creating collection info ...");
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
+    CollectionInfo<T>** collections = CreateWrapperCollection<CollectionInfo<T>>(keys,args,&length);
     if(collections == NULL)
       return;
 
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     printf("length is :%d \n",length);
 
-    RoaringBitSetWrapper** wrappers = new RoaringBitSetWrapper*[length];
+    T** wrappers = new T*[length];
     for(int i=0;i<length;i++){
       wrappers[i]= collections[i]->GetOrCreateBitSetWrapper();
     }
@@ -197,7 +198,7 @@ namespace monad {
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     ReportProgressOnOperation(on_progress,"call callback function");
-    CallJavascriptFunction<RoaringBitSetWrapper>(args,wrapper);
+    CallJavascriptFunction<RoaringBitSetWrapper>(args,new CollectionInfo<T>(wrapper));
   }
 
   /**
@@ -265,7 +266,7 @@ namespace monad {
     uint32_t weight = args_[4].as<uint32_t>();
     wrapper->SetWeight(weight);
 
-    CallJavascriptFunction(arg,wrapper);
+    CallJavascriptFunction(arg,new CollectionInfo<RoaringBitSetWrapper>(wrapper));
   }
   /**
    * 设置全局的API_URL
@@ -304,20 +305,20 @@ namespace monad {
     return container.Size();
   }
   void InPlaceAnd(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&RoaringBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
+    DoOperator<RoaringBitSetWrapper>(&RoaringBitSetWrapper::InPlaceAnd,keys,new_key,callback,on_fail,on_progress);
   }
   void InPlaceOr(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&RoaringBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail,on_progress);
+    DoOperator<RoaringBitSetWrapper>(&RoaringBitSetWrapper::InPlaceOr,keys,new_key,callback,on_fail,on_progress);
   }
   void AndNot(const val& keys,const val& new_key,const val& callback,const val& on_fail,const val& on_progress){
-    DoOperator(&RoaringBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail,on_progress);
+    DoOperator<RoaringBitSetWrapper>(&RoaringBitSetWrapper::InPlaceNot,keys,new_key,callback,on_fail,on_progress);
   }
   void InPlaceAndTop(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail);
 
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
+    CollectionInfo<RoaringBitSetWrapper>** collections = CreateWrapperCollection<CollectionInfo<RoaringBitSetWrapper>>(keys,args,&length);
     if(collections == NULL)
       return;
     RoaringBitSetWrapper** wrappers = new RoaringBitSetWrapper*[length]();
@@ -333,14 +334,14 @@ namespace monad {
     delete[] wrappers;
     delete [] collections;
     ReportProgressOnOperation(on_progress,"call callback function...");
-    CallJavascriptFunction<TopBitSetWrapper>(args,wrapper);
+    CallJavascriptFunction(args,new CollectionInfo<RoaringBitSetWrapper>(wrapper));
   }
   void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail,on_progress);
 
     ReportProgressOnOperation(on_progress,"creating top wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo** collections = CreateWrapperCollection<CollectionInfo>(keys,args,&length);
+    CollectionInfo<RoaringBitSetWrapper>** collections = CreateWrapperCollection<CollectionInfo<RoaringBitSetWrapper>>(keys,args,&length);
     if(collections == NULL)
       return;
     TopBitSetWrapper** wrappers = new TopBitSetWrapper*[length]();
@@ -369,7 +370,7 @@ namespace monad {
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     ReportProgressOnOperation(on_progress,"call callback function...");
-    CallJavascriptFunction<TopBitSetWrapper>(args,wrapper);
+    CallJavascriptFunction<RoaringBitSetWrapper>(args,new CollectionInfo<RoaringBitSetWrapper>(wrapper));
   }
   void Top(const IdCategory category,const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail,const val& on_progress) {
     int32_t len=0;
@@ -380,7 +381,7 @@ namespace monad {
     parameter <<"q=";
 
     //TOP
-    CollectionInfo* ci =container.FindWrapper(key);
+    CollectionInfo<RoaringBitSetWrapper>* ci =container.FindWrapper(key);
 
     if(ci != NULL) {
       if (ci->IsTopCollection()) {
@@ -486,7 +487,7 @@ namespace monad {
    * 得到某一个集合的属性
    */
   val GetCollectionProperties(const val& key){
-    CollectionInfo* ci = container.FindWrapper(key);
+    CollectionInfo<RoaringBitSetWrapper>* ci = container.FindWrapper(key);
     val result = val::object();
     if(ci){
       result.set("count",val(ci->BitCount()));
@@ -499,7 +500,7 @@ namespace monad {
     //先删除同key的集合
     ClearCollection(key);
     RoaringBitSetWrapper* wrapper = new RoaringBitSetWrapper();
-    CollectionInfo* ci = new CollectionInfo(wrapper);
+    CollectionInfo<RoaringBitSetWrapper>* ci = new CollectionInfo<RoaringBitSetWrapper>(wrapper);
     container.AddWrapper(key,*ci);
     return wrapper;
   }
