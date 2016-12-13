@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "bit_set_wrapper.h"
-#include "roaring_bit_set_wrapper.h"
 #include "top_bit_set_wrapper.h"
 
 //using namespace emscripten;
@@ -40,9 +39,9 @@ namespace monad {
         _top_wrapper = NULL;
       }
     }
-    RoaringBitSetWrapper* GetOrCreateBitSetWrapper(){
+    WRAPPER* GetOrCreateBitSetWrapper(){
       if(!_wrapper)
-        _wrapper = RoaringBitSetWrapper::FromTopBitSetWrapper(_top_wrapper);
+        _wrapper = WRAPPER::FromTopBitSetWrapper(_top_wrapper);
 
       return _wrapper;
     }
