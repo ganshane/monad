@@ -11,6 +11,7 @@
 
 
 #include "bit_set_wrapper.h"
+#include "collection_info.h"
 //#include "sparse_bit_set.h"
 //#include "sparse_bit_set_wrapper.h"
 #include "roaring_bit_set_wrapper.h"
@@ -22,88 +23,25 @@ using namespace emscripten;
 namespace monad {
   //api url
   static std::string api_url;
-  enum class IdCategory {
-    Person =1,
-    Car =2 ,
-    Mobile =3 ,
-    Mac = 4,
-    QQ = 5,
-    WeiXin =6
-  };
 
   /**
    * val作为map的key,此对象作为key的比较函数
    */
   struct ValComp {
-    bool operator()(const val &lhs, const val &rhs) const {
-      std::string ltype(lhs.typeof().as<std::string>());
-      std::string rtype(rhs.typeof().as<std::string>());
-      if (ltype != rtype) {
-        return ltype < rtype;
+      bool operator()(const val &lhs, const val &rhs) const {
+        std::string ltype(lhs.typeof().as<std::string>());
+        std::string rtype(rhs.typeof().as<std::string>());
+        if (ltype != rtype) {
+          return ltype < rtype;
+        }
+        if (ltype == "string") {
+          return lhs.as<std::string>() < rhs.as<std::string>();
+        } else if (ltype == "number") {
+          return lhs.as<int>() < rhs.as<int>();
+        } else {
+          return false;
+        }
       }
-      if (ltype == "string") {
-        return lhs.as<std::string>() < rhs.as<std::string>();
-      } else if (ltype == "number") {
-        return lhs.as<int>() < rhs.as<int>();
-      } else {
-        return false;
-      }
-    }
-  };
-  class CollectionInfo{
-      RoaringBitSetWrapper* _wrapper;
-      TopBitSetWrapper* _top_wrapper;
-    //此标记注明_wrapper是否为临时创建的wrapper
-      bool _tmp_wrapper_flag;
-  public:
-    CollectionInfo(RoaringBitSetWrapper* wrapper):_wrapper(wrapper),_top_wrapper(NULL),_tmp_wrapper_flag(false){
-    }
-    CollectionInfo(TopBitSetWrapper* top_wrapper):_wrapper(NULL),_top_wrapper(top_wrapper),_tmp_wrapper_flag(true){
-    }
-    virtual ~CollectionInfo(){
-      if(_wrapper){
-        delete _wrapper;
-        _wrapper = NULL;
-      }
-      if(_top_wrapper){
-        delete _top_wrapper;
-        _top_wrapper = NULL;
-      }
-    }
-    RoaringBitSetWrapper* GetOrCreateBitSetWrapper(){
-      if(!_wrapper)
-        _wrapper = RoaringBitSetWrapper::FromTopBitSetWrapper(_top_wrapper);
-
-      return _wrapper;
-    }
-    TopBitSetWrapper* GetTopBitSetWrapper(){
-      return _top_wrapper;
-    }
-    void ClearBitSetWrapper(){
-      if(_tmp_wrapper_flag && _wrapper) {
-        delete _wrapper;
-        _wrapper = NULL;
-      }
-    }
-    bool IsTopCollection(){
-      return _tmp_wrapper_flag;
-    }
-    RegionDoc** TopWrapper(int32_t n,int32_t& data_len){
-      if(_wrapper)
-        return _wrapper->Top(n,data_len);
-      else
-        return NULL;
-    }
-    RegionTopDoc** TopWrapperTop(int32_t n,int32_t& data_len){
-      if(_top_wrapper)
-        return _top_wrapper ->Top(n,data_len);
-      else
-        return NULL;
-    }
-    int32_t BitCount(){
-      if(IsTopCollection()) return _top_wrapper->BitCount();
-      else return _wrapper->BitCount();
-    }
   };
   typedef ValComp KEY;
   //记录BitSetWrapper的容器
