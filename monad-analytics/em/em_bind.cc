@@ -233,7 +233,7 @@ namespace monad {
     uint32_t weight = args_[4].as<uint32_t>();
     wrapper->SetWeight(weight);
 
-    CallJavascriptFunction(arg,new CollectionInfo<WRAPPER>(wrapper));
+    CallJavascriptFunction(arg,new COLL_INFO(wrapper));
   }
   /**
    * 设置全局的API_URL
@@ -285,7 +285,7 @@ namespace monad {
 
     ReportProgressOnOperation(on_progress,"creating wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo<WRAPPER>** collections = CreateWrapperCollection<CollectionInfo<WRAPPER>>(keys,args,&length);
+    COLL_INFO** collections = CreateWrapperCollection<CollectionInfo<WRAPPER>>(keys,args,&length);
     if(collections == NULL)
       return;
     WRAPPER** wrappers = new WRAPPER*[length]();
@@ -301,14 +301,14 @@ namespace monad {
     delete[] wrappers;
     delete [] collections;
     ReportProgressOnOperation(on_progress,"call callback function...");
-    CallJavascriptFunction(args,new CollectionInfo<WRAPPER>(wrapper));
+    CallJavascriptFunction(args,new COLL_INFO(wrapper));
   }
   void InPlaceAndTopWithPositionMerged(const val& keys,const val& new_key,const val& callback,const int32_t min_freq,const val& on_fail,const val& on_progress){
     std::vector<val> *args = CreateCallArgs(new_key,callback, on_fail,on_progress);
 
     ReportProgressOnOperation(on_progress,"creating top wrapper collection ...");
     uint32_t length=0;
-    CollectionInfo<WRAPPER>** collections = CreateWrapperCollection<CollectionInfo<WRAPPER>>(keys,args,&length);
+    COLL_INFO** collections = CreateWrapperCollection<CollectionInfo<WRAPPER>>(keys,args,&length);
     if(collections == NULL)
       return;
     TopBitSetWrapper** wrappers = new TopBitSetWrapper*[length]();
@@ -337,7 +337,7 @@ namespace monad {
     delete[] collections;
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     ReportProgressOnOperation(on_progress,"call callback function...");
-    CallJavascriptFunction(args,new CollectionInfo<WRAPPER>(wrapper));
+    CallJavascriptFunction(args,new COLL_INFO(wrapper));
   }
   void Top(const IdCategory category,const val& key,const uint32_t topN,const val& callback,const uint32_t offset,const val& on_fail,const val& on_progress) {
     int32_t len=0;
@@ -348,7 +348,7 @@ namespace monad {
     parameter <<"q=";
 
     //TOP
-    CollectionInfo<WRAPPER>* ci =container.FindWrapper(key);
+    COLL_INFO* ci =container.FindWrapper(key);
 
     if(ci != NULL) {
       if (ci->IsTopCollection()) {
@@ -454,7 +454,7 @@ namespace monad {
    * 得到某一个集合的属性
    */
   val GetCollectionProperties(const val& key){
-    CollectionInfo<WRAPPER>* ci = container.FindWrapper(key);
+    COLL_INFO* ci = container.FindWrapper(key);
     val result = val::object();
     if(ci){
       result.set("count",val(ci->BitCount()));
@@ -467,7 +467,7 @@ namespace monad {
     //先删除同key的集合
     ClearCollection(key);
     WRAPPER* wrapper = new WRAPPER();
-    CollectionInfo<WRAPPER>* ci = new CollectionInfo<WRAPPER>(wrapper);
+    COLL_INFO* ci = new COLL_INFO(wrapper);
     container.AddWrapper(key,*ci);
     return wrapper;
   }
