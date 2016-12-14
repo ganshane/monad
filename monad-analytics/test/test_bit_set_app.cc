@@ -25,8 +25,8 @@ struct Int32Comp {
       return lhs < rhs;
     }
 };
-void OnProgress(int32_t,char*){}
-void OnFail(int32_t,char*){}
+void OnProgress(const int32_t,const char*){}
+void OnFail(const int32_t,const char*){}
 
 class MyApp:public BitSetApp<int32_t,Int32Comp,RoaringBitSetWrapper> {
 public:
