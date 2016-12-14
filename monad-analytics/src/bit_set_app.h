@@ -123,29 +123,29 @@ namespace monad {
     //virtual void Query(const std::string& index,const std::string& q)=0;
     virtual void FullTextQuery(const std::string& index,const std::string& q,WrapperCallback callback);
     virtual size_t ContainerSize(){return _container.size();};
-    virtual void InPlaceAnd(std::vector<K>& keys,const K& new_key,const WrapperCallback callback){
-      DoOperator(&WRAPPER::InPlaceAnd,keys,new_key,callback);
+    virtual void InPlaceAnd(std::vector<K>& keys,const WrapperCallback callback){
+      DoOperator(&WRAPPER::InPlaceAnd,keys,NewKey(),callback);
     };
-    virtual void InPlaceOr(std::vector<K>& keys,const K& new_key,const WrapperCallback callback){
-      DoOperator(&WRAPPER::InPlaceOr,keys,new_key,callback);
+    virtual void InPlaceOr(std::vector<K>& keys,const WrapperCallback callback){
+      DoOperator(&WRAPPER::InPlaceOr,keys,NewKey(),callback);
     }
-    virtual void AndNot(std::vector<K>& keys,const K& new_key,const WrapperCallback callback){
-      DoOperator(&WRAPPER::InPlaceNot,keys,new_key,callback);
+    virtual void AndNot(std::vector<K>& keys,const WrapperCallback callback){
+      DoOperator(&WRAPPER::InPlaceNot,keys,NewKey(),callback);
     }
-    virtual void InPlaceAndTop(std::vector<K>& keys,const K& new_key,const WrapperCallback callback){
-    }
-    virtual void InPlaceAndTopWithPositionMerged(std::vector<K>& keys,const K& new_key,const WrapperCallback callback){
-    }
+    virtual void InPlaceAndTop(std::vector<K>& keys,const int32_t min_freq,const WrapperCallback callback);
+    virtual void InPlaceAndTopWithPositionMerged(std::vector<K>& keys,const int32_t min_freq,const WrapperCallback callback);
     /*
     virtual void Top()=0;
-    virtual void ClearAllCollection()=0;
      */
+    virtual void ClearAllCollection(){ClearContainer();}
     virtual void ClearCollection(const K& key){  RemoveWrapper(key); }
     //virtual void GetCollectionProperties()=0;
     COLL_INFO& CreateBitSetWrapper(const K& k);
 
   protected:
+    virtual K& NewKey()=0;
     virtual void WebGet(const std::string url,const std::string parameter,WrapperCallback callback)=0;
+
     void DoOperator(const WrapperAction action,const std::vector<K>& keys,const K& new_key,const WrapperCallback callback);
     /**
     * 查找map中的wrapper对象
@@ -212,7 +212,7 @@ namespace monad {
 
   template <typename K,typename COMPARATOR,typename WRAPPER>
   void BitSetApp<K,COMPARATOR,WRAPPER>::FullTextQuery(const std::string &index, const std::string &q, WrapperCallback callback) {
-
+    _options.progress_callback(1,"build query parameter");
     std::string parameter;
     parameter.append("i=").append(index);
     parameter.append("&");
@@ -221,6 +221,7 @@ namespace monad {
     std::string query_api(_options.api_url);
     query_api.append("/search");
 
+    _options.progress_callback(2,"post data to api url ");
     WebGet(query_api,parameter,callback);
   };
   template <typename K,typename COMPARATOR,typename WRAPPER>
@@ -238,7 +239,7 @@ namespace monad {
     uint32_t length=keys.size();
     _options.progress_callback(1,"creating collection info ...");
     COLL_INFO** collections = CreateWrapperCollection(keys);
-    if(collections == NULL)
+    if(collections == NULL || length == 0)
       return;
 
     _options.progress_callback(2,"creating wrapper collection ...");
@@ -261,6 +262,77 @@ namespace monad {
     //printf("or result bitCount:%d \n",wrapper->BitCount());
     _options.progress_callback(4,"call callback function");
     COLL_INFO* coll_info = new COLL_INFO(new_key,wrapper);
+    AddWrapper(*coll_info);
+    callback(coll_info);
+  }
+  template <typename K,typename COMPARATOR,typename WRAPPER>
+  void BitSetApp<K,COMPARATOR,WRAPPER>::InPlaceAndTop(std::vector<K> &keys, const int32_t min_freq, const WrapperCallback callback) {
+    uint32_t length=keys.size();
+    _options.progress_callback(1,"creating collection info ...");
+    COLL_INFO** collections = CreateWrapperCollection(keys);
+    if(collections == NULL)
+      return;
+
+    _options.progress_callback(2,"creating wrapper collection ...");
+    //printf("length is :%d \n",length);
+
+    WRAPPER** wrappers = new WRAPPER*[length];
+    for(int i=0;i<length;i++){
+      wrappers[i]= collections[i]->GetOrCreateBitSetWrapper();
+    }
+
+    _options.progress_callback(3,"execute ...");
+    TopBitSetWrapper* wrapper= WRAPPER::InPlaceAndTop(wrappers,length,min_freq);
+
+    //clear tmp wrapper
+    for(int i=0;i<length;i++){
+      collections[i]->ClearBitSetWrapper();
+    }
+    delete[] wrappers;
+    delete[] collections;
+    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    _options.progress_callback(4,"call callback function");
+    COLL_INFO* coll_info = new COLL_INFO(NewKey(),wrapper);
+    AddWrapper(*coll_info);
+    callback(coll_info);
+  }
+
+  template <typename K,typename COMPARATOR,typename WRAPPER>
+  void BitSetApp<K,COMPARATOR,WRAPPER>::InPlaceAndTopWithPositionMerged(std::vector<K> &keys, const int32_t min_freq,
+                                                  const WrapperCallback callback) {
+
+    uint32_t length=keys.size();
+    _options.progress_callback(1,"creating collection info ...");
+    COLL_INFO** collections = CreateWrapperCollection(keys);
+    if(collections == NULL)
+      return;
+
+    _options.progress_callback(2,"creating wrapper collection ...");
+    //printf("length is :%d \n",length);
+
+    TopBitSetWrapper** wrappers = new TopBitSetWrapper*[length];
+    for(int i=0;i<length;i++){
+      TopBitSetWrapper* tbsw = collections[i]->GetTopBitSetWrapper();
+      if(tbsw) wrappers[i]=tbsw;
+      else {
+        delete[] wrappers;
+        delete[] collections;
+        std::ostringstream os;
+        K key = keys[i];
+        os << "collection is not top wrapper, key is " << key;
+        _options.fail_callback(52,os.str().c_str());
+        return;
+      }
+    }
+
+    _options.progress_callback(3,"execute ...");
+    TopBitSetWrapper* wrapper= WRAPPER::InPlaceAndTopWithPositionMerged(wrappers,length,min_freq);
+
+    delete[] wrappers;
+    delete[] collections;
+    //printf("or result bitCount:%d \n",wrapper->BitCount());
+    _options.progress_callback(4,"call callback function");
+    COLL_INFO* coll_info = new COLL_INFO(NewKey(),wrapper);
     AddWrapper(*coll_info);
     callback(coll_info);
   }

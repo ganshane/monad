@@ -25,21 +25,30 @@ struct Int32Comp {
       return lhs < rhs;
     }
 };
-void OnProgress(const int32_t,const char*){}
-void OnFail(const int32_t,const char*){}
+void OnProgress(const int32_t code,const char* message){
+  std::cout << "progress [" << code << "] " << message << std::endl;
+}
+void OnFail(const int32_t code,const char* message){
+  std::cout << "fail " << code << message << std::endl;
+}
 
 class MyApp:public BitSetApp<int32_t,Int32Comp,RoaringBitSetWrapper> {
 public:
   MyApp(BitSetAppOptions& options):BitSetApp(options),_seq(0){
   }
   static void MyCallback(COLL_INFO* coll_info){
-
+    std::cout<<"["<<coll_info->GetKey() << "] "<<"bit count:" << coll_info->BitCount() << " time:" << coll_info->ElapsedTime() << std::endl;
   }
 protected:
   int32_t _seq;
+
+  int32_t& NewKey(){
+    ++_seq;
+    return _seq;
+  }
   void WebGet(const std::string url,const std::string parameter,WrapperCallback callback){
-    _seq ++;
-    COLL_INFO& info = CreateBitSetWrapper(_seq);
+    int32_t key = NewKey();
+    COLL_INFO& info = CreateBitSetWrapper(key);
     RoaringBitSetWrapper* wrapper = info.GetOrCreateBitSetWrapper();
     wrapper->NewSeg(1,12);
     wrapper->FastSet(108);
@@ -56,5 +65,16 @@ TEST_F(BitSetAppTest, TestApp) {
   options.fail_callback= OnFail;
   MyApp app(options);
   app.FullTextQuery("trace","i=x",MyApp::MyCallback);
+  std::vector<int32_t> keys;
+  keys.push_back(1);
+  keys.push_back(1);
+  app.InPlaceAnd(keys,MyApp::MyCallback);
+  app.InPlaceOr(keys,MyApp::MyCallback);
+  app.AndNot(keys,MyApp::MyCallback);
+  app.InPlaceAndTop(keys,1,MyApp::MyCallback);
+  keys.clear();
+  keys.push_back(5);
+  keys.push_back(5);
+  app.InPlaceAndTopWithPositionMerged(keys,1,MyApp::MyCallback);
   ASSERT_EQ(1,1);
 }
