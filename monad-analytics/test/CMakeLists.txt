@@ -8,6 +8,7 @@ MACRO(ANAYTICS_TEST name)
 	ADD_TEST(${name} ${name})
 ENDMACRO(ANAYTICS_TEST name)
 
+ANAYTICS_TEST(test_bit_set_app)
 ANAYTICS_TEST(test_open_bit_set)
 ANAYTICS_TEST(test_open_bit_set_iterator)
 ANAYTICS_TEST(test_open_bit_set_operator)
