@@ -133,6 +133,7 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    finish = clock();
     float duration = (double)(finish - start) / CLOCKS_PER_SEC;
     wrapper->elapsed_time = duration;
     return wrapper;
@@ -217,6 +218,7 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    finish = clock();
     float duration = (double)(finish - start) / CLOCKS_PER_SEC;
     wrapper->elapsed_time = duration;
     return wrapper;
@@ -304,6 +306,7 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    finish = clock();
     float duration = (double)(finish - start) / CLOCKS_PER_SEC;
     wrapper->elapsed_time = duration;
     return wrapper;
@@ -479,6 +482,7 @@ namespace monad{
     }
     delete[] its;
     wrapper->Commit();
+    finish = clock();
     float duration = (double)(finish - start) / CLOCKS_PER_SEC;
     wrapper->elapsed_time = duration;
     return wrapper;
