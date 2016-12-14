@@ -134,12 +134,16 @@ namespace monad {
     }
     virtual void InPlaceAndTop(std::vector<K>& keys,const int32_t min_freq,const WrapperCallback callback);
     virtual void InPlaceAndTopWithPositionMerged(std::vector<K>& keys,const int32_t min_freq,const WrapperCallback callback);
-    /*
-    virtual void Top()=0;
-     */
     virtual void ClearAllCollection(){ClearContainer();}
     virtual void ClearCollection(const K& key){  RemoveWrapper(key); }
-    //virtual void GetCollectionProperties()=0;
+    virtual void GetCollectionProperties(const K& key,const WrapperCallback callback){
+      COLL_INFO* coll_info = FindWrapper(key);
+      if(coll_info){
+        callback(coll_info);
+      }else{
+        _options.fail_callback(404,"collection not found");
+      }
+    }
     COLL_INFO& CreateBitSetWrapper(const K& k);
 
   protected:
