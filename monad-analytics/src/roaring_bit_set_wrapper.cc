@@ -30,15 +30,19 @@ namespace monad {
 
   uint32_t RoaringBitSetWrapper::NewSeg(int32_t region,const char* bb) {
     roaring_bitmap_t* underlying = roaring_bitmap_portable_deserialize(bb);
+    if(underlying) {
 
-    _seg = new BitSetRegion<RoaringBitSet>();
-    _seg->region = static_cast<uint32_t> (region);
-    _seg->bit_set = new RoaringBitSet();
-    _seg->bit_set->_underlying = underlying;
-    _seg->bit_set->SetWeight(_weight);
+      _seg = new BitSetRegion<RoaringBitSet>();
+      _seg->region = static_cast<uint32_t> (region);
+      _seg->bit_set = new RoaringBitSet();
+      _seg->bit_set->_underlying = underlying;
+      _seg->bit_set->SetWeight(_weight);
 
-    _data.push_back(_seg);
-    return roaring_bitmap_portable_size_in_bytes(underlying);
+      _data.push_back(_seg);
+      return roaring_bitmap_portable_size_in_bytes(underlying);
+    }else{
+      return 0;
+    }
   }
   void RoaringBitSetWrapper::NewSeg(int32_t region, int32_t num_words) {
     _seg = new BitSetRegion<RoaringBitSet>();

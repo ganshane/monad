@@ -38,7 +38,8 @@ class IdShardResultResultProcessor(response: Response) extends ComponentEventRes
       //  response.setHeader(MonadApiConstants.HEADER_NODE_SUCCESS_INFO, collect.nodesSuccessInfo.toString)
       //response.setHeader(MonadApiConstants.HEADER_NODE_ERROR, collect.nodesError.toString)
 
-      val regionLength = if(collect.data != null) 1 else 0
+      val length = collect.results.length
+      val regionLength = length
       response.setHeader(MonadApiConstants.HEADER_REGIONS,0.until(regionLength).mkString(","))
 
       //os = response.getOutputStream("text/plain")
@@ -46,7 +47,6 @@ class IdShardResultResultProcessor(response: Response) extends ComponentEventRes
 
       //os = new DeflaterOutputStream(response.getOutputStream("application/octet-stream"),true)
       os = response.getOutputStream("application/octet-stream")
-      val length = collect.results.length
 
       val buffer = ByteBuffer.allocate(4)
 

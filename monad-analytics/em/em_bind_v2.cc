@@ -54,15 +54,17 @@ namespace monad {
     ((val)on_progress)(val(message));
   }
 
+  /*
   class EmApp:public BitSetApp<int32_t,ValComp,RoaringBitSetWrapper>{
   public:
     EmApp(){
-      
+
     }
   protected:
     void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback){
     }
   };
+   */
 }
 
 #endif //MONAD_EM_BIND_H_

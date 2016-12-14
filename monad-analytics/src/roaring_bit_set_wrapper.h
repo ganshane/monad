@@ -28,6 +28,7 @@ namespace monad {
     RoaringBitSetWrapper();
     void NewSeg(int32_t region, int32_t num_words);
     uint32_t NewSeg(int32_t region,const char* bb);
+    uint32_t NewSegFromJava(int32_t region,int8_t * long_byte_data){return NewSeg(region, (const char*) long_byte_data);}
     void FastSet(int32_t index);
     void Set(int32_t index);
     void Optimize();
