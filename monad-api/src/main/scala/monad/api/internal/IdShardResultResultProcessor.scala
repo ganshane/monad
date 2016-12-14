@@ -64,6 +64,12 @@ class IdShardResultResultProcessor(response: Response) extends ComponentEventRes
         info("shard region:{},size:{}bytes after:{} bytes",shard.region,shard.data.size(),outBytes.length)
         os.write(outBytes)
         */
+
+        val dataSize = shard.data.size();
+        buffer.clear()
+        buffer.putInt(dataSize)
+        os.write(buffer.array())
+
         shard.data.writeTo(os)
       }
 

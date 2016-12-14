@@ -4,8 +4,10 @@
 
 #include "bit_set_wrapper_holder.h"
 #include "open_bit_set.h"
+#include "roaring_bit_set.h"
 #include "sparse_bit_set.h"
 #include "open_bit_set_wrapper.h"
+#include "roaring_bit_set_wrapper.h"
 #include "sparse_bit_set_wrapper.h"
 #include "top_bit_set.h"
 #include "top_bit_set_wrapper.h"
@@ -63,6 +65,13 @@ using namespace monad;
     }
     return pointerArray;
   }
+  static long[] convertBitSetAsLongArray(RoaringBitSetWrapper wrappers[]){
+    long[] pointerArray = new long[wrappers.length];
+    for(int i=0;i<wrappers.length;i++){
+      pointerArray[i]=RoaringBitSetWrapper.getCPtr(wrappers[i]);
+    }
+    return pointerArray;
+  }
   static long[] convertBitSetAsLongArray(SparseBitSetWrapper wrappers[]){
     long[] pointerArray = new long[wrappers.length];
     for(int i=0;i<wrappers.length;i++){
@@ -91,6 +100,25 @@ using namespace monad;
 }
 %apply(monad::OpenBitSetWrapper** WRAPPER, size_t LENGTH) { (monad::OpenBitSetWrapper**  wrappers, size_t len) };
 //--------------- (Wrapper** WRAPPER,size_t LENGTH) end --
+//--------------- (RoaringBitSetWrapper** WRAPPER,size_t LENGTH) begin --
+//定义OpenBitSetWrapper** 的映射
+%typemap(jni)     (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) "jlongArray"
+%typemap(jtype)   (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) "long[]"
+%typemap(jstype)   (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) "RoaringBitSetWrapper[]"
+%typemap(javain)  (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) "$module.convertBitSetAsLongArray($javainput)"
+%typemap(in,numinputs=1)  (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) {
+  jlong* long_arr = JCALL2(GetLongArrayElements, jenv, $input,0);
+  $2 = JCALL1(GetArrayLength, jenv, $input);
+  $1 = new RoaringBitSetWrapper*[$2]();
+  for(uint32_t i=0;i<$2;i++)
+    $1[i]= reinterpret_cast<monad::RoaringBitSetWrapper*>(long_arr[i]);
+  if ($input) JCALL3(ReleaseLongArrayElements, jenv, $input, long_arr, 0);
+}
+%typemap(freearg) (monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH){
+  if($1)
+    delete[] $1;
+}
+%apply(monad::RoaringBitSetWrapper** WRAPPER, size_t LENGTH) { (monad::RoaringBitSetWrapper**  wrappers, size_t len) };
 //--------------- (SparseBitSetWrapper** WRAPPER,size_t LENGTH) begin --
 //定义OpenBitSetWrapper** 的映射
 %typemap(jni)     (monad::SparseBitSetWrapper** WRAPPER, size_t LENGTH) "jlongArray"
@@ -189,6 +217,47 @@ using namespace monad;
   }
 }
 //------------------- monad::OpenBitSetWrapper::Top end -------
+//------------------- monad::RoaringBitSetWrapper::Top begin -------
+// 去掉数据长度参数
+%typemap(in,numinputs=0,noblock=1) int32_t& data_len {
+   int temp_len=0;
+   $1 =  &temp_len;
+}
+//申明返回类型
+%typemap(jstype) monad::RegionDoc** monad::RoaringBitSetWrapper::Top "monad.analytics.model.RegionDoc[]"
+%typemap(jtype)  monad::RegionDoc** monad::RoaringBitSetWrapper::Top "monad.analytics.model.RegionDoc[]"
+//设置JNI操作时候的数据类型
+%typemap(jni)   monad::RegionDoc** monad::RoaringBitSetWrapper::Top "jobjectArray"
+%typemap(javaout) monad::RegionDoc** monad::RoaringBitSetWrapper::Top {
+  return $jnicall;
+}
+//设置C调用过程中的转换
+%typemap(out)   monad::RegionDoc** monad::RoaringBitSetWrapper::Top {
+  if($1){
+    //生成Java中的数组
+    jclass region_doc_class = JCALL1(FindClass,jenv,"monad/analytics/model/RegionDoc");
+    $result = JCALL3(NewObjectArray, jenv, temp_len,region_doc_class,NULL);
+    jmethodID cid = JCALL3(GetMethodID,jenv,region_doc_class, "<init>", "(II)V");
+    for(int i=0;i<temp_len;i++){
+      //printf("i:%d doc:%u region:%u \n",i,$1[i]->doc,$1[i]->region);
+        jobject obj = JCALL4(NewObject,jenv,
+                region_doc_class,
+                cid,
+                static_cast<jint>($1[i]->doc),
+                static_cast<jint>($1[i]->region) );
+        JCALL3(SetObjectArrayElement,jenv,$result, i, obj);
+        JCALL1(DeleteLocalRef,jenv,obj);
+    }
+    //清空内存
+    for(int i=0;i<temp_len;i++){
+      delete $1[i];
+    }
+    delete[] $1;
+  }else{
+    $result = NULL;
+  }
+}
+//------------------- monad::RoaringBitSetWrapper::Top end -------
 //------------------- monad::SparseBitSetWrapper::Top begin -------
 // 去掉数据长度参数
 %typemap(in,numinputs=0,noblock=1) int32_t& data_len {
@@ -281,6 +350,7 @@ using namespace monad;
 
 %include "bit_set_wrapper.h"
 %include "open_bit_set_wrapper.h"
+%include "roaring_bit_set_wrapper.h"
 %include "sparse_bit_set_wrapper.h"
 %include "top_bit_set_wrapper.h"
 
@@ -320,6 +390,24 @@ using namespace monad;
     }
     static SparseBitSetWrapper* InPlaceNot(SparseBitSetWrapper** wrappers, size_t len){
       return BitSetWrapper<SparseBitSetWrapper,SparseBitSet>::InPlaceNot(wrappers,len);
+    }
+ }
+%extend monad::RoaringBitSetWrapper{
+    static RoaringBitSetWrapper* InPlaceAnd(RoaringBitSetWrapper** wrappers,size_t len){
+      return BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>::InPlaceAnd(wrappers,len);
+    }
+    static TopBitSetWrapper* InPlaceAndTop(RoaringBitSetWrapper** wrappers, size_t len,int32_t min_freq){
+      return BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>::InPlaceAndTop(wrappers,len,min_freq);
+
+    }
+    static TopBitSetWrapper* InPlaceAndTopWithPositionMerged(TopBitSetWrapper** wrappers, size_t len, int32_t min_freq){
+      return BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>::InPlaceAndTopWithPositionMerged(wrappers,len,min_freq);
+    }
+    static RoaringBitSetWrapper* InPlaceOr(RoaringBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>::InPlaceOr(wrappers,len);
+    }
+    static RoaringBitSetWrapper* InPlaceNot(RoaringBitSetWrapper** wrappers, size_t len){
+      return BitSetWrapper<RoaringBitSetWrapper,RoaringBitSet>::InPlaceNot(wrappers,len);
     }
  }
 

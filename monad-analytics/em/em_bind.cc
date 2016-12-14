@@ -224,6 +224,7 @@ namespace monad {
     for(int seg=0;seg<seg_len;seg++) {
       //regionId
       int regionId = ReadUint32(bb);
+      ReadUint32(bb);//读取长度，在C中没有用
       *bb = *bb + wrapper->NewSeg(regionId,*bb);
     }
 
