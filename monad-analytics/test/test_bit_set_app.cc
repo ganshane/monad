@@ -46,7 +46,7 @@ protected:
     ++_seq;
     return _seq;
   }
-  void WebGet(const std::string url,const std::string parameter,WrapperCallback callback){
+  void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback){
     int32_t key = NewKey();
     COLL_INFO& info = CreateBitSetWrapper(key);
     RoaringBitSetWrapper* wrapper = info.GetOrCreateBitSetWrapper();

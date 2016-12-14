@@ -148,7 +148,7 @@ namespace monad {
 
   protected:
     virtual K& NewKey()=0;
-    virtual void WebGet(const std::string url,const std::string parameter,WrapperCallback callback)=0;
+    virtual void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback)=0;
 
     void DoOperator(const WrapperAction action,const std::vector<K>& keys,const K& new_key,const WrapperCallback callback);
     /**
