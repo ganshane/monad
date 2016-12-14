@@ -25,9 +25,13 @@ struct Int32Comp {
       return lhs < rhs;
     }
 };
+void OnProgress(int32_t,char*){}
+void OnFail(int32_t,char*){}
+
 class MyApp:public BitSetApp<int32_t,Int32Comp,RoaringBitSetWrapper> {
 public:
-  MyApp():_seq(0){}
+  MyApp(BitSetAppOptions& options):BitSetApp(options),_seq(0){
+  }
   static void MyCallback(COLL_INFO* coll_info){
 
   }
@@ -46,7 +50,11 @@ protected:
 };
 
 TEST_F(BitSetAppTest, TestApp) {
-  MyApp app;
+  BitSetAppOptions options;
+  options.api_url= (char *) "http://localhost:8080/api";
+  options.progress_callback = OnProgress;
+  options.fail_callback= OnFail;
+  MyApp app(options);
   app.FullTextQuery("trace","i=x",MyApp::MyCallback);
   ASSERT_EQ(1,1);
 }

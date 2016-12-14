@@ -82,6 +82,20 @@ namespace monad {
     }
   };
 
+  typedef void (*MessageCallback)(int32_t code,char* message);
+  void NilMessageCallback(int32_t,char*){}
+  struct BitSetAppOptions{
+      char* api_url;
+      MessageCallback progress_callback;
+      MessageCallback fail_callback;
+  public:
+    BitSetAppOptions(){
+      api_url = NULL;
+      progress_callback = NilMessageCallback;
+      fail_callback = NilMessageCallback;
+    }
+  };
+
   template <typename K,typename COMPARATOR,typename WRAPPER>
   class BitSetApp{
   public:
@@ -89,7 +103,21 @@ namespace monad {
     typedef typename std::map<K,COLL_INFO*>::iterator CONTAINER_IT;
     typedef void (*WrapperCallback)(COLL_INFO* coll);
 
-    virtual void SetApiUrl(const std::string& api_url);
+    BitSetApp(BitSetAppOptions& options){
+      assert(options.api_url);
+      size_t len = strlen(options.api_url);
+      _options.api_url = (char*)malloc(len + 1);
+      memset(_options.api_url,0,len+1);
+      memcpy(_options.api_url,options.api_url,len);
+
+      _options.progress_callback = options.progress_callback;
+      _options.fail_callback = options.fail_callback;
+    }
+    virtual ~BitSetApp(){
+      free(_options.api_url);
+    }
+
+    //virtual void SetApiUrl(const std::string& api_url);
     //virtual void Query(const std::string& index,const std::string& q)=0;
     virtual void FullTextQuery(const std::string& index,const std::string& q,WrapperCallback callback);
     virtual size_t ContainerSize(){return _container.size();};
@@ -145,13 +173,11 @@ namespace monad {
       _container.insert(std::pair<K,COLL_INFO*>(info.GetKey(),&info));
     }
 
-    std::string _api_url;
+    BitSetAppOptions _options;
     //记录BitSetWrapper的容器
     std::map<K,COLL_INFO*,COMPARATOR> _container;
   };
 
-  template <typename K,typename COMPARATOR,typename WRAPPER>
-  void BitSetApp<K,COMPARATOR,WRAPPER>::SetApiUrl(const std::string& api_url) {_api_url.assign(api_url);};
 
   template <typename K,typename COMPARATOR,typename WRAPPER>
   void BitSetApp<K,COMPARATOR,WRAPPER>::FullTextQuery(const std::string &index, const std::string &q, WrapperCallback callback) {
@@ -161,7 +187,7 @@ namespace monad {
     parameter.append("&");
     parameter.append("q=").append(q);
 
-    std::string query_api(_api_url);
+    std::string query_api(_options.api_url);
     query_api.append("/search");
 
     WebGet(query_api,parameter,callback);
