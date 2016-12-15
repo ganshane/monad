@@ -2,6 +2,6 @@
 // site: http://www.ganshane.com
 
 function analytics_onready(){
-    Module.SetApiUrl("http://localhost:9081/api");
+    //Module.SetApiUrl("http://localhost:9081/api");
     console.log("loaded ....")
 }

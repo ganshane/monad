@@ -30,12 +30,12 @@
         function onData(obj){
             onMessage("分析结果数:"+obj.count+" time:"+obj.elapsed_time);
         }
-        function onFail(msg){
-            onMessage(msg);
+        function onFail(code,msg){
+            onMessage("code:"+code+" "+msg);
         }
-        function onProgress(msg){
-            //var textNode = document.createTextNode(msg);
-            document.getElementById("loading").innerHTML=msg;//.appendChild(textNode);
+        function onProgress(code,msg){
+            var textNode = "["+code+"] "+msg;
+            document.getElementById("loading").innerHTML = textNode;
 //            onMessage(msg);
         }
         function testFlex(){

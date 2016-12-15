@@ -486,6 +486,7 @@ namespace monad {
   }
 
 
+/*
 
   // Binding code
   EMSCRIPTEN_BINDINGS(analytics) {
@@ -529,6 +530,7 @@ namespace monad {
           //.class_function("InPlaceAnd",select_overload<WRAPPER*(WRAPPER**,size_t)>(&monad::WRAPPER::InPlaceAnd), allow_raw_pointers());
 
   };
+  */
 }
 
 #endif //MONAD_EM_BIND_H_

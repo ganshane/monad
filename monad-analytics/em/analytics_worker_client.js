@@ -102,10 +102,10 @@ extend(AnalyticsClient,{
     this.backendWorker.addEventListener("message",function(event) {
       switch(event.data.op){
         case OP_FAIL:
-          onFail(event.data.message)
+          onFail(event.data.code,event.data.message)
           break;
         case OP_PROGRESS:
-          onProgress(event.data.message)
+          onProgress(event.data.code,event.data.message)
           break;
         default:
           current_task_callback(event.data.result)

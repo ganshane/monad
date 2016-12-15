@@ -6,11 +6,11 @@ importScripts('analytics.js');
 importScripts('ops.js');
 */
 
-Analytics.config.fail = function(fail_message){
-  postMessage({op:OP_FAIL,message:fail_message})
+Analytics.config.fail = function(code,fail_message){
+  postMessage({op:OP_FAIL,code:code,message:fail_message})
 }
-Analytics.config.progress= function(progress_message){
-  postMessage({op:OP_PROGRESS,message:progress_message})
+Analytics.config.progress= function(code,progress_message){
+  postMessage({op:OP_PROGRESS,code:code,message:progress_message})
 }
 
 
@@ -21,7 +21,9 @@ onmessage=function(event){
   };
   switch(op){
     case OP_INIT_URL:
-      Module.SetApiUrl(event.data.url);
+      Module.Init(event.data.url,
+          Analytics.config.progress,
+          Analytics.config.fail);
       break;
     case OP_TOP:
       Analytics.top(client_callback,event.data.parameters)
