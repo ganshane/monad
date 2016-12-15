@@ -1,0 +1,22 @@
+# -s EXPORT_NAME=\"Mai\"
+#--post-js '$(pwd)/../em/analytics_worker.js' \
+#--closure 1 -s MODULARIZE=1 \
+cmake -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake  -DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_C_FLAGS_DEBUG="-g4 -o0" \
+-DCMAKE_CXX_FLAGS_DEBUG="-g4 -o0" \
+-DENABLE_EM=on   \
+-DBUILD_STATIC=on   \
+-DCMAKE_CXX_FLAGS="--bind -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=512000000 \
+-s AGGRESSIVE_VARIABLE_ELIMINATION=1  \
+-s RESERVED_FUNCTION_POINTERS=5 \
+-s OUTLINING_LIMIT=0 --memory-init-file 0 -s ALLOW_MEMORY_GROWTH=0 \
+-g4 \
+--pre-js '$(pwd)/../em/analytics_pre.js' \
+--pre-js '$(pwd)/../em/ops.js' \
+--pre-js '$(pwd)/../em/async.min.js' \
+--post-js '$(pwd)/../em/analytics_post.js' \
+--post-js '$(pwd)/../em/analytics.js' \
+--post-js '$(pwd)/../em/analytics_worker.js' \
+ " ..
+
+
