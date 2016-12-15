@@ -113,7 +113,6 @@ extend(Analytics,{
         r.elapsed_time = (time_end - time_start)/1000.0;
         callback(r);
       };
-      console.log("callback ",callbackWithTimed);
       Module.query(op.i, op.q, callbackWithTimed, op.weight);
     }
   },

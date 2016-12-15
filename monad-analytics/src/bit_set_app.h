@@ -109,14 +109,7 @@ namespace monad {
 
     }
     BitSetApp(BitSetAppOptions& options){
-      assert(options.api_url);
-      size_t len = strlen(options.api_url);
-      _options.api_url = (char*)malloc(len + 1);
-      memset(_options.api_url,0,len+1);
-      memcpy(_options.api_url,options.api_url,len);
-
-      _options.progress_callback = options.progress_callback;
-      _options.fail_callback = options.fail_callback;
+      Init(options);
     }
     virtual ~BitSetApp(){
       free(_options.api_url);
