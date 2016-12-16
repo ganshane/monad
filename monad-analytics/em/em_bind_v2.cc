@@ -22,9 +22,6 @@
 
 using namespace emscripten;
 namespace monad {
-  //api url
-  static std::string api_url;
-
   /**
    * val作为map的key,此对象作为key的比较函数
    */
@@ -63,12 +60,31 @@ namespace monad {
     void TestFunctionQuery(const std::string& index,const std::string& q,WrapperCallback callback){
 
     }
+    void WebGetTopN(const std::string& url,const std::string& parameter,const val& callback,const val& key,const val& data){
+      CallbackBinding* binding = new CallbackBinding();
+      binding->app = this;
+
+      binding->topN.push_back(key);
+      binding->topN.push_back(data);
+      binding->topN.push_back(callback);
+
+      emscripten_async_wget2_data(url.c_str(),
+                                  "POST",
+                                  parameter.c_str(),
+                                  binding, true,
+                                  &OnLoadIdLabel,
+                                  &OnFail, &OnProgress);
+    }
   protected:
     int32_t _seq;
     struct CallbackBinding{
       EmApp* app;
       WrapperCallback callback;
       int32_t weight;
+
+      //topN
+      std::vector<val> topN;
+
     };
 
     int32_t& NewKey(){
@@ -95,7 +111,7 @@ namespace monad {
       CallbackBinding* binding = (CallbackBinding*)arg;
       EmApp* me = binding->app;
 
-      COLL_INFO& coll_info= me->CreateBitSetWrapper(me->NewKey());
+      COLL_INFO& coll_info= me->CreateBitSetWrapper();
       WRAPPER* wrapper = coll_info.GetOrCreateBitSetWrapper();
       uint32_t seg_len = ReadUint32(bb);
       for(int seg=0;seg<seg_len;seg++) {
@@ -117,6 +133,33 @@ namespace monad {
       printf("after bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
       */
 
+    }
+    /**
+ * 当加载id的具体数据时候执行的操作
+ */
+    static void OnLoadIdLabel(unsigned task_id,void* arg,void* buffer,size_t size){
+      CallbackBinding* binding = (CallbackBinding*)arg;
+      EmApp* me = binding->app;
+
+      val key(binding->topN[0]);
+      val data(binding->topN[1]);
+      val callback(binding->topN[2]);
+
+      std::string result((char*)buffer,size);
+      std::stringstream ss(result);
+      std::string item;
+      int i = 0;
+      int len = data["length"].as<int>();
+      while (std::getline(ss, item, ',')) {
+        data[i].set("id",val(item));
+        if(++i >= len){
+          break;
+        }
+      }
+
+      callback(data,key);
+
+      delete binding;
     }
     static void OnFail(unsigned task_id,void* arg,int32_t code,const char* msg){
       CallbackBinding* binding = (CallbackBinding*)arg;
@@ -196,6 +239,106 @@ namespace monad {
     app.InPlaceAndTopWithPositionMerged(key_coll,min_freq,wrapper_callback);
 
   }
+  void Top(const IdCategory category,const val& key,const uint32_t topN,const val& callback,const uint32_t offset){
+    int32_t len=0;
+    uint32_t query_topN = topN + offset;
+    val data=val::array();
+    std::ostringstream parameter;
+
+    parameter <<"q=";
+
+    //TOP
+    COLL_INFO* ci =app.FindWrapper(key.as<KEY>());
+
+    if(ci != NULL) {
+      if (ci->IsTopCollection()) {
+        RegionTopDoc **docs = ci->TopWrapperTop(query_topN, len);
+        printf("top len:%d \n", len);
+        for (int i = offset; i < len; i++) {
+          TopDoc *top_doc = docs[i]->top_doc;
+          val obj = val::object();
+          obj.set("id", val(top_doc->doc));
+          parameter << top_doc->doc << "@" << docs[i]->region << ",";
+          obj.set("count", val(top_doc->freq));
+          val p = val::array();
+          //js中不能直接保存64bit的对象,拆分成两个int
+          for (int j = 0; j < top_doc->position_len; j++) {
+            p[j * 2] = val((uint32_t) (top_doc->position[j] >> 32));
+            p[j * 2 + 1] = val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL));
+          }
+
+          obj.set("p", val(top_doc->freq));
+          //printf("obj id:%d \n", top_doc->doc);
+
+          data.set(i - offset, obj);
+        }
+
+
+        //clear
+        for (int i = 0; i < len; i++)
+          delete docs[i];
+        delete[] docs;
+      } else {
+        RegionDoc **docs = ci->TopWrapper(query_topN, len);
+        printf("sparse len :%d \n", len);
+        for (int i = offset; i < len; i++) {
+          uint32_t doc = docs[i]->doc;
+          uint32_t region = docs[i]->region;
+          val obj = val::object();
+          obj.set("id", val(doc));
+          obj.set("region", val(region));
+          parameter << doc << "@" << region << ",";
+//        parameter << doc << ",";
+          data.set(i - offset, obj);
+        }
+        //clear
+        for (int i = 0; i < len; i++)
+          delete docs[i];
+        delete[] docs;
+      }
+    }
+    if(ci == NULL) {
+      std::ostringstream os;
+      os << "collection not found by key " << key.as<KEY>() << std::endl;
+      app._options.fail_callback(404,os.str());
+    }else if(len > offset) { //查到数据
+      switch(category){
+        case (IdCategory::Person):
+          parameter << "&c=Person";
+          break;
+        case (IdCategory::Car):
+          parameter << "&c=Car";
+          break;
+        case (IdCategory::Mobile):
+          parameter << "&c=Mobile";
+          break;
+        case (IdCategory::Mac):
+          parameter << "&c=Mac";
+          break;
+        case (IdCategory::QQ):
+          parameter << "&c=QQ";
+          break;
+        case (IdCategory::WeiXin):
+          parameter << "&c=WeiXin";
+          break;
+        default:
+          char message[100];
+          sprintf(message,"category not found by :%d",category);
+          app._options.fail_callback(404,std::string(message));
+          return;
+      }
+      printf(" paramter %s \n",parameter.str().c_str());
+
+
+
+      std::string query_api(app._options.api_url);
+      query_api.append("/analytics/IdConverterApi");
+
+      app.WebGetTopN(query_api,parameter.str(),callback,key,data);
+    }else{
+      ((val)callback)(data,key);
+    }
+  }
   static val GetCollectionProperties(const val& key){
     COLL_INFO* ci = app.FindWrapper(key.as<KEY>());
     val result = val::object();
@@ -210,9 +353,24 @@ namespace monad {
     }
     return result;
   }
+  WRAPPER* CreateBitSetWrapper(){
+    COLL_INFO& coll_info = app.CreateBitSetWrapper();
+    return coll_info.GetOrCreateBitSetWrapper();
+  }
+  /**
+ * 清空所有的集合
+ */
+  void ClearAllCollection(){
+    app.ClearContainer();
+  }
+  /**
+   * 清空某一个集合
+   */
+  void ClearCollection(const val& key){
+    app.RemoveWrapper(key.as<KEY>());
+  }
   // Binding code
   EMSCRIPTEN_BINDINGS(analytics2) {
-      /*
       enum_<IdCategory>("IdCategory")
           .value("Person", IdCategory::Person)
           .value("Mobile", IdCategory::Mobile)
@@ -220,7 +378,6 @@ namespace monad {
           .value("QQ", IdCategory::QQ)
           .value("WeiXin", IdCategory::WeiXin)
           .value("Car", IdCategory::Car);
-          */
 
       function("Init", &Init);
       function("query", &Query);
@@ -231,15 +388,11 @@ namespace monad {
       function("andNot", &AndNot);
       function("inPlaceAndTop", &InPlaceAndTop);
       function("inPlaceAndTopWithPositionMerged", &InPlaceAndTopWithPositionMerged);
-      /*
       function("top", &Top);
       function("clearAllCollection", &ClearAllCollection);
       function("clearCollection", &ClearCollection);
-       */
       function("getCollectionProperties", &GetCollectionProperties);
-      /*
       function("createBitSetWrapper", &CreateBitSetWrapper, allow_raw_pointers());
-      */
 
 
       class_<WRAPPER>("BitSetWrapper")

@@ -154,6 +154,7 @@ namespace monad {
       }
     }
     COLL_INFO& CreateBitSetWrapper(const K& k);
+    COLL_INFO& CreateBitSetWrapper();
 
   protected:
     virtual K& NewKey()=0;
@@ -255,6 +256,16 @@ namespace monad {
   template <typename K,typename COMPARATOR,typename WRAPPER>
   CollectionInfo<K,WRAPPER>& BitSetApp<K,COMPARATOR,WRAPPER>::CreateBitSetWrapper(const K &key) {
     //先删除同key的集合
+    ClearCollection(key);
+    WRAPPER* wrapper = new WRAPPER();
+    COLL_INFO* ci = new COLL_INFO(key,wrapper);
+    AddWrapper(*ci);
+    return *ci;
+  }
+  template <typename K,typename COMPARATOR,typename WRAPPER>
+  CollectionInfo<K,WRAPPER>& BitSetApp<K,COMPARATOR,WRAPPER>::CreateBitSetWrapper() {
+    //先删除同key的集合
+    K& key= NewKey();
     ClearCollection(key);
     WRAPPER* wrapper = new WRAPPER();
     COLL_INFO* ci = new COLL_INFO(key,wrapper);
@@ -364,5 +375,6 @@ namespace monad {
     AddWrapper(*coll_info);
     callback(coll_info);
   }
+
 }
 #endif //BIT_SET_APP_H_

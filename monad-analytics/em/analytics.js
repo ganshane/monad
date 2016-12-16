@@ -92,7 +92,7 @@ extend(Analytics,{
   top:function(callback,options){
     var _options = {category:Module.IdCategory.Person,top:100,offset:0}
     extend(_options,options)
-     Module.top(_options.category,_options.key,_options.top,callback,_options.offset,config.fail,config.progress);
+     Module.top(_options.category,_options.key,_options.top,callback,_options.offset)
   },
   //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
   fullTextQuery:function(parameters,callback){
