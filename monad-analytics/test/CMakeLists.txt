@@ -1,6 +1,7 @@
 # Copyright 2016 the original author or authors. All rights reserved.
 # site: http://www.ganshane.com
 SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pthread " )
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 " )
 
 MACRO(ANAYTICS_TEST name)
 	ADD_EXECUTABLE(${name} ${name}.cc)

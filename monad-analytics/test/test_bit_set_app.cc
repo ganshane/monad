@@ -7,6 +7,8 @@
 #include "bit_set_wrapper.h"
 #include "roaring_bit_set_wrapper.h"
 using namespace monad;
+using namespace std::placeholders;
+
 class BitSetAppTest: public ::testing::Test {
   protected:
   BitSetAppTest() {
@@ -25,10 +27,10 @@ struct Int32Comp {
       return lhs < rhs;
     }
 };
-void OnProgress(const int32_t code,const char* message){
+void OnProgress(const int32_t code,const std::string& message){
   std::cout << "progress [" << code << "] " << message << std::endl;
 }
-void OnFail(const int32_t code,const char* message){
+void OnFail(const int32_t code,const std::string& message){
   std::cout << "fail " << code << message << std::endl;
 }
 
@@ -46,7 +48,7 @@ protected:
     ++_seq;
     return _seq;
   }
-  void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback){
+  void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback,int32_t weight){
     int32_t key = NewKey();
     COLL_INFO& info = CreateBitSetWrapper(key);
     RoaringBitSetWrapper* wrapper = info.GetOrCreateBitSetWrapper();
@@ -61,10 +63,10 @@ protected:
 TEST_F(BitSetAppTest, TestApp) {
   BitSetAppOptions options;
   options.api_url= (char *) "http://localhost:8080/api";
-  options.progress_callback = OnProgress;
-  options.fail_callback= OnFail;
+  options.progress_callback = OnProgress;//(MessageCallback)std::bind(OnProgress,_1,_2);
+  options.fail_callback=  OnFail;//(MessageCallback)std::bind(OnFail,_1,_2);
   MyApp app(options);
-  app.FullTextQuery("trace","i=x",MyApp::MyCallback);
+  app.Query("trace","i=x",MyApp::MyCallback,1);
   std::vector<int32_t> keys;
   keys.push_back(1);
   keys.push_back(1);

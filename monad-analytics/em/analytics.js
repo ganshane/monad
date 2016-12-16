@@ -79,6 +79,7 @@ function base_operation_func(query_parameters,operation_func){
   			for(var i=0;i<task_results.length;i++){
   				keys[i] = task_results[i].key;
   			}
+  			console.log("....",keys);
   			operation_func(keys)
   		})
   	})
@@ -139,7 +140,8 @@ extend(Analytics,{
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceAnd:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.inPlaceAnd(keys,++key,callback,config.fail,config.progress)
+      console.log("keys ",keys)
+      Module.inPlaceAnd(keys,callback)
     });
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)

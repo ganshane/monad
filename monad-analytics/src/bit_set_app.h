@@ -158,6 +158,7 @@ namespace monad {
     virtual void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback,int32_t weight)=0;
 
     void DoOperator(const WrapperAction action,const std::vector<K>& keys,const K& new_key,const WrapperCallback callback);
+  public:
     /**
     * 查找map中的wrapper对象
     */
@@ -194,10 +195,10 @@ namespace monad {
     void AddWrapper(COLL_INFO& info){
       _container.insert(std::pair<K,COLL_INFO*>(info.GetKey(),&info));
     }
-    COLL_INFO** CreateWrapperCollection(const std::vector<K> keys){
+    COLL_INFO** CreateWrapperCollection(const std::vector<K>& keys){
       size_t length = keys.size();
       COLL_INFO** collections = new COLL_INFO*[length];
-      //printf("length:%d \n",length);
+      printf("length:%d \n",length);
       COLL_INFO* wrapper;
       for(unsigned i=0;i<length;i++){
         K key = keys[i];

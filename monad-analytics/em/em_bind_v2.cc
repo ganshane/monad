@@ -25,10 +25,6 @@ namespace monad {
   //api url
   static std::string api_url;
 
-  typedef RoaringBitSetWrapper WRAPPER;
-  typedef CollectionInfo<int32_t,WRAPPER> COLL_INFO;
-
-
   /**
    * val作为map的key,此对象作为key的比较函数
    */
@@ -38,7 +34,14 @@ namespace monad {
       }
   };
 
-  class EmApp:public BitSetApp<int32_t,Int32Comp,RoaringBitSetWrapper>{
+  typedef RoaringBitSetWrapper WRAPPER;
+  typedef int32_t KEY;
+  typedef Int32Comp KEY_COMPARATOR;
+  typedef CollectionInfo<int32_t,WRAPPER> COLL_INFO;
+
+
+
+  class EmApp:public BitSetApp<KEY,KEY_COMPARATOR,WRAPPER>{
   public:
     EmApp(){}
     void InitJavascript(const std::string& api,const val& on_progress,const val& on_fail){
@@ -93,7 +96,7 @@ namespace monad {
       EmApp* me = binding->app;
 
       COLL_INFO coll_info= me->CreateBitSetWrapper(me->NewKey());
-      RoaringBitSetWrapper* wrapper = coll_info.GetOrCreateBitSetWrapper();
+      WRAPPER* wrapper = coll_info.GetOrCreateBitSetWrapper();
       uint32_t seg_len = ReadUint32(bb);
       for(int seg=0;seg<seg_len;seg++) {
         //regionId
@@ -130,19 +133,60 @@ namespace monad {
 
   static EmApp app;
 
+  static EmApp::WrapperCallback createJavascriptCallback(const val& callback){
+    return [=](COLL_INFO* coll){
+      val json=val::object();
+      json.set("key",val(coll->GetKey()));
+      json.set("count",val(coll->BitCount()));
+      json.set("elapsed_time",val(coll->ElapsedTime()));
+      static_cast<val>(callback)(json);
+    };
+
+  }
   static void Init(const std::string& api_url,const val& on_progress,const val& on_fail){
     app.InitJavascript(api_url,on_progress,on_fail);
   }
-
   static void Query(const std::string& index,const std::string& q,const val& callback,const int32_t weight){
+    /*
     EmApp::WrapperCallback wrapper_callback=[=](COLL_INFO* coll){
       val json=val::object();
       json.set("key",val(coll->GetKey()));
       json.set("count",val(coll->BitCount()));
       json.set("elapsed_time",val(coll->ElapsedTime()));
-      callback.call<void>("call",NULL,json);
+      static_cast<val>(callback)(json);
     };
+     */
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
     app.Query(index,q, wrapper_callback,weight);
+  }
+  static uint32_t ContainerSize(){
+    return app.ContainerSize();
+  }
+  static void InPlaceAnd(const val& keys,const val& callback){
+    unsigned length = keys["length"].as<unsigned>();
+    printf("key length %d \n",length);
+    std::vector<KEY> vector;
+    for(int i=0;i<length;i++){
+      KEY key=keys[i].as<KEY>();
+      vector.push_back(key);
+    }
+
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    app.InPlaceAnd(vector,wrapper_callback);
+  }
+  static val GetCollectionProperties(const val& key){
+    COLL_INFO* ci = app.FindWrapper(key.as<KEY>());
+    val result = val::object();
+    if(ci){
+      result.set("count",val(ci->BitCount()));
+      result.set("key",val(key));
+      result.set("is_top",val(false));
+    }else{
+      std::ostringstream os;
+      os << "collection not found by " << key.as<KEY>() << std::endl;
+      app._options.fail_callback(404,os.str());
+    }
+    return result;
   }
   // Binding code
   EMSCRIPTEN_BINDINGS(analytics2) {
@@ -158,10 +202,10 @@ namespace monad {
 
       function("Init", &Init);
       function("query", &Query);
-      /*
-      function("fullTextQuery", &FullTextQuery);
+      //function("fullTextQuery", &FullTextQuery);
       function("ContainerSize", &ContainerSize);
       function("inPlaceAnd", &InPlaceAnd);
+      /*
       function("inPlaceOr", &InPlaceOr);
       function("andNot", &AndNot);
       function("inPlaceAndTop", &InPlaceAndTop);
@@ -169,7 +213,9 @@ namespace monad {
       function("top", &Top);
       function("clearAllCollection", &ClearAllCollection);
       function("clearCollection", &ClearCollection);
+       */
       function("getCollectionProperties", &GetCollectionProperties);
+      /*
       function("createBitSetWrapper", &CreateBitSetWrapper, allow_raw_pointers());
       */
 
