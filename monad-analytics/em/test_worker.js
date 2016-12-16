@@ -11,17 +11,24 @@
   function onData(obj){
       onMessage("分析结果数:"+obj.count);
   }
-  function onFail(msg){
+  function onFail(code,msg){
       var el = document.createElement("div");
       el.setAttribute("style","color:red")
       el.appendChild(document.createTextNode(msg));
       document.getElementById("msg").appendChild(el);
   }
-  function onProgress(msg){
+  function onProgress(code,msg){
       onMessage(msg);
   }
-  Analytics.config.fail = onFail;
-  Analytics.config.progress= onProgress;
+var parameters={
+    fail:onFail,
+    progress:onProgress,
+    apiUrl:"http://keyten:9081/api",
+    coreJsPath:"../build-em/em/monad_analytics.js"
+}
+Analytics.init(parameters);
+
+
 
   QUnit.test( "fullTextQuery", function( assert ) {
       var done = assert.async();

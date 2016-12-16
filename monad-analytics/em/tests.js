@@ -17,8 +17,15 @@
   function onProgress(msg){
       onMessage(msg);
   }
-  Analytics.config.fail = onFail;
-  Analytics.config.progress= onProgress;
+var parameters={
+    fail:onFail,
+    progress:onProgress,
+    apiUrl:"http://keyten:9081/api",
+    coreJsPath:"../build-em/em/monad_analytics.js"
+}
+Module.Init(parameters.apiUrl,
+    parameters.progress,
+    parameters.fail);
 
   QUnit.test( "query", function( assert ) {
 
