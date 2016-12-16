@@ -208,36 +208,36 @@ namespace monad {
   static uint32_t ContainerSize(){
     return app.ContainerSize();
   }
-  static void InPlaceAnd(const val& keys,const val& callback){
+  template<typename T,typename... Args>
+  static void CommonMethod(const val& keys,const val& callback,void(T::* fn)(Args...)){
     std::vector<KEY> key_coll;
     CreateKeyCollection(keys,key_coll);
     EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.InPlaceAnd(key_coll,wrapper_callback);
+    EmApp* app_ptr=&app;
+    (app_ptr->*fn)(key_coll,wrapper_callback);
+  }
+  template<typename T,typename... Args>
+  static void CommonMethod(const val& keys,const int32_t min_freq,const val& callback,void(T::* fn)(Args...)){
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    EmApp* app_ptr=&app;
+    (app_ptr->*fn)(key_coll,min_freq,wrapper_callback);
+  }
+  static void InPlaceAnd(const val& keys,const val& callback){
+    CommonMethod(keys,callback,&EmApp::InPlaceAnd);
   }
   static void InPlaceOr(const val& keys,const val& callback){
-    std::vector<KEY> key_coll;
-    CreateKeyCollection(keys,key_coll);
-    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.InPlaceOr(key_coll,wrapper_callback);
+    CommonMethod(keys,callback,&EmApp::InPlaceOr);
   }
   static void AndNot(const val& keys,const val& callback){
-    std::vector<KEY> key_coll;
-    CreateKeyCollection(keys,key_coll);
-    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.AndNot(key_coll,wrapper_callback);
+    CommonMethod(keys,callback,&EmApp::AndNot);
   }
   static void InPlaceAndTop(const val& keys,const val& callback,const int32_t min_freq){
-    std::vector<KEY> key_coll;
-    CreateKeyCollection(keys,key_coll);
-    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.InPlaceAndTop(key_coll,min_freq,wrapper_callback);
+    CommonMethod(keys,min_freq,callback,&EmApp::InPlaceAndTop);
   }
   static void InPlaceAndTopWithPositionMerged(const val& keys,const val& callback,const int32_t min_freq){
-    std::vector<KEY> key_coll;
-    CreateKeyCollection(keys,key_coll);
-    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.InPlaceAndTopWithPositionMerged(key_coll,min_freq,wrapper_callback);
-
+    CommonMethod(keys,min_freq,callback,&EmApp::InPlaceAndTopWithPositionMerged);
   }
   void Top(const IdCategory category,const val& key,const uint32_t topN,const val& callback,const uint32_t offset){
     int32_t len=0;
