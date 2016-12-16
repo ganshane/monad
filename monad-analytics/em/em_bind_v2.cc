@@ -263,12 +263,15 @@ namespace monad {
           val p = val::array();
           //js中不能直接保存64bit的对象,拆分成两个int
           for (int j = 0; j < top_doc->position_len; j++) {
+            p.call<void>("push",val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL)));
+            p.call<void>("push",val((uint32_t) (top_doc->position[j] >> 32)));
+                         /*
             p[j * 2] = val((uint32_t) (top_doc->position[j] >> 32));
             p[j * 2 + 1] = val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL));
+                          */
           }
 
           obj.set("p", p);
-          obj.set("freq", val(top_doc->freq));
           //printf("obj id:%d \n", top_doc->doc);
 
           data.set(i - offset, obj);

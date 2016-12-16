@@ -165,8 +165,11 @@ Conditions.prototype = {
   /**
    * 取得一个集合的前N个数据
    * @method top
-   * @param {Function} callback 回调函数
-   *  回调参入两个参数,第一个为数据集合，第二个为对应的集合的Key
+   * @param {Function} callback 回调函数,函数的参数是一个json数组，数组中的元素有:
+   * @param {Int} callback.id 对象的id
+   * @param {Int} callback.count 出现的次数
+   * @param {Array} callback.p 位置信息,整数数组
+   *
    * @param {Object} options 获取数据时候使用的参数
    * @param {Int} options.category 该集合的类别,默认是: Module.IdCategory.Person
    * @param {Int} options.top 取多少数据,默认是：100
