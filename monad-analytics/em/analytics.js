@@ -178,6 +178,9 @@ extend(Analytics,{
   clearAllCollection:function(){
     Module.clearAllCollection();
   },
+  clearCollection:function(key){
+    Module.clearCollection(key);
+  },
   extend:extend
 });
 

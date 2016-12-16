@@ -94,6 +94,15 @@ extend(AnalyticsClient,{
   clearAllCollection:function(){
     this.backendWorker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
   },
+  /**
+   * 清空某个集合，释放内存
+   * @method clearCollection
+   * @static
+   * @param key 集合的key
+   */
+  clearCollection:function(key){
+    this.backendWorker.postMessage({op:OP_CLEAR_COLLECTION,key:parseInt(key)})
+  },
   extend:extend
 });
 

@@ -267,7 +267,8 @@ namespace monad {
             p[j * 2 + 1] = val((uint32_t) (top_doc->position[j] & 0x00000000fffffffL));
           }
 
-          obj.set("p", val(top_doc->freq));
+          obj.set("p", p);
+          obj.set("freq", val(top_doc->freq));
           //printf("obj id:%d \n", top_doc->doc);
 
           data.set(i - offset, obj);
@@ -390,6 +391,7 @@ namespace monad {
       function("inPlaceAndTopWithPositionMerged", &InPlaceAndTopWithPositionMerged);
       function("top", &Top);
       function("clearAllCollection", &ClearAllCollection);
+
       function("clearCollection", &ClearCollection);
       function("getCollectionProperties", &GetCollectionProperties);
       function("createBitSetWrapper", &CreateBitSetWrapper, allow_raw_pointers());

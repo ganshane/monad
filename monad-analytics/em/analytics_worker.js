@@ -25,6 +25,12 @@ onmessage=function(event){
           Analytics.config.progress,
           Analytics.config.fail);
       break;
+    case OP_CLEAR_COLLECTION:
+      Analytics.clearCollection(event.data.key);
+      break;
+    case OP_CLEAR_ALL_COLLECTION:
+      Analytics.clearAllCollection();
+      break;
     case OP_TOP:
       Analytics.top(client_callback,event.data.parameters)
       break;
