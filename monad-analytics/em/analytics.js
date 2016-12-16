@@ -43,7 +43,7 @@ function is_json(obj){
 //创建迭代使用的函数
 function createQueryFunction(query_object,iterator_callback){
   if(hasOwn.call(query_object,"query_objects")){//Condition
-    console.log("condition!!")
+    // console.log("condition!!")
     iterator_callback(null,function(query_callback){
       query_object.execute(function(coll){query_callback(null,coll)})
     })
@@ -79,7 +79,7 @@ function base_operation_func(query_parameters,operation_func){
   			for(var i=0;i<task_results.length;i++){
   				keys[i] = task_results[i].key;
   			}
-  			console.log("....",keys);
+  			// console.log("....",keys);
   			operation_func(keys)
   		})
   	})
@@ -128,26 +128,26 @@ extend(Analytics,{
       _freq = freq;
 
   	base_operation_func(args,function(keys){
-      Module.inPlaceAndTop(keys,++key,callback,_freq,config.fail,config.progress)
+      Module.inPlaceAndTop(keys,callback,_freq)
     });
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   andNot:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.andNot(keys,++key,callback,config.fail,config.progress)
+      Module.andNot(keys,callback)
     });
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceAnd:function(args,callback){
   	base_operation_func(args,function(keys){
-      console.log("keys ",keys)
+      // console.log("keys ",keys)
       Module.inPlaceAnd(keys,callback)
     });
   },
   //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
   inPlaceOr:function(args,callback){
   	base_operation_func(args,function(keys){
-      Module.inPlaceOr(keys,++key,callback,config.fail,config.progress)
+      Module.inPlaceOr(keys,callback)
     });
   },
   //args=[Condition,Condition] callback=function(coll)
@@ -168,7 +168,7 @@ extend(Analytics,{
   			for(var i=0;i<task_results.length;i++){
   				keys[i] = task_results[i].key;
   			}
-        Module.inPlaceAndTopWithPositionMerged(keys,++key,function(coll){callback(coll);},_freq,config.fail,config.progress)
+        Module.inPlaceAndTopWithPositionMerged(keys,function(coll){callback(coll);},_freq)
     });
   },
   createBitSetWrapper:function(){

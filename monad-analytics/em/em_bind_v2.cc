@@ -95,7 +95,7 @@ namespace monad {
       CallbackBinding* binding = (CallbackBinding*)arg;
       EmApp* me = binding->app;
 
-      COLL_INFO coll_info= me->CreateBitSetWrapper(me->NewKey());
+      COLL_INFO& coll_info= me->CreateBitSetWrapper(me->NewKey());
       WRAPPER* wrapper = coll_info.GetOrCreateBitSetWrapper();
       uint32_t seg_len = ReadUint32(bb);
       for(int seg=0;seg<seg_len;seg++) {
@@ -105,12 +105,18 @@ namespace monad {
         *bb = *bb + wrapper->NewSeg(regionId,*bb);
       }
       wrapper->Commit();
-//    printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
+//      printf("bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
       wrapper->SetWeight(binding->weight);
 
       binding->callback(&coll_info);
-
       delete binding;
+
+      /*
+      COLL_INFO* ci = me->FindWrapper(coll_info.GetKey());
+      wrapper = ci->GetOrCreateBitSetWrapper();
+      printf("after bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
+      */
+
     }
     static void OnFail(unsigned task_id,void* arg,int32_t code,const char* msg){
       CallbackBinding* binding = (CallbackBinding*)arg;
@@ -141,21 +147,18 @@ namespace monad {
       json.set("elapsed_time",val(coll->ElapsedTime()));
       static_cast<val>(callback)(json);
     };
-
+  }
+  static void CreateKeyCollection(const val&keys,std::vector<KEY>& dest){
+    unsigned length = keys["length"].as<unsigned>();
+    for(int i=0;i<length;i++){
+      KEY key=keys[i].as<KEY>();
+      dest.push_back(key);
+    }
   }
   static void Init(const std::string& api_url,const val& on_progress,const val& on_fail){
     app.InitJavascript(api_url,on_progress,on_fail);
   }
   static void Query(const std::string& index,const std::string& q,const val& callback,const int32_t weight){
-    /*
-    EmApp::WrapperCallback wrapper_callback=[=](COLL_INFO* coll){
-      val json=val::object();
-      json.set("key",val(coll->GetKey()));
-      json.set("count",val(coll->BitCount()));
-      json.set("elapsed_time",val(coll->ElapsedTime()));
-      static_cast<val>(callback)(json);
-    };
-     */
     EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
     app.Query(index,q, wrapper_callback,weight);
   }
@@ -163,16 +166,35 @@ namespace monad {
     return app.ContainerSize();
   }
   static void InPlaceAnd(const val& keys,const val& callback){
-    unsigned length = keys["length"].as<unsigned>();
-    printf("key length %d \n",length);
-    std::vector<KEY> vector;
-    for(int i=0;i<length;i++){
-      KEY key=keys[i].as<KEY>();
-      vector.push_back(key);
-    }
-
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
     EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
-    app.InPlaceAnd(vector,wrapper_callback);
+    app.InPlaceAnd(key_coll,wrapper_callback);
+  }
+  static void InPlaceOr(const val& keys,const val& callback){
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    app.InPlaceOr(key_coll,wrapper_callback);
+  }
+  static void AndNot(const val& keys,const val& callback){
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    app.AndNot(key_coll,wrapper_callback);
+  }
+  static void InPlaceAndTop(const val& keys,const val& callback,const int32_t min_freq){
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    app.InPlaceAndTop(key_coll,min_freq,wrapper_callback);
+  }
+  static void InPlaceAndTopWithPositionMerged(const val& keys,const val& callback,const int32_t min_freq){
+    std::vector<KEY> key_coll;
+    CreateKeyCollection(keys,key_coll);
+    EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
+    app.InPlaceAndTopWithPositionMerged(key_coll,min_freq,wrapper_callback);
+
   }
   static val GetCollectionProperties(const val& key){
     COLL_INFO* ci = app.FindWrapper(key.as<KEY>());
@@ -205,11 +227,11 @@ namespace monad {
       //function("fullTextQuery", &FullTextQuery);
       function("ContainerSize", &ContainerSize);
       function("inPlaceAnd", &InPlaceAnd);
-      /*
       function("inPlaceOr", &InPlaceOr);
       function("andNot", &AndNot);
       function("inPlaceAndTop", &InPlaceAndTop);
       function("inPlaceAndTopWithPositionMerged", &InPlaceAndTopWithPositionMerged);
+      /*
       function("top", &Top);
       function("clearAllCollection", &ClearAllCollection);
       function("clearCollection", &ClearCollection);

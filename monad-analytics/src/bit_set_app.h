@@ -31,6 +31,7 @@ namespace monad {
     CollectionInfo(const K& k,TopBitSetWrapper* top_wrapper):
         _key(k),_wrapper(NULL),_top_wrapper(top_wrapper),_tmp_wrapper_flag(true){}
     virtual ~CollectionInfo(){
+      printf("delete collection info...\n");
       if(_wrapper){
         delete _wrapper;
         _wrapper = NULL;
@@ -112,6 +113,7 @@ namespace monad {
       Init(options);
     }
     virtual ~BitSetApp(){
+      printf("delete bitset application ... \n");
       free(_options.api_url);
     }
     void Init(BitSetAppOptions& options){
@@ -198,7 +200,7 @@ namespace monad {
     COLL_INFO** CreateWrapperCollection(const std::vector<K>& keys){
       size_t length = keys.size();
       COLL_INFO** collections = new COLL_INFO*[length];
-      printf("length:%d \n",length);
+      //printf("length:%d \n",length);
       COLL_INFO* wrapper;
       for(unsigned i=0;i<length;i++){
         K key = keys[i];
