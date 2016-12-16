@@ -4,6 +4,11 @@
 var AnalyticsClient,
   config,
   hasOwn = Object.prototype.hasOwnProperty;
+  /**
+   * 全局使用的操作对象,必须使用 Analytics.init进行初始化.
+   * @class Analytics
+   * @static
+   */
   AnalyticsClient = {};
   config = {
    fail:function(message){},
@@ -29,70 +34,37 @@ function extend( a, b, undefOnly ) {
 var current_task_callback = null
 extend(AnalyticsClient,{
   backendWorker:{},
+  /**
+   * 创建查询条件对象
+   * @method createCondition 创建条件对象
+   * @static
+   * @return {Conditions} 条件集合对象
+   */
   createCondition:function(){ return new Conditions(this.backendWorker);},
-  /*
-  top:function(callback,options){
-    var _options = {category:Module.IdCategory.Person,top:100,offset:0}
-    extend(_options,options)
-     Module.top(_options.category,_options.key,_options.top,callback,_options.offset,config.fail,config.progress);
-  },
-  //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
-  query:function(parameters,callback){
-    var op={weight:1}
-    extend(op,parameters)
-    //Module.query({i:op.i,q:op.q},++key,callback,config.fail,config.progress,op.weight);
-  },
-  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
-  inPlaceAndTop:function(args,callback,freq){
-    var _freq = 1;
-    if(freq != null)
-      _freq = freq;
-
-  	base_operation_func(args,function(keys){
-      Module.inPlaceAndTop(keys,++key,callback,_freq,config.fail,config.progress)
-    });
-  },
-  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
-  andNot:function(args,callback){
-  	base_operation_func(args,function(keys){
-      Module.andNot(keys,++key,callback,config.fail,config.progress)
-    });
-  },
-  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
-  inPlaceAnd:function(args,callback){
-  	base_operation_func(args,function(keys){
-      Module.inPlaceAnd(keys,++key,callback,config.fail,config.progress)
-    });
-  },
-  //args=[Condition|{i:xxx,q:'xxx"}|key_id]+ callback=function(coll)
-  inPlaceOr:function(args,callback){
-  	base_operation_func(args,function(keys){
-      Module.inPlaceOr(keys,++key,callback,config.fail,config.progress)
-    });
-  },
-  //args=[Condition,Condition] callback=function(coll)
-  inPlaceAndTopWithPositionMerged:function(args,callback,freq){
-    var _freq = 1;
-    if(freq != null)
-      _freq = freq;
-
-    var conditions=[];
-    for(i = 0;i<args.length;i++){
-      conditions[i]=args[i].toWorkerParameter();
-    }
-    current_task_callback = callback;
-    worker.postMessage({op:OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED,parameters:{conditions:conditions,freq:freq}})
-  },
-  /*
-  createBitSetWrapper:function(){
-    var key_seq = ++ key;
-    return {wrapper:Module.createBitSetWrapper(key_seq),key:key_seq};
-  },
-  */
   performance:function(callback){
     current_task_callback = callback;
     this.backendWorker.postMessage({op:OP_PERFORMANCE});
   },
+  /**
+   * 初始化整个应用
+   * @method init
+   * @static
+   * @param parameters 初始化参数.
+   * @example
+   *
+   *     var parameters={
+   *          fail:onFail,
+   *          progress:onProgress,
+   *          apiUrl:"http://localhost:9081/api",
+   *          coreJsPath:"../build-em/em/monad_analytics.js"
+   *      }
+   *
+   * @param parameters.coreJsPath 核心JS的路径
+   * @param parameters.fail 当操作失败的回调函数，函数具备两个参数，分别是 code,message
+   * @param parameters.progress 当操作进行中的回调函数，函数具备两个参数，分别是 code,message
+   * @param parameters.apiUrl api服务器的路劲，譬如:http://localhost:9081/api
+   *
+   */
   init:function(parameters){
     config.fail = parameters.fail;
     config.progress = parameters.progress;
@@ -114,6 +86,11 @@ extend(AnalyticsClient,{
     });
     this.backendWorker.postMessage({op:OP_INIT_URL,url:apiUrl});
   },
+  /**
+   * 清空所有的集合
+   * @method clearAllCollection
+   * @static
+   */
   clearAllCollection:function(){
     this.backendWorker.postMessage({op:OP_CLEAR_ALL_COLLECTION})
   },
@@ -122,6 +99,12 @@ extend(AnalyticsClient,{
 
 
 //DSL mode
+/**
+* 条件对象,通常使用 Analytics.createCondition进行创建
+* @class Conditions
+* @constructor
+* @private
+*/
 function Conditions(worker){
   this.worker = worker;
   this.query_objects=[];
@@ -135,20 +118,52 @@ Conditions.prototype = {
     this.op = OP_FULL_TEXT_QUERY;
     return this;
   },
+  /**
+   * 获得某一个集合对象
+   * @method collection
+   * @param collectionKey 集合的key
+   * @returns {Conditions} 条件对象
+   */
   collection:function(collectionKey){
     this.query_objects.push({key:parseInt(collectionKey)});
     this.op = OP_QUERY;
     return this;
   },
+  /**
+   * 设置一个查询条件，此条件将向后端服务器发生请求
+   * @method query
+   * @param {Object} query_object 查询使用的JSON
+   *                 譬如： {i:'trace',q:'张三'} ,其中i为查询的索引/表，q为查询的语句
+   * @param {Object} query_object.i 待查询的索引/表
+   * @param {Object} query_object.q 查询语句
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   query:function(query_object){
     this.query_objects.push(query_object);
     this.op = OP_QUERY;
     return this;
   },
+  /**
+   * 添加条件
+   * @method addCondition
+   * @param {Conditions} condition 另外一个条件对象
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   addCondition:function(condition){
     this.query_objects.push(condition);
     return this;
   },
+  /**
+   * 取得一个集合的前N个数据
+   * @method top
+   * @param {Function} callback 回调函数
+   *  回调参入两个参数,第一个为数据集合，第二个为对应的集合的Key
+   * @param {Object} options 获取数据时候使用的参数
+   * @param {Int} options.category 该集合的类别,默认是: Module.IdCategory.Person
+   * @param {Int} options.top 取多少数据,默认是：100
+   * @param {Int} options.offset 偏移量，默认是: 0
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   top:function(callback,options){
     var top_func = (function(coll){
       var _options = {key:coll.key}
@@ -158,6 +173,14 @@ Conditions.prototype = {
     }).bind(this);
     this.execute(top_func)
   },
+  /**
+   * 执行操作，调用此方法才执行真正的操作(除top方法)
+   * @method execute
+   * @param {Function} callback 回调函数
+   * @param {Int} callback.key 该集合的key
+   * @param {Int} callback.count 集合的数量
+   * @param {Int} callback.elapsed_time 执行该操作所需要的时间
+   */
   execute:function(callback){
     current_task_callback = callback;
     switch(this.op){
@@ -167,24 +190,49 @@ Conditions.prototype = {
         break;
     }
   },
+  /**
+   * 设置and操作
+   * @method inPlaceAnd
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   inPlaceAnd:function(){
     this.op = OP_IN_PLACE_AND;
     return this;
   },
+  /**
+   * 设置andTop操作
+   * @method inPlaceAndTop
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   inPlaceAndTop:function(freq){
     this.op = OP_IN_PLACE_AND_TOP;
     this.freq = freq;
     return this;
   },
+  /**
+   * 设置inPlaceAndTopWithPositionMerged操作
+   * @method inPlaceAndTopWithPositionMerged
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   inPlaceAndTopWithPositionMerged:function(freq){
     this.op = OP_IN_PLACE_AND_TOP_WITH_POSITION_MERGED;
     this.freq = freq;
     return this;
   },
+  /**
+   * 设置inPlaceOr操作
+   * @method inPlaceOr
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   inPlaceOr:function(){
     this.op = OP_IN_PLACE_OR;
     return this;
   },
+  /**
+   * 设置andNot操作
+   * @method andNot
+   * @return {Conditions} 查询使用的Conditions对象
+   */
   andNot:function(){
     this.op = OP_AND_NOT;
     return this;
