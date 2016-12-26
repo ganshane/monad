@@ -30,10 +30,9 @@ function extend( a, b, undefOnly ) {
 
 	return a;
 }
-//TODO using AnalyticsClient member variable
-var current_task_callback = null
 extend(AnalyticsClient,{
   backendWorker:{},
+  current_task_callback:null,
   /**
    * 创建查询条件对象
    * @method createCondition 创建条件对象
@@ -42,7 +41,7 @@ extend(AnalyticsClient,{
    */
   createCondition:function(){ return new Conditions(this.backendWorker);},
   performance:function(callback){
-    current_task_callback = callback;
+    this.current_task_callback = callback;
     this.backendWorker.postMessage({op:OP_PERFORMANCE});
   },
   /**
@@ -71,16 +70,29 @@ extend(AnalyticsClient,{
     var apiUrl = parameters.apiUrl;
     var coreJsPath = parameters.coreJsPath;
     this.backendWorker = new Worker(coreJsPath);
+    var me=this;
     this.backendWorker.addEventListener("message",function(event) {
       switch(event.data.op){
         case OP_FAIL:
-          onFail(event.data.code,event.data.message)
+          if(parameters.fail)
+            parameters.fail(event.data.code,event.data.message)
+          else
+            console.log("fail function is null")
           break;
         case OP_PROGRESS:
-          onProgress(event.data.code,event.data.message)
+          if(parameters.progress)
+            parameters.progress(event.data.code,event.data.message)
+          else
+            console.log("progress function is null")
           break;
         default:
-          current_task_callback(event.data.result)
+          if(me.current_task_callback)
+            me.current_task_callback(event.data.result)
+          else
+            console.log("callback is null!")
+
+          me.current_task_callback = null
+
           break;
       }
     });
@@ -180,7 +192,7 @@ Conditions.prototype = {
     var top_func = (function(coll){
       var _options = {key:coll.key}
       extend(_options,options)
-      current_task_callback = callback;
+      AnalyticsClient.current_task_callback = callback;
       this.worker.postMessage({op:OP_TOP,parameters:_options})
     }).bind(this);
     this.execute(top_func)
@@ -194,7 +206,7 @@ Conditions.prototype = {
    * @param {Int} callback.elapsed_time 执行该操作所需要的时间
    */
   execute:function(callback){
-    current_task_callback = callback;
+    AnalyticsClient.current_task_callback = callback;
     switch(this.op){
       default:
         var message= {op:this.op,parameters:this.toWorkerParameter()};
