@@ -105,6 +105,7 @@ namespace monad {
     typedef typename std::map<K,COLL_INFO*>::iterator CONTAINER_IT;
     //typedef void (*WrapperCallback)(COLL_INFO* coll);
     typedef std::function<void(COLL_INFO*)> WrapperCallback;
+    typedef std::function<void(std::string&)> FullTextQueryCallback;
     typedef WRAPPER* (*WrapperAction)(WRAPPER**,size_t);
     BitSetApp(){
 
@@ -130,7 +131,7 @@ namespace monad {
     //virtual void SetApiUrl(const std::string& api_url);
     //virtual void Query(const std::string& index,const std::string& q,WrapperCallback callback,const int32_t weight);
     virtual void Query(const std::string& index,const std::string& q,WrapperCallback callback,const int32_t weight);
-    virtual void FullTextQuery(const std::string& index,const std::string& q,WrapperCallback callback);
+    virtual void FullTextQuery(const std::string& index,const std::string& q,FullTextQueryCallback callback);
     virtual size_t ContainerSize(){return _container.size();};
     virtual void InPlaceAnd(std::vector<K>& keys,const WrapperCallback callback){
       DoOperator(&WRAPPER::InPlaceAnd,keys,NewKey(),callback);
@@ -159,6 +160,7 @@ namespace monad {
   protected:
     virtual K& NewKey()=0;
     virtual void WebGet(const std::string& url,const std::string& parameter,WrapperCallback callback,int32_t weight)=0;
+    virtual void WebGet(const std::string& url,const std::string& parameter,FullTextQueryCallback callback)=0;
 
     void DoOperator(const WrapperAction action,const std::vector<K>& keys,const K& new_key,const WrapperCallback callback);
   public:
@@ -240,7 +242,7 @@ namespace monad {
     WebGet(query_api,parameter,callback,weight);
   };
   template <typename K,typename COMPARATOR,typename WRAPPER>
-  void BitSetApp<K,COMPARATOR,WRAPPER>::FullTextQuery(const std::string &index, const std::string &q, WrapperCallback callback) {
+  void BitSetApp<K,COMPARATOR,WRAPPER>::FullTextQuery(const std::string &index, const std::string &q, FullTextQueryCallback callback) {
     _options.progress_callback(1,"build query parameter");
     std::string parameter;
     parameter.append("i=").append(index);
@@ -251,7 +253,7 @@ namespace monad {
     query_api.append("/search");
 
     _options.progress_callback(2,"post data to api url ");
-    WebGet(query_api,parameter,callback,1);
+    WebGet(query_api,parameter,callback);
   };
   template <typename K,typename COMPARATOR,typename WRAPPER>
   CollectionInfo<K,WRAPPER>& BitSetApp<K,COMPARATOR,WRAPPER>::CreateBitSetWrapper(const K &key) {

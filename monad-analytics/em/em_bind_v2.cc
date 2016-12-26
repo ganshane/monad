@@ -81,10 +81,12 @@ namespace monad {
       EmApp* app;
       WrapperCallback callback;
       int32_t weight;
-
       //topN
       std::vector<val> topN;
-
+    };
+    struct FullTextQueryCallbackBinding{
+      EmApp* app;
+      FullTextQueryCallback callback;
     };
 
     int32_t& NewKey(){
@@ -97,6 +99,12 @@ namespace monad {
       binding->callback = callback;
       binding->weight= weight;
       emscripten_async_wget2_data(url.c_str(),"POST",parameter.c_str(),binding,true,&OnLoadRoaringBitSetBuffer,&OnFail,&OnProgress);
+    }
+    void WebGet(const std::string& url,const std::string& parameter,FullTextQueryCallback callback){
+      FullTextQueryCallbackBinding* binding = new FullTextQueryCallbackBinding();
+      binding->app = this;
+      binding->callback = callback;
+      emscripten_async_wget2_data(url.c_str(),"POST",parameter.c_str(),binding,true,&OnLoadFullTextQuery,&OnFail,&OnProgress);
     }
     /**
      * loading http buffer stream as RoaringBitSetWrapper
@@ -133,6 +141,13 @@ namespace monad {
       printf("after bitCount:%d size:%d\n",wrapper->BitCount(),wrapper->SegCount());
       */
 
+    }
+    static void OnLoadFullTextQuery(unsigned,void* arg,void* buffer,unsigned size){
+      FullTextQueryCallbackBinding* binding = (FullTextQueryCallbackBinding*)arg;
+      EmApp* me = binding->app;
+      std::string str((char*)buffer,size);
+      binding->callback(str);
+      delete binding;
     }
     /**
  * 当加载id的具体数据时候执行的操作
@@ -182,6 +197,12 @@ namespace monad {
 
   static EmApp app;
 
+  static EmApp::FullTextQueryCallback createJavascriptFullTextQueryCallback(const val& callback){
+    return [=](std::string& result){
+      val json=val(result);
+      static_cast<val>(callback)(json);
+    };
+  }
   static EmApp::WrapperCallback createJavascriptCallback(const val& callback){
     return [=](COLL_INFO* coll){
       val json=val::object();
@@ -204,6 +225,10 @@ namespace monad {
   static void Query(const std::string& index,const std::string& q,const val& callback,const int32_t weight){
     EmApp::WrapperCallback wrapper_callback=createJavascriptCallback(callback);
     app.Query(index,q, wrapper_callback,weight);
+  }
+  static void FullTextQuery(const std::string& index,const std::string& q,const val& callback){
+    EmApp::FullTextQueryCallback wrapper_callback=createJavascriptFullTextQueryCallback(callback);
+    app.FullTextQuery(index,q, wrapper_callback);
   }
   static uint32_t ContainerSize(){
     return app.ContainerSize();
@@ -385,7 +410,7 @@ namespace monad {
 
       function("Init", &Init);
       function("query", &Query);
-      //function("fullTextQuery", &FullTextQuery);
+      function("fullTextQuery", &FullTextQuery);
       function("ContainerSize", &ContainerSize);
       function("inPlaceAnd", &InPlaceAnd);
       function("inPlaceOr", &InPlaceOr);

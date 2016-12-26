@@ -30,6 +30,10 @@
         function onData(obj){
             onMessage("分析结果数:"+obj.count+" time:"+obj.elapsed_time);
         }
+        function onFullTextQueryData(obj){
+            onMessage("全文检索结果:"+obj);
+        }
+
         function onFail(code,msg){
             onMessage("code:"+code+" "+msg);
         }
@@ -58,6 +62,14 @@
             Analytics.createCondition().query(json).execute(function(r){
                 onData(r);
                 sf('qk', r.key);
+            })
+
+        }
+        function testFullTextQuery(){
+            var json = {i:f('fi'),q:f('fq')}
+            var k = f('qk');
+            Analytics.createCondition().fullTextQuery(json).execute(function(r){
+                onFullTextQueryData(r);
             })
 
         }
@@ -131,5 +143,9 @@
 <input type="text" id="clear"/>
 <input type="button" onClick="javascript:testClear();" value="ClearCollection"/>
 <br/>
+<div>
+    <h3>full text query</h3><br/> q:<input type="text" id="fq" value="test"/>,resource:<input type="text" id="fi" value="trace"/>
+    <input type="button" onClick="javascript:testFullTextQuery();" value="FullTextQuery"/><br/>
+</div>
 </body>
 </html>

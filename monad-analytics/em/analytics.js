@@ -98,7 +98,7 @@ extend(Analytics,{
   fullTextQuery:function(parameters,callback){
     var op={weight:1}
     extend(op,parameters)
-    Module.fullTextQuery({i:op.i,q:op.q},callback,config.fail,config.progress);
+    Module.fullTextQuery(op.i,op.q,callback)
   },
   //args=[{i:xxx,q:'yyy",weight:zz}]+ callback=function(coll)
   query:function(parameters,callback){
