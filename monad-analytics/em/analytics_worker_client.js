@@ -86,12 +86,13 @@ extend(AnalyticsClient,{
             console.log("progress function is null")
           break;
         default:
-          if(me.current_task_callback)
-            me.current_task_callback(event.data.result)
+          var scope_callback = me.current_task_callback;
+          me.current_task_callback = null;
+          if(scope_callback)
+            scope_callback(event.data.result)
           else
             console.log("callback is null!")
 
-          me.current_task_callback = null
 
           break;
       }
